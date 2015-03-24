@@ -7,9 +7,9 @@ using UnityEngine;
 
 namespace Unlimiter
 {
-    public static class FakeBuildingDecoration
+    public static class LimitBuildingDecoration
     {
-        public static void ClearDecorations()
+        private static void ClearDecorations()
         {
             NetManager instance1 = Singleton<NetManager>.instance;
             for (int index = 1; index < 32768; ++index)
@@ -36,7 +36,7 @@ namespace Unlimiter
             }
         }
 
-        public static void SaveProps(BuildingInfo info, ushort buildingID, ref Building data)
+        private static void SaveProps(BuildingInfo info, ushort buildingID, ref Building data)
         {
             FastList<BuildingInfo.Prop> fastList = new FastList<BuildingInfo.Prop>();
             Vector3 pos = data.m_position;

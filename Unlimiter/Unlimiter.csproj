@@ -53,10 +53,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FakeBuildingDecoration.cs" />
-    <Compile Include="FakeNaturalResourceManager.cs" />
-    <Compile Include="FakeTreeManager.cs" />
-    <Compile Include="FakeTreeTool.cs" />
+    <Compile Include="Trees\LimitBuildingDecoration.cs" />
+    <Compile Include="Trees\LimitNaturalResourceManager.cs" />
+    <Compile Include="Trees\LimitTreeManager.cs" />
+    <Compile Include="Trees\LimitTreeTool.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedirectionHelper.cs" />

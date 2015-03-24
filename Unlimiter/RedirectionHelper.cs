@@ -58,7 +58,7 @@ namespace CitiesSkylinesDetour
             // GetFunctionPointer enforces compilation of the method.
             var fptr1 = from.MethodHandle.GetFunctionPointer();
             var fptr2 = to.MethodHandle.GetFunctionPointer();
-            Debug.Log("Patching from " + fptr1 + " to " + fptr2);
+            //Debug.Log("Patching from " + fptr1 + " to " + fptr2);
             PatchJumpTo(fptr1, fptr2);
             // We could also use:
             //RedirectCall(from, to);
@@ -128,7 +128,7 @@ namespace CitiesSkylinesDetour
                 }
                 if (jitInfoFrom == null || jitInfoTo == null)
                 {
-                    Debug.Log("Could not find methods");
+                    //Debug.Log("Could not find methods");
                     return;
                 }
 

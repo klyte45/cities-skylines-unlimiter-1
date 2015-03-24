@@ -7,11 +7,10 @@ using UnityEngine;
 
 namespace Unlimiter
 {
-    public static class FakeNaturalResourceManager
+    internal static class LimitNaturalResourceManager
     {
-
         // FIXME m_naturalResources?
-        public static void TreesModified(NaturalResourceManager nrm, Vector3 position)
+        private static void TreesModified(NaturalResourceManager nrm, Vector3 position)
         {
             int num1 = Mathf.Clamp((int)((double)position.x / 33.75 + 256.0), 0, 511);
             int num2 = Mathf.Clamp((int)((double)position.z / 33.75 + 256.0), 0, 511);

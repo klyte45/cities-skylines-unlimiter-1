@@ -36,15 +36,15 @@ namespace Unlimiter
         {
             try
             {
-                RedirectCalls(typeof(BuildingDecoration), typeof(FakeBuildingDecoration), "ClearDecorations");
-                RedirectCalls(typeof(BuildingDecoration), typeof(FakeBuildingDecoration), "SaveProps");
-                RedirectCalls(typeof(NaturalResourceManager), typeof(FakeNaturalResourceManager), "TreesModified");
-                RedirectCalls(typeof(TreeTool), typeof(FakeTreeTool), "ApplyBrush");
-                RedirectCalls(typeof(TreeManager.Data), typeof(FakeTreeManager.Data), "Serialize");
-                RedirectCalls(typeof(TreeManager.Data), typeof(FakeTreeManager.Data), "Deserialize");
+                RedirectCalls(typeof(BuildingDecoration), typeof(LimitBuildingDecoration), "ClearDecorations");
+                RedirectCalls(typeof(BuildingDecoration), typeof(LimitBuildingDecoration), "SaveProps");
+                RedirectCalls(typeof(NaturalResourceManager), typeof(LimitNaturalResourceManager), "TreesModified");
+                RedirectCalls(typeof(TreeTool), typeof(LimitTreeTool), "ApplyBrush");
+                RedirectCalls(typeof(TreeManager.Data), typeof(LimitTreeManager.Data), "Serialize");
+                RedirectCalls(typeof(TreeManager.Data), typeof(LimitTreeManager.Data), "Deserialize");
 
-                foreach (var method in typeof(FakeTreeManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public))
-                    RedirectCalls(typeof(TreeManager), typeof(FakeTreeManager), method.Name);
+                foreach (var method in typeof(LimitTreeManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(TreeManager), typeof(LimitTreeManager), method.Name);
             }
             catch(Exception e)
             {
@@ -55,8 +55,8 @@ namespace Unlimiter
 
         private void RedirectCalls(Type type1, Type type2, string p)
         {
-            Debug.LogFormat("{0}/{1}/{2}", type1, type2, p);
-            RedirectionHelper.RedirectCalls(type1.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static), type2.GetMethod(p, BindingFlags.Public | BindingFlags.Static));
+            //Debug.LogFormat("{0}/{1}/{2}", type1, type2, p);
+            RedirectionHelper.RedirectCalls(type1.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static), type2.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Static));
         }
     }
 }

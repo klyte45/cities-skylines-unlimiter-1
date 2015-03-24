@@ -10,21 +10,24 @@ using UnityEngine;
 
 namespace Unlimiter
 {
-    public static class FakeTreeManager
+    internal static class LimitTreeManager
     {
-        internal static void EnsureInit()
+        internal static class Helper
         {
-            if (TreeManager.instance.m_trees.m_buffer.Length != Mod.MAX_TREE_COUNT)
+            internal static void EnsureInit()
             {
-                Debug.LogFormat("Awake TreeManager");
+                if (TreeManager.instance.m_trees.m_buffer.Length != Mod.MAX_TREE_COUNT)
+                {
+                    Debug.LogFormat("Awake TreeManager");
 
-                TreeManager.instance.m_trees = new Array32<TreeInstance>(Mod.MAX_TREE_COUNT);
-                TreeManager.instance.m_updatedTrees = new ulong[4096 * Mod.MOD_SCALE];
-                TreeManager.instance.m_treeGrid = new uint[291600];
+                    TreeManager.instance.m_trees = new Array32<TreeInstance>(Mod.MAX_TREE_COUNT);
+                    TreeManager.instance.m_updatedTrees = new ulong[4096 * Mod.MOD_SCALE];
+                    TreeManager.instance.m_treeGrid = new uint[291600];
+                }
             }
         }
 
-        public static void EndRenderingImpl(TreeManager tm, RenderManager.CameraInfo cameraInfo)
+        private static void EndRenderingImpl(TreeManager tm, RenderManager.CameraInfo cameraInfo)
         {
             if (Input.GetKeyDown(KeyCode.F5))
             {
@@ -72,7 +75,7 @@ namespace Unlimiter
                     TreeInstance.RenderLod(cameraInfo, prefab);
             }
         }
-        public static float SampleSmoothHeight(TreeManager tm, Vector3 worldPos)
+        private static float SampleSmoothHeight(TreeManager tm, Vector3 worldPos)
         {
             float num1 = 0.0f;
             int num2 = Mathf.Max((int)(((double)worldPos.x - 32.0) / 32.0 + 270.0), 0);
@@ -114,7 +117,7 @@ namespace Unlimiter
             return num1;
         }
 
-        public static bool CheckLimits(TreeManager tm)
+        private static bool CheckLimits(TreeManager tm)
         {
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
             if ((availability & ItemClass.Availability.MapEditor) != ItemClass.Availability.None)
@@ -132,7 +135,7 @@ namespace Unlimiter
             return true;
         }
 
-        public static void ReleaseTreeImplementation(TreeManager tm, uint tree, ref TreeInstance data)
+        private static void ReleaseTreeImplementation(TreeManager tm, uint tree, ref TreeInstance data)
         {
             if ((int)data.m_flags == 0)
                 return;
@@ -199,14 +202,14 @@ namespace Unlimiter
             Singleton<RenderManager>.instance.UpdateGroup(num1 * 45 / 540, num2 * 45 / 540, tm.m_treeLayer);
         }
 
-        public static void UpdateTree(TreeManager tm, uint tree)
+        private static void UpdateTree(TreeManager tm, uint tree)
         {
             // This requires us to use a bigger tree grid.
             tm.m_updatedTrees[(tree >> 6)] |= (ulong)(1L << (int)tree);
             tm.m_treesUpdated = true;
         }
 
-        public static void UpdateTrees(TreeManager tm, float minX, float minZ, float maxX, float maxZ)
+        private static void UpdateTrees(TreeManager tm, float minX, float minZ, float maxX, float maxZ)
         {
             int num1 = Mathf.Max((int)(((double)minX - 8.0) / 32.0 + 270.0), 0);
             int num2 = Mathf.Max((int)(((double)minZ - 8.0) / 32.0 + 270.0), 0);
@@ -236,7 +239,8 @@ namespace Unlimiter
                 }
             }
         }
-        public static bool OverlapQuad(TreeManager tm, Quad2 quad, float minY, float maxY, int layer, uint ignoreTree)
+
+        private static bool OverlapQuad(TreeManager tm, Quad2 quad, float minY, float maxY, int layer, uint ignoreTree)
         {
             Vector2 vector2_1 = quad.Min();
             Vector2 vector2_2 = quad.Max();
@@ -267,7 +271,7 @@ namespace Unlimiter
             return false;
         }
 
-        public static bool RayCast(TreeManager tm, Segment3 ray, ItemClass.Service service, ItemClass.SubService subService, ItemClass.Layer itemLayers, TreeInstance.Flags ignoreFlags, out Vector3 hit, out uint treeIndex)
+        private static bool RayCast(TreeManager tm, Segment3 ray, ItemClass.Service service, ItemClass.SubService subService, ItemClass.Layer itemLayers, TreeInstance.Flags ignoreFlags, out Vector3 hit, out uint treeIndex)
         {
             Bounds bounds = new Bounds(new Vector3(0.0f, 512f, 0.0f), new Vector3(17280f, 1152f, 17280f));
             if (ray.Clip(bounds))
@@ -369,7 +373,7 @@ namespace Unlimiter
             return false;
         }
 
-        public static void TerrainUpdated(TreeManager tm, TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
+        private static void TerrainUpdated(TreeManager tm, TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
         {
             float minX = surfaceArea.m_min.x;
             float minZ = surfaceArea.m_min.z;
@@ -401,7 +405,7 @@ namespace Unlimiter
             }
         }
 
-        public static void AfterTerrainUpdate(TreeManager tm, TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
+        private static void AfterTerrainUpdate(TreeManager tm, TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
         {
             float minX = heightArea.m_min.x;
             float minZ = heightArea.m_min.z;
@@ -433,7 +437,7 @@ namespace Unlimiter
             }
         }
 
-        public static void CalculateAreaHeight(TreeManager tm, float minX, float minZ, float maxX, float maxZ, out int num, out float min, out float avg, out float max)
+        private static void CalculateAreaHeight(TreeManager tm, float minX, float minZ, float maxX, float maxZ, out int num, out float min, out float avg, out float max)
         {
             int num1 = Mathf.Max((int)(((double)minX - 8.0) / 32.0 + 270.0), 0);
             int num2 = Mathf.Max((int)(((double)minZ - 8.0) / 32.0 + 270.0), 0);
@@ -482,7 +486,7 @@ namespace Unlimiter
             avg = avg / (float)num;
         }
 
-        public static bool CalculateGroupData(TreeManager tm, int groupX, int groupZ, int layer, ref int vertexCount, ref int triangleCount, ref int objectCount, ref RenderGroup.VertexArrays vertexArrays)
+        private static bool CalculateGroupData(TreeManager tm, int groupX, int groupZ, int layer, ref int vertexCount, ref int triangleCount, ref int objectCount, ref RenderGroup.VertexArrays vertexArrays)
         {
             bool flag = false;
             if (layer != tm.m_treeLayer)
@@ -512,7 +516,8 @@ namespace Unlimiter
             }
             return flag;
         }
-        public static void PopulateGroupData(TreeManager tm, int groupX, int groupZ, int layer, ref int vertexIndex, ref int triangleIndex, Vector3 groupPosition, RenderGroup.MeshData data, ref Vector3 min, ref Vector3 max, ref float maxRenderDistance, ref float maxInstanceDistance, ref bool requireSurfaceMaps)
+        
+        private static void PopulateGroupData(TreeManager tm, int groupX, int groupZ, int layer, ref int vertexIndex, ref int triangleIndex, Vector3 groupPosition, RenderGroup.MeshData data, ref Vector3 min, ref Vector3 max, ref float maxRenderDistance, ref float maxInstanceDistance, ref bool requireSurfaceMaps)
         {
             if (layer != tm.m_treeLayer)
                 return;
@@ -539,7 +544,8 @@ namespace Unlimiter
                 }
             }
         }
-        public static void UpdateData(TreeManager tm, SimulationManager.UpdateMode mode)
+
+        private static void UpdateData(TreeManager tm, SimulationManager.UpdateMode mode)
         {
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("TreeManager.UpdateData");
             // base.UpdateData(mode);
@@ -568,7 +574,7 @@ namespace Unlimiter
         }
 
 
-        public static void InitializeTree(TreeManager tm, uint tree, ref TreeInstance data, bool assetEditor)
+        private static void InitializeTree(TreeManager tm, uint tree, ref TreeInstance data, bool assetEditor)
         {
             int num1;
             int num2;
@@ -597,9 +603,9 @@ namespace Unlimiter
             }
         }
 
-        public class Data
+        internal class Data
         {
-            public static void Serialize(TreeManager.Data data, DataSerializer s)
+            private static void Serialize(TreeManager.Data data, DataSerializer s)
             {
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginSerialize(s, "TreeManager");
                 TreeInstance[] treeInstanceArray = Singleton<TreeManager>.instance.m_trees.m_buffer;
@@ -637,9 +643,9 @@ namespace Unlimiter
                 short2.EndWrite();
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "TreeManager");
             }
-            public static void Deserialize(TreeManager.Data data, DataSerializer s)
+            private static void Deserialize(TreeManager.Data data, DataSerializer s)
             {
-                EnsureInit();
+                Helper.EnsureInit();
 
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginDeserialize(s, "TreeManager");
                 TreeManager instance = Singleton<TreeManager>.instance;
@@ -676,7 +682,7 @@ namespace Unlimiter
                     treeInstanceArray[index].m_nextGridTree = 0U;
                     treeInstanceArray[index].m_posY = (ushort)0;
                     if ((int)treeInstanceArray[index].m_flags != 0)
-                        FakeTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
+                        LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
                     else
                         instance.m_trees.ReleaseItem((uint)index);
                 }

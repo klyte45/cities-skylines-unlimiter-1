@@ -8,9 +8,9 @@ using UnityEngine;
 
 namespace Unlimiter
 {
-    public static class FakeTreeTool
+    internal static class LimitTreeTool
     {
-        public static void ApplyBrush(TreeTool tt)
+        private static void ApplyBrush(TreeTool tt)
         {
             Randomizer r = (Randomizer)tt.GetType().GetField("m_randomizer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(tt);
             ToolController m_toolController = (ToolController)tt.GetType().GetField("m_toolController", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(tt);
