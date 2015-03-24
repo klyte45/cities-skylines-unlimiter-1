@@ -19,6 +19,7 @@ namespace Unlimiter
                 Debug.LogFormat("Awake TreeManager");
 
                 TreeManager.instance.m_trees = new Array32<TreeInstance>(Mod.MAX_TREE_COUNT);
+                TreeManager.instance.m_updatedTrees = new ulong[4096 * Mod.MOD_SCALE];
                 TreeManager.instance.m_treeGrid = new uint[291600];
             }
         }
@@ -26,7 +27,12 @@ namespace Unlimiter
         public static void EndRenderingImpl(TreeManager tm, RenderManager.CameraInfo cameraInfo)
         {
             if (Input.GetKeyDown(KeyCode.F5))
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Trees: {0}", tm.m_treeCount));
+            {
+                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Trees: {0}, {1}, {2}", tm.m_treeCount, Mod.MAX_TREE_COUNT, tm.CheckLimits()));
+
+                var ta = tm.m_trees;
+                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("X: {0}, {1}, {2}", ta.m_size, ta.ItemCount(), ta.GetType().GetField("m_unusedCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(ta)));
+            }
 
             FastList<RenderGroup> fastList = Singleton<RenderManager>.instance.m_renderedGroups;
             for (int index1 = 0; index1 < fastList.m_size; ++index1)
@@ -187,12 +193,19 @@ namespace Unlimiter
             tm.m_trees.ReleaseItem(tree);
 
             // UpdateTree
-            tm.m_updatedTrees[(tree >> 6)] |= (ulong)(1L << (int)tree);
-            tm.m_treesUpdated = true;
+            UpdateTree(tm, tree);
 
             tm.m_treeCount = (int)tm.m_trees.ItemCount() - 1;
             Singleton<RenderManager>.instance.UpdateGroup(num1 * 45 / 540, num2 * 45 / 540, tm.m_treeLayer);
         }
+
+        public static void UpdateTree(TreeManager tm, uint tree)
+        {
+            // This requires us to use a bigger tree grid.
+            tm.m_updatedTrees[(tree >> 6)] |= (ulong)(1L << (int)tree);
+            tm.m_treesUpdated = true;
+        }
+
         public static void UpdateTrees(TreeManager tm, float minX, float minZ, float maxX, float maxZ)
         {
             int num1 = Mathf.Max((int)(((double)minX - 8.0) / 32.0 + 270.0), 0);
@@ -667,6 +680,8 @@ namespace Unlimiter
                     else
                         instance.m_trees.ReleaseItem((uint)index);
                 }
+                for (int index = length1; index < Mod.MAX_TREE_COUNT; ++index)
+                    instance.m_trees.ReleaseItem((uint)index);
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "TreeManager");
             }
         }
