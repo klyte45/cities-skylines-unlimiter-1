@@ -43,7 +43,7 @@ namespace Unlimiter
                             }
                         }
                         num13 = instance.m_trees.m_buffer[num13].m_nextGridTree;
-                        if (++num14 >= Mod.MAX_TREE_COUNT)
+                        if (++num14 >= LimitTreeManager.Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;

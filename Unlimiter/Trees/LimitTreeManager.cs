@@ -14,27 +14,53 @@ namespace Unlimiter
     {
         internal static class Helper
         {
+            internal static int TreeLimit
+            {
+                get
+                {
+                    if(!UseModifiedTreeCap)
+                        return Mod.DEFAULT_TREE_COUNT;
+                    
+                    return Mod.MOD_TREE_SCALE * Mod.DEFAULT_TREE_COUNT;
+                }
+            }
+
+            internal static bool UseModifiedTreeCap
+            {
+                get
+                {
+                    if (!Mod.IsEnabled)
+                        return false;
+
+                    var mode = Singleton<SimulationManager>.instance.m_metaData.m_updateMode;
+                    return mode == SimulationManager.UpdateMode.LoadGame || mode == SimulationManager.UpdateMode.NewGame;
+                }
+            }
+
             internal static void EnsureInit()
             {
-                if (TreeManager.instance.m_trees.m_buffer.Length != Mod.MAX_TREE_COUNT)
-                {
-                    Debug.LogFormat("Awake TreeManager");
+                Debug.LogFormat("[TreeLimit] This mod is {0}. Tree limit is {0}.", Mod.IsEnabled ? "enabled" : "disabled", UseModifiedTreeCap ? "enabled" : "disabled");
+                if (!UseModifiedTreeCap)
+                    return;
 
-                    TreeManager.instance.m_trees = new Array32<TreeInstance>(Mod.MAX_TREE_COUNT);
-                    TreeManager.instance.m_updatedTrees = new ulong[4096 * Mod.MOD_SCALE];
-                    TreeManager.instance.m_treeGrid = new uint[291600];
+                if (TreeManager.instance.m_trees.m_buffer.Length != TreeLimit)
+                {
+                    Debug.LogFormat("Updating TreeManager");
+
+                    TreeManager.instance.m_trees = new Array32<TreeInstance>((uint)TreeLimit);
+                    TreeManager.instance.m_updatedTrees = new ulong[4096 * Mod.MOD_TREE_SCALE];
                 }
             }
         }
 
         private static void EndRenderingImpl(TreeManager tm, RenderManager.CameraInfo cameraInfo)
         {
-            if (Input.GetKeyDown(KeyCode.F5))
+            if (Input.GetKeyDown(KeyCode.F5) && Event.current.control)
             {
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("Trees: {0}, {1}, {2}", tm.m_treeCount, Mod.MAX_TREE_COUNT, tm.CheckLimits()));
+                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("TreeLimit: TreeCount={0}, TreeLimit={1}, CanPlaceMoreTrees={2}", tm.m_treeCount, Helper.TreeLimit, tm.CheckLimits()));
 
                 var ta = tm.m_trees;
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("X: {0}, {1}, {2}", ta.m_size, ta.ItemCount(), ta.GetType().GetField("m_unusedCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(ta)));
+                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("TreeLimit: ArraySize={0}, ItemCount={1}, UnusedCount={2}", ta.m_size, ta.ItemCount(), ta.GetType().GetField("m_unusedCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(ta)));
             }
 
             FastList<RenderGroup> fastList = Singleton<RenderManager>.instance.m_renderedGroups;
@@ -57,7 +83,7 @@ namespace Unlimiter
                             {
                                 tm.m_trees.m_buffer[treeID].RenderInstance(cameraInfo, treeID, renderGroup.m_instanceMask);
                                 treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                                if (++num5 >= Mod.MAX_TREE_COUNT)
+                                if (++num5 >= Helper.TreeLimit)
                                 {
                                     CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                                     break;
@@ -106,7 +132,7 @@ namespace Unlimiter
                             }
                         }
                         num6 = tm.m_trees.m_buffer[num6].m_nextGridTree;
-                        if (++num7 >= Mod.MAX_TREE_COUNT)
+                        if (++num7 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -130,7 +156,7 @@ namespace Unlimiter
                 if (tm.m_treeCount + Singleton<PropManager>.instance.m_propCount >= 64)
                     return false;
             }
-            else if (tm.m_treeCount >= Mod.MAX_TREE_COUNT - 5)//262139
+            else if (tm.m_treeCount >= Helper.TreeLimit - 5)//262139
                 return false;
             return true;
         }
@@ -181,7 +207,7 @@ namespace Unlimiter
                     }
                     num3 = num4;
                     num4 = tm.m_trees.m_buffer[num4].m_nextGridTree;
-                    if (++num5 > Mod.MAX_TREE_COUNT)
+                    if (++num5 > Helper.TreeLimit)
                     {
                         CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                         break;
@@ -230,7 +256,7 @@ namespace Unlimiter
                             tm.m_treesUpdated = true;
                         }
                         num5 = tm.m_trees.m_buffer[num5].m_nextGridTree;
-                        if (++num6 >= Mod.MAX_TREE_COUNT)
+                        if (++num6 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -260,7 +286,7 @@ namespace Unlimiter
                         if ((double)Mathf.Max(Mathf.Max(vector2_1.x - 8f - position.x, vector2_1.y - 8f - position.z), Mathf.Max((float)((double)position.x - (double)vector2_2.x - 8.0), (float)((double)position.z - (double)vector2_2.y - 8.0))) < 0.0 && tm.m_trees.m_buffer[treeID].OverlapQuad(treeID, quad, minY, maxY))
                             return true;
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.MAX_TREE_COUNT)
+                        if (++num5 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -348,7 +374,7 @@ namespace Unlimiter
                                     }
                                 }
                                 treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                                if (++num14 > Mod.MAX_TREE_COUNT)
+                                if (++num14 > Helper.TreeLimit)
                                 {
                                     CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                                     break;
@@ -395,7 +421,7 @@ namespace Unlimiter
                         if ((double)Mathf.Max(Mathf.Max(minX - 8f - position.x, minZ - 8f - position.z), Mathf.Max((float)((double)position.x - (double)maxX - 8.0), (float)((double)position.z - (double)maxZ - 8.0))) < 0.0)
                             tm.m_trees.m_buffer[treeID].TerrainUpdated(treeID, minX, minZ, maxX, maxZ);
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.MAX_TREE_COUNT)
+                        if (++num5 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -427,7 +453,7 @@ namespace Unlimiter
                         if ((double)Mathf.Max(Mathf.Max(minX - 8f - position.x, minZ - 8f - position.z), Mathf.Max((float)((double)position.x - (double)maxX - 8.0), (float)((double)position.z - (double)maxZ - 8.0))) < 0.0)
                             tm.m_trees.m_buffer[treeID].AfterTerrainUpdated(treeID, minX, minZ, maxX, maxZ);
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.MAX_TREE_COUNT)
+                        if (++num5 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -473,7 +499,7 @@ namespace Unlimiter
                             }
                         }
                         _seed = tm.m_trees.m_buffer[_seed].m_nextGridTree;
-                        if (++num5 >= Mod.MAX_TREE_COUNT)
+                        if (++num5 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -506,7 +532,7 @@ namespace Unlimiter
                         if (tm.m_trees.m_buffer[treeID].CalculateGroupData(treeID, layer, ref vertexCount, ref triangleCount, ref objectCount, ref vertexArrays))
                             flag = true;
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.MAX_TREE_COUNT)
+                        if (++num5 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -535,7 +561,7 @@ namespace Unlimiter
                     {
                         tm.m_trees.m_buffer[treeID].PopulateGroupData(treeID, layer, ref vertexIndex, ref triangleIndex, groupPosition, data, ref min, ref max, ref maxRenderDistance, ref maxInstanceDistance);
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.MAX_TREE_COUNT)
+                        if (++num5 >= Helper.TreeLimit)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -549,7 +575,7 @@ namespace Unlimiter
         {
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("TreeManager.UpdateData");
             // base.UpdateData(mode);
-            for (int index = 1; index < Mod.MAX_TREE_COUNT; ++index)
+            for (int index = 1; index < Helper.TreeLimit; ++index)
             {
                 if ((int)tm.m_trees.m_buffer[index].m_flags != 0 && tm.m_trees.m_buffer[index].Info == null)
                     tm.ReleaseTree((uint)index);
@@ -642,8 +668,6 @@ namespace Unlimiter
                 }
                 short2.EndWrite();
 
-                CustomSerializer.Serialize();
-
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "TreeManager");
             }
             private static void Deserialize(TreeManager.Data data, DataSerializer s)
@@ -690,7 +714,15 @@ namespace Unlimiter
                         instance.m_trees.ReleaseItem((uint)index);
                 }
 
-                CustomSerializer.Deserialize();
+                // needed to ensure enough free spaces are available
+                if (Helper.UseModifiedTreeCap)
+                {
+                    if (!CustomSerializer.Deserialize())
+                    {
+                        for (int index = Mod.DEFAULT_TREE_COUNT; index < Helper.TreeLimit; ++index)
+                            instance.m_trees.ReleaseItem((uint)index);
+                    }
+                }
 
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "TreeManager");
             }
@@ -700,16 +732,143 @@ namespace Unlimiter
         {
             internal static void Serialize()
             {
+                if (!Helper.UseModifiedTreeCap)
+                    return;
 
-            }
-
-            internal static void Deserialize()
-            {
-                // needed to ensure enough free spaces are available
                 TreeManager instance = Singleton<TreeManager>.instance;
-                for (int index = Mod.DEFAULT_TREE_COUNT; index < Mod.MAX_TREE_COUNT; ++index)
-                    instance.m_trees.ReleaseItem((uint)index);
+                TreeInstance[] treeInstanceArray = instance.m_trees.m_buffer;
+
+                List<ushort> data = new List<ushort>();
+
+                // Version
+                data.Add(1);
+
+                int serialized = 0;
+                for (int i = Mod.DEFAULT_TREE_COUNT; i < Helper.TreeLimit; ++i)
+                {
+                    TreeInstance element = treeInstanceArray[i];
+                    data.Add(element.m_flags);
+                    if(element.m_flags != 0)
+                    {
+                        data.Add(element.m_infoIndex);
+                        data.Add((ushort)element.m_posX);
+                        data.Add((ushort)element.m_posZ);
+                        ++serialized;
+                    }
+                }
+
+                // FIXME is it possible to loose trees here? CheckLimits() uses (LIMIT-5) by default
+                Debug.LogFormat("TreeLimit: used {0} of {1} extra trees, size in savegame: {2} bytes", serialized, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT, data.Count * 2);
+                SimulationManager.instance.m_serializableDataStorage["mabako/unlimiter"] = data.SelectMany(v => BitConverter.GetBytes(v)).ToArray();
             }
+
+            internal static bool Deserialize()
+            {
+                Helper.EnsureInit();
+                if (!Helper.UseModifiedTreeCap)
+                    return false;
+
+                byte[] bytes = null;
+                if (SimulationManager.instance.m_serializableDataStorage.TryGetValue("mabako/unlimiter", out bytes))
+                {
+                    Debug.LogFormat("TreeLimit: we have {0} bytes of extra trees", bytes.Length);
+                    if (bytes.Length < 2 || bytes.Length % 2 != 0)
+                    {
+                        Debug.Log("TreeLimit: Invalid chunk size");
+                        return false;
+                    }
+
+                    // just the required things
+                    SimulationManager.UpdateMode updateMode = Singleton<SimulationManager>.instance.m_metaData.m_updateMode;
+                    bool assetEditor = updateMode == SimulationManager.UpdateMode.NewAsset || updateMode == SimulationManager.UpdateMode.LoadAsset;
+                    TreeManager instance = Singleton<TreeManager>.instance;
+                    TreeInstance[] treeInstanceArray = instance.m_trees.m_buffer;
+
+                    // we basically need shorts for everything
+                    ushort[] shorts = new ushort[bytes.Length / 2];
+                    Buffer.BlockCopy(bytes, 0, shorts, 0, bytes.Length);
+
+                    uint pos = 0;
+                    ushort version = shorts[pos++];
+                    if (version != 1)
+                    {
+                        Debug.LogFormat("TreeLimit: Wrong version ({0}|{1}|{2},{3}).", shorts[0], version, bytes[0], bytes[1]);
+                        return false;
+                    }
+
+                    int loaded = 0;
+                    for (int index = Mod.DEFAULT_TREE_COUNT; index < Helper.TreeLimit; ++index)
+                    {
+                        uint savedPos = pos;
+                        try
+                        {
+                            treeInstanceArray[index].m_flags = shorts[pos++];
+                            if (treeInstanceArray[index].m_flags == 0)
+                            {
+                                instance.m_trees.ReleaseItem((uint)index);
+                            }
+                            else
+                            {
+                                treeInstanceArray[index].m_infoIndex = shorts[pos++];
+                                treeInstanceArray[index].m_posX = (short)shorts[pos++];
+                                treeInstanceArray[index].m_posY = 0;
+                                treeInstanceArray[index].m_posZ = (short)shorts[pos++];
+
+                                LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
+                                ++loaded;
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            Debug.LogFormat("While fetching tree {0} in pos {1} of {2}", index, savedPos, shorts.Length);
+                            Debug.LogException(e);
+                            throw e;
+                        }
+                    }
+                    Debug.LogFormat("TreeLimit: Loaded {0} additional trees (out of {1} possible)", loaded, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT);
+                    return true;
+                }
+                else
+                {
+                    Debug.Log("TreeLimit: no extra data saved with this savegame.");
+                    return false;
+                }
+            }
+
+#if false
+                EncodedArray.UShort @ushort = EncodedArray.UShort.BeginRead(s);
+                for (int index = 1; index < length1; ++index)
+                    treeInstanceArray[index].m_flags = @ushort.Read();
+                @ushort.EndRead();
+                PrefabCollection<TreeInfo>.BeginDeserialize(s);
+                for (int index = 1; index < length1; ++index)
+                {
+                    if ((int)treeInstanceArray[index].m_flags != 0)
+                        treeInstanceArray[index].m_infoIndex = (ushort)PrefabCollection<TreeInfo>.Deserialize();
+                }
+                PrefabCollection<TreeInfo>.EndDeserialize(s);
+                EncodedArray.Short short1 = EncodedArray.Short.BeginRead(s);
+                for (int index = 1; index < length1; ++index)
+                    treeInstanceArray[index].m_posX = (int)treeInstanceArray[index].m_flags == 0 ? (short)0 : short1.Read();
+                short1.EndRead();
+                EncodedArray.Short short2 = EncodedArray.Short.BeginRead(s);
+                for (int index = 1; index < length1; ++index)
+                    treeInstanceArray[index].m_posZ = (int)treeInstanceArray[index].m_flags == 0 ? (short)0 : short2.Read();
+                short2.EndRead();
+                for (int index = 1; index < length1; ++index)
+                {
+                    treeInstanceArray[index].m_nextGridTree = 0U;
+                    treeInstanceArray[index].m_posY = (ushort)0;
+                    if ((int)treeInstanceArray[index].m_flags != 0)
+                        LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
+                    else
+                        instance.m_trees.ReleaseItem((uint)index);
+                }
+
+
+
+
+#endif
         }
     }
 }

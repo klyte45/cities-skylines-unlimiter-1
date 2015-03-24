@@ -29,7 +29,7 @@ namespace Unlimiter
                     instance2.ReleaseProp((ushort)index);
             }
             TreeManager instance3 = Singleton<TreeManager>.instance;
-            for (int index = 1; index < Mod.MAX_TREE_COUNT; ++index)
+            for (int index = 1; index < LimitTreeManager.Helper.TreeLimit; ++index)
             {
                 if ((int)instance3.m_trees.m_buffer[index].m_flags != 0)
                     instance3.ReleaseTree((uint)index);
@@ -61,7 +61,7 @@ namespace Unlimiter
                 }
             }
             TreeManager instance2 = Singleton<TreeManager>.instance;
-            for (int index = 0; index < Mod.MAX_TREE_COUNT; ++index)
+            for (int index = 0; index < LimitTreeManager.Helper.TreeLimit; ++index)
             {
                 if (((int)instance2.m_trees.m_buffer[index].m_flags & 3) == 1 && instance2.m_trees.m_buffer[index].GrowState != 0)
                 {
