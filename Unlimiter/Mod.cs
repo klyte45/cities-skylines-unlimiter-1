@@ -28,8 +28,9 @@ namespace Unlimiter
             }
         }
 
-        internal const int MOD_SCALE = 4;
-        internal const int MAX_TREE_COUNT = MOD_SCALE * 262144;
+        internal const int MOD_SCALE = 3;
+        internal const int DEFAULT_TREE_COUNT = 262144;
+        internal const int MAX_TREE_COUNT = MOD_SCALE * DEFAULT_TREE_COUNT;
 
         private void Setup()
         {
