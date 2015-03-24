@@ -834,41 +834,6 @@ namespace Unlimiter
                     return false;
                 }
             }
-
-#if false
-                EncodedArray.UShort @ushort = EncodedArray.UShort.BeginRead(s);
-                for (int index = 1; index < length1; ++index)
-                    treeInstanceArray[index].m_flags = @ushort.Read();
-                @ushort.EndRead();
-                PrefabCollection<TreeInfo>.BeginDeserialize(s);
-                for (int index = 1; index < length1; ++index)
-                {
-                    if ((int)treeInstanceArray[index].m_flags != 0)
-                        treeInstanceArray[index].m_infoIndex = (ushort)PrefabCollection<TreeInfo>.Deserialize();
-                }
-                PrefabCollection<TreeInfo>.EndDeserialize(s);
-                EncodedArray.Short short1 = EncodedArray.Short.BeginRead(s);
-                for (int index = 1; index < length1; ++index)
-                    treeInstanceArray[index].m_posX = (int)treeInstanceArray[index].m_flags == 0 ? (short)0 : short1.Read();
-                short1.EndRead();
-                EncodedArray.Short short2 = EncodedArray.Short.BeginRead(s);
-                for (int index = 1; index < length1; ++index)
-                    treeInstanceArray[index].m_posZ = (int)treeInstanceArray[index].m_flags == 0 ? (short)0 : short2.Read();
-                short2.EndRead();
-                for (int index = 1; index < length1; ++index)
-                {
-                    treeInstanceArray[index].m_nextGridTree = 0U;
-                    treeInstanceArray[index].m_posY = (ushort)0;
-                    if ((int)treeInstanceArray[index].m_flags != 0)
-                        LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
-                    else
-                        instance.m_trees.ReleaseItem((uint)index);
-                }
-
-
-
-
-#endif
         }
     }
 }
