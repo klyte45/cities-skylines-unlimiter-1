@@ -603,7 +603,7 @@ namespace Unlimiter
             {
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginSerialize(s, "TreeManager");
                 TreeInstance[] treeInstanceArray = Singleton<TreeManager>.instance.m_trees.m_buffer;
-                int length = 262144; //treeInstanceArray.Length;
+                int length = Mod.DEFAULT_TREE_COUNT; //treeInstanceArray.Length;
                 EncodedArray.UShort @ushort = EncodedArray.UShort.BeginWrite(s);
                 for (int index = 1; index < length; ++index)
                     @ushort.Write(treeInstanceArray[index].m_flags);
@@ -645,7 +645,7 @@ namespace Unlimiter
                 TreeManager instance = Singleton<TreeManager>.instance;
                 TreeInstance[] treeInstanceArray = instance.m_trees.m_buffer;
                 uint[] numArray = instance.m_treeGrid;
-                int length1 = 262144;// treeInstanceArray.Length;
+                int length1 = Mod.DEFAULT_TREE_COUNT;// treeInstanceArray.Length;
                 int length2 = numArray.Length;
                 instance.m_trees.ClearUnused();
                 SimulationManager.UpdateMode updateMode = Singleton<SimulationManager>.instance.m_metaData.m_updateMode;
