@@ -28,7 +28,7 @@ namespace Unlimiter
             }
         }
 
-        internal const int TREE_COUNT = 1028 * 1028; //262144 * 8;
+        internal const int MAX_TREE_COUNT = 1028 * 1028; //262144 * 8;
         //internal const int TREE_GRID_DIMENSION = 1080 * 1080;// 291600; 
 
         private void Setup()

@@ -95,7 +95,7 @@ namespace Unlimiter
                             if (r.Int32(10000U) < num20)
                                 Singleton<TreeManager>.instance.ReleaseTree(tree);
                             tree = num22;
-                            if (++num21 >= Mod.TREE_COUNT)
+                            if (++num21 >= Mod.MAX_TREE_COUNT)
                             {
                                 CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                                 break;

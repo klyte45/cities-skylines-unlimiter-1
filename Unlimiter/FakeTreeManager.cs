@@ -14,11 +14,11 @@ namespace Unlimiter
     {
         internal static void EnsureInit()
         {
-            if (TreeManager.instance.m_trees.m_buffer.Length != Mod.TREE_COUNT)
+            if (TreeManager.instance.m_trees.m_buffer.Length != Mod.MAX_TREE_COUNT)
             {
                 Debug.LogFormat("Awake TreeManager");
 
-                TreeManager.instance.m_trees = new Array32<TreeInstance>(Mod.TREE_COUNT);
+                TreeManager.instance.m_trees = new Array32<TreeInstance>(Mod.MAX_TREE_COUNT);
                 TreeManager.instance.m_treeGrid = new uint[291600];
             }
         }
@@ -48,7 +48,7 @@ namespace Unlimiter
                             {
                                 tm.m_trees.m_buffer[treeID].RenderInstance(cameraInfo, treeID, renderGroup.m_instanceMask);
                                 treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                                if (++num5 >= Mod.TREE_COUNT)
+                                if (++num5 >= Mod.MAX_TREE_COUNT)
                                 {
                                     CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                                     break;
@@ -97,7 +97,7 @@ namespace Unlimiter
                             }
                         }
                         num6 = tm.m_trees.m_buffer[num6].m_nextGridTree;
-                        if (++num7 >= Mod.TREE_COUNT)
+                        if (++num7 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -121,7 +121,7 @@ namespace Unlimiter
                 if (tm.m_treeCount + Singleton<PropManager>.instance.m_propCount >= 64)
                     return false;
             }
-            else if (tm.m_treeCount >= Mod.TREE_COUNT - 5)//262139
+            else if (tm.m_treeCount >= Mod.MAX_TREE_COUNT - 5)//262139
                 return false;
             return true;
         }
@@ -172,7 +172,7 @@ namespace Unlimiter
                     }
                     num3 = num4;
                     num4 = tm.m_trees.m_buffer[num4].m_nextGridTree;
-                    if (++num5 > Mod.TREE_COUNT)
+                    if (++num5 > Mod.MAX_TREE_COUNT)
                     {
                         CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                         break;
@@ -214,7 +214,7 @@ namespace Unlimiter
                             tm.m_treesUpdated = true;
                         }
                         num5 = tm.m_trees.m_buffer[num5].m_nextGridTree;
-                        if (++num6 >= Mod.TREE_COUNT)
+                        if (++num6 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -243,7 +243,7 @@ namespace Unlimiter
                         if ((double)Mathf.Max(Mathf.Max(vector2_1.x - 8f - position.x, vector2_1.y - 8f - position.z), Mathf.Max((float)((double)position.x - (double)vector2_2.x - 8.0), (float)((double)position.z - (double)vector2_2.y - 8.0))) < 0.0 && tm.m_trees.m_buffer[treeID].OverlapQuad(treeID, quad, minY, maxY))
                             return true;
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.TREE_COUNT)
+                        if (++num5 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -331,7 +331,7 @@ namespace Unlimiter
                                     }
                                 }
                                 treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                                if (++num14 > Mod.TREE_COUNT)
+                                if (++num14 > Mod.MAX_TREE_COUNT)
                                 {
                                     CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                                     break;
@@ -378,7 +378,7 @@ namespace Unlimiter
                         if ((double)Mathf.Max(Mathf.Max(minX - 8f - position.x, minZ - 8f - position.z), Mathf.Max((float)((double)position.x - (double)maxX - 8.0), (float)((double)position.z - (double)maxZ - 8.0))) < 0.0)
                             tm.m_trees.m_buffer[treeID].TerrainUpdated(treeID, minX, minZ, maxX, maxZ);
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.TREE_COUNT)
+                        if (++num5 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -410,7 +410,7 @@ namespace Unlimiter
                         if ((double)Mathf.Max(Mathf.Max(minX - 8f - position.x, minZ - 8f - position.z), Mathf.Max((float)((double)position.x - (double)maxX - 8.0), (float)((double)position.z - (double)maxZ - 8.0))) < 0.0)
                             tm.m_trees.m_buffer[treeID].AfterTerrainUpdated(treeID, minX, minZ, maxX, maxZ);
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.TREE_COUNT)
+                        if (++num5 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -456,7 +456,7 @@ namespace Unlimiter
                             }
                         }
                         _seed = tm.m_trees.m_buffer[_seed].m_nextGridTree;
-                        if (++num5 >= Mod.TREE_COUNT)
+                        if (++num5 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -489,7 +489,7 @@ namespace Unlimiter
                         if (tm.m_trees.m_buffer[treeID].CalculateGroupData(treeID, layer, ref vertexCount, ref triangleCount, ref objectCount, ref vertexArrays))
                             flag = true;
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.TREE_COUNT)
+                        if (++num5 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -517,7 +517,7 @@ namespace Unlimiter
                     {
                         tm.m_trees.m_buffer[treeID].PopulateGroupData(treeID, layer, ref vertexIndex, ref triangleIndex, groupPosition, data, ref min, ref max, ref maxRenderDistance, ref maxInstanceDistance);
                         treeID = tm.m_trees.m_buffer[treeID].m_nextGridTree;
-                        if (++num5 >= Mod.TREE_COUNT)
+                        if (++num5 >= Mod.MAX_TREE_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -530,7 +530,7 @@ namespace Unlimiter
         {
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("TreeManager.UpdateData");
             // base.UpdateData(mode);
-            for (int index = 1; index < Mod.TREE_COUNT; ++index)
+            for (int index = 1; index < Mod.MAX_TREE_COUNT; ++index)
             {
                 if ((int)tm.m_trees.m_buffer[index].m_flags != 0 && tm.m_trees.m_buffer[index].Info == null)
                     tm.ReleaseTree((uint)index);
