@@ -641,6 +641,9 @@ namespace Unlimiter
                         short2.Write(treeInstanceArray[index].m_posZ);
                 }
                 short2.EndWrite();
+
+                CustomSerializer.Serialize();
+
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "TreeManager");
             }
             private static void Deserialize(TreeManager.Data data, DataSerializer s)
@@ -686,9 +689,26 @@ namespace Unlimiter
                     else
                         instance.m_trees.ReleaseItem((uint)index);
                 }
-                for (int index = length1; index < Mod.MAX_TREE_COUNT; ++index)
-                    instance.m_trees.ReleaseItem((uint)index);
+
+                CustomSerializer.Deserialize();
+
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "TreeManager");
+            }
+        }
+
+        internal static class CustomSerializer
+        {
+            internal static void Serialize()
+            {
+
+            }
+
+            internal static void Deserialize()
+            {
+                // needed to ensure enough free spaces are available
+                TreeManager instance = Singleton<TreeManager>.instance;
+                for (int index = Mod.DEFAULT_TREE_COUNT; index < Mod.MAX_TREE_COUNT; ++index)
+                    instance.m_trees.ReleaseItem((uint)index);
             }
         }
     }
