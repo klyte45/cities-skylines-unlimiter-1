@@ -33,7 +33,7 @@ namespace CitiesSkylinesDetour
     /// Helper class to deal with detours. This version is for Unity 5 x64 on Windows.
     /// We provide three different methods of detouring.
     /// </summary>
-    public static class RedirectionHelper
+    internal static class RedirectionHelper
     {
         // Note: These two DllImports are really only used in the alternative methods
         // for detouring.
@@ -48,7 +48,7 @@ namespace CitiesSkylinesDetour
         /// </summary>
         /// <param name="from"></param>
         /// <param name="to"></param>
-        public static void RedirectCalls(MethodInfo from, MethodInfo to)
+        internal static void RedirectCalls(MethodInfo from, MethodInfo to)
         {
             if(from == null)
                 Debug.LogError("No From.");
