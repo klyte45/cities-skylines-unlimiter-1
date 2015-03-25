@@ -817,6 +817,9 @@ namespace Unlimiter
                                 LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
                                 ++loaded;
                             }
+
+                            if (pos == shorts.Length)
+                                break;
                         }
                         catch(Exception e)
                         {
