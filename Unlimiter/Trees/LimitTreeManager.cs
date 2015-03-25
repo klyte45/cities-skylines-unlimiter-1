@@ -45,10 +45,13 @@ namespace Unlimiter
 
                 if (TreeManager.instance.m_trees.m_buffer.Length != TreeLimit)
                 {
-                    Debug.LogFormat("Updating TreeManager");
+                    Debug.LogFormat("[TreeLimit] Scaling up TreeManager");
 
                     TreeManager.instance.m_trees = new Array32<TreeInstance>((uint)TreeLimit);
                     TreeManager.instance.m_updatedTrees = new ulong[4096 * Mod.MOD_TREE_SCALE];
+
+                    uint num;
+                    TreeManager.instance.m_trees.CreateItem(out num);
                 }
             }
         }
@@ -219,7 +222,16 @@ namespace Unlimiter
             {
                 Monitor.Exit((object)tm.m_treeGrid);
             }
-            tm.m_trees.ReleaseItem(tree);
+
+            try
+            {
+                tm.m_trees.ReleaseItem(tree);
+            }
+            catch (Exception e)
+            {
+                Debug.LogFormat("[TreeLimit] Releasing {0} {1} {2} {3}", tree, tm.m_trees.m_size, Helper.TreeLimit, Helper.UseModifiedTreeCap);
+                Debug.LogException(e);
+            }
 
             // UpdateTree
             UpdateTree(tm, tree);
@@ -575,10 +587,12 @@ namespace Unlimiter
         {
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("TreeManager.UpdateData");
             // base.UpdateData(mode);
+            Helper.EnsureInit();
             for (int index = 1; index < Helper.TreeLimit; ++index)
             {
                 if ((int)tm.m_trees.m_buffer[index].m_flags != 0 && tm.m_trees.m_buffer[index].Info == null)
                     tm.ReleaseTree((uint)index);
+                
             }
             int num = PrefabCollection<TreeInfo>.PrefabCount();
             int tiles = 1;
@@ -708,21 +722,26 @@ namespace Unlimiter
                 {
                     treeInstanceArray[index].m_nextGridTree = 0U;
                     treeInstanceArray[index].m_posY = (ushort)0;
-                    if ((int)treeInstanceArray[index].m_flags != 0)
-                        LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
-                    else
-                        instance.m_trees.ReleaseItem((uint)index);
                 }
 
                 // needed to ensure enough free spaces are available
                 if (Helper.UseModifiedTreeCap)
                 {
-                    if (!CustomSerializer.Deserialize())
-                    {
-                        for (int index = Mod.DEFAULT_TREE_COUNT; index < Helper.TreeLimit; ++index)
-                            instance.m_trees.ReleaseItem((uint)index);
-                    }
+                    CustomSerializer.Deserialize();
                 }
+
+                // I feel like this is called in some other way; at least it was usually bugging out when the number of total loaded trees exceeded the natural cap.
+                // This was only noticable after reloading saves/creating new games often enough.
+                // This would cause m_trees.ReleaseItem() to exceed array buffers and throw an exception.
+                instance.m_trees.ClearUnused();
+                for (int index = 0; index < Helper.TreeLimit; ++index)
+                {
+                    if ((int)treeInstanceArray[index].m_flags != 0)
+                        LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
+                    else
+                        instance.m_trees.ReleaseItem((uint)index);
+                }
+                
 
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "TreeManager");
             }
@@ -758,7 +777,7 @@ namespace Unlimiter
                 }
 
                 // FIXME is it possible to loose trees here? CheckLimits() uses (LIMIT-5) by default
-                Debug.LogFormat("TreeLimit: used {0} of {1} extra trees, size in savegame: {2} bytes", serialized, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT, data.Count * 2);
+                Debug.LogFormat("[TreeLimit] used {0} of {1} extra trees, size in savegame: {2} bytes", serialized, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT, data.Count * 2);
                 SimulationManager.instance.m_serializableDataStorage["mabako/unlimiter"] = data.SelectMany(v => BitConverter.GetBytes(v)).ToArray();
             }
 
@@ -771,16 +790,14 @@ namespace Unlimiter
                 byte[] bytes = null;
                 if (SimulationManager.instance.m_serializableDataStorage.TryGetValue("mabako/unlimiter", out bytes))
                 {
-                    Debug.LogFormat("TreeLimit: we have {0} bytes of extra trees", bytes.Length);
+                    Debug.LogFormat("[TreeLimit] we have {0} bytes of extra trees", bytes.Length);
                     if (bytes.Length < 2 || bytes.Length % 2 != 0)
                     {
-                        Debug.Log("TreeLimit: Invalid chunk size");
+                        Debug.Log("[TreeLimit] Invalid chunk size");
                         return false;
                     }
 
                     // just the required things
-                    SimulationManager.UpdateMode updateMode = Singleton<SimulationManager>.instance.m_metaData.m_updateMode;
-                    bool assetEditor = updateMode == SimulationManager.UpdateMode.NewAsset || updateMode == SimulationManager.UpdateMode.LoadAsset;
                     TreeManager instance = Singleton<TreeManager>.instance;
                     TreeInstance[] treeInstanceArray = instance.m_trees.m_buffer;
 
@@ -792,7 +809,7 @@ namespace Unlimiter
                     ushort version = shorts[pos++];
                     if (version != 1)
                     {
-                        Debug.LogFormat("TreeLimit: Wrong version ({0}|{1}|{2},{3}).", shorts[0], version, bytes[0], bytes[1]);
+                        Debug.LogFormat("[TreeLimit] Wrong version ({0}|{1}|{2},{3}).", shorts[0], version, bytes[0], bytes[1]);
                         return false;
                     }
 
@@ -803,18 +820,13 @@ namespace Unlimiter
                         try
                         {
                             treeInstanceArray[index].m_flags = shorts[pos++];
-                            if (treeInstanceArray[index].m_flags == 0)
-                            {
-                                instance.m_trees.ReleaseItem((uint)index);
-                            }
-                            else
+                            if (treeInstanceArray[index].m_flags != 0)
                             {
                                 treeInstanceArray[index].m_infoIndex = shorts[pos++];
                                 treeInstanceArray[index].m_posX = (short)shorts[pos++];
                                 treeInstanceArray[index].m_posY = 0;
                                 treeInstanceArray[index].m_posZ = (short)shorts[pos++];
 
-                                LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
                                 ++loaded;
                             }
 
@@ -823,17 +835,17 @@ namespace Unlimiter
                         }
                         catch(Exception e)
                         {
-                            Debug.LogFormat("While fetching tree {0} in pos {1} of {2}", index, savedPos, shorts.Length);
+                            Debug.LogFormat("[TreeLimit]While fetching tree {0} in pos {1} of {2}", index, savedPos, shorts.Length);
                             Debug.LogException(e);
                             throw e;
                         }
                     }
-                    Debug.LogFormat("TreeLimit: Loaded {0} additional trees (out of {1} possible)", loaded, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT);
+                    Debug.LogFormat("[TreeLimit] Loaded {0} additional trees (out of {1} possible)", loaded, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT);
                     return true;
                 }
                 else
                 {
-                    Debug.Log("TreeLimit: no extra data saved with this savegame.");
+                    Debug.Log("[TreeLimit] no extra data saved with this savegame.");
                     return false;
                 }
             }
