@@ -64,5 +64,19 @@ namespace Unlimiter.Trees
                 return;
             nrm.AreaModified(num1, num2, num1, num2);
         }
+
+#if false
+        private static void GetTileResources(NaturalResourceManager nm, int x, int z, out uint ore, out uint oil, out uint forest, out uint fertility, out uint water)
+        {
+            //int num = 2;
+            ore = 0U;
+            oil = 0U;
+            forest = 0U;
+            fertility = 0U;
+            water = 0U;
+            Debug.LogFormat("NMR {0} {1}", x, z);
+            //nm.GetTileResourcesImpl(x + num, z + num, ref ore, ref oil, ref forest, ref fertility, ref water);
+        }
+#endif
     }
 }

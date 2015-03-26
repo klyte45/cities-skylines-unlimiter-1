@@ -128,7 +128,6 @@ namespace CitiesSkylinesDetour
                 }
                 if (jitInfoFrom == null || jitInfoTo == null)
                 {
-                    //Debug.Log("Could not find methods");
                     return;
                 }
 
