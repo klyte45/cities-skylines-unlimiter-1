@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 
-namespace Unlimiter
+namespace Unlimiter.Trees
 {
     internal static class LimitTreeManager
     {
@@ -741,7 +741,6 @@ namespace Unlimiter
                     else
                         instance.m_trees.ReleaseItem((uint)index);
                 }
-                
 
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "TreeManager");
             }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace Unlimiter
+namespace Unlimiter.Trees
 {
     internal static class LimitNaturalResourceManager
     {

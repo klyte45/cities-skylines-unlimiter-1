@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Trees;
 
 namespace Unlimiter
 {
@@ -45,6 +46,10 @@ namespace Unlimiter
                 RedirectCalls(typeof(TreeTool), typeof(LimitTreeTool), "ApplyBrush");
                 RedirectCalls(typeof(TreeManager.Data), typeof(LimitTreeManager.Data), "Serialize");
                 RedirectCalls(typeof(TreeManager.Data), typeof(LimitTreeManager.Data), "Deserialize");
+                //RedirectCalls(typeof(TreeInstance), typeof(RotatingTreeInstance), "RenderLod");
+
+                RedirectionHelper.RedirectCalls(typeof(TreeInstance).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static),
+                    typeof(RotatingTreeInstance).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Static));
 
                 foreach (var method in typeof(LimitTreeManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
                     RedirectCalls(typeof(TreeManager), typeof(LimitTreeManager), method.Name);
