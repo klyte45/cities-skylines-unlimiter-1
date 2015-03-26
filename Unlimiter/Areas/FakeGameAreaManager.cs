@@ -39,14 +39,6 @@ namespace Unlimiter.Areas
 
         private static Vector3 GetAreaPositionSmooth(GameAreaManager g, int x, int z)
         {
-            //GameAreaInfoPanel gameAreaInfoPanel = UIView.library.Hide<GameAreaInfoPanel>("GameAreaInfoPanel");
-            //if (gameAreaInfoPanel == null)
-            //   return Vector3.zero;
-
-            int tile = z * DEFAULT_GRID + x;
-            GetTileXZ(g, tile, out x, out z);
-            // we already know this is literally only used in one place
-            // Debug.LogFormat("FFF {0} | {1}, {2}", gameAreaInfoPanel.GetType().GetField("m_AreaIndex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(gameAreaInfoPanel), x, z);
             if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF))
                 return Vector3.zero;
             Vector3 worldPos;
@@ -297,7 +289,7 @@ namespace Unlimiter.Areas
 
         private static int GetArea(GameAreaManager g, int x, int z)
         {
-            if (x >= -GRID_DIFF && z >= -GRID_DIFF && (x < DEFAULT_GRID - GRID_DIFF && z < DEFAULT_GRID - GRID_DIFF))
+            if (x >= -GRID_DIFF && z >= -GRID_DIFF && (x < DEFAULT_GRID + GRID_DIFF && z < DEFAULT_GRID + GRID_DIFF))
                 return g.m_areaGrid[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)];
             return -2;
         }

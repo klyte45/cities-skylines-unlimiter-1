@@ -64,6 +64,7 @@ namespace Unlimiter
 
                 RedirectCalls(typeof(GameAreaTool), typeof(FakeGameAreaTool), "OnToolGUI");
                 RedirectCalls(typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel), "ShowInternal");
+                RedirectCalls(typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel), "UpdatePanel");
                 
                 // We should probably check if we're enabled
                 PluginsChanged();
