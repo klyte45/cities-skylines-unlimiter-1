@@ -9,6 +9,7 @@ using System.Text;
 using UnityEngine;
 using Unlimiter.Areas;
 using Unlimiter.Trees;
+using Unlimiter.Zones;
 
 namespace Unlimiter
 {
@@ -50,17 +51,29 @@ namespace Unlimiter
                 RedirectCalls(typeof(TreeManager.Data), typeof(LimitTreeManager.Data), "Deserialize");
                 //RedirectCalls(typeof(TreeInstance), typeof(RotatingTreeInstance), "RenderLod");
 
+                Debug.Log("RenderInstance");
                 RedirectionHelper.RedirectCalls(typeof(TreeInstance).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static),
                     typeof(RotatingTreeInstance).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Static));
 
                 foreach (var method in typeof(LimitTreeManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(TreeManager), typeof(LimitTreeManager), method.Name);
+                    RedirectCalls(typeof(TreeManager), method);
 
                 foreach (var method in typeof(FakeGameAreaManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(GameAreaManager), typeof(FakeGameAreaManager), method.Name);
-                foreach (var method in typeof(FakeNetManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(NetManager), typeof(FakeNetManager), method.Name);
+                    RedirectCalls(typeof(GameAreaManager), method);
+                Debug.Log("CalculateTilePrice");
                 RedirectionHelper.RedirectCalls(typeof(GameAreaManager).GetMethod("CalculateTilePrice", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, new Type[] { typeof(int) }, null), typeof(FakeGameAreaManager).GetMethod("CalculateTilePrice", BindingFlags.Public | BindingFlags.Static));
+                
+                foreach (var method in typeof(FakeNetManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(NetManager), method);
+
+                foreach (var method in typeof(FakeZoneManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(ZoneManager), method);
+                foreach (var method in typeof(FakeBuilding).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(Building), method);
+                foreach (var method in typeof(FakeZoneBlock).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(ZoneBlock), method);
+                Debug.Log("CheckSpace");
+                RedirectionHelper.RedirectCalls(typeof(ZoneManager).GetMethod("CheckSpace", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(Vector3), typeof(float), typeof(int), typeof(int), typeof(int).MakeByRefType() }, null), typeof(FakeZoneManager).GetMethod("CheckSpace", BindingFlags.Public | BindingFlags.Static));
 
                 RedirectCalls(typeof(GameAreaTool), typeof(FakeGameAreaTool), "OnToolGUI");
                 RedirectCalls(typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel), "ShowInternal");
@@ -104,6 +117,20 @@ namespace Unlimiter
         {
             Debug.LogFormat("{0}/{1}/{2}", type1, type2, p);
             RedirectionHelper.RedirectCalls(type1.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static), type2.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Static));
+        }
+
+        private void RedirectCalls(Type type1, MethodInfo method)
+        {
+            Debug.LogFormat("{0} ~> {1}", type1, method);
+            var parameters = method.GetParameters();
+
+            Type[] types;
+            if (parameters[0].ParameterType == type1)
+                types = parameters.Skip(1).Select(p => p.ParameterType).ToArray();
+            else
+                types = parameters.Select(p => p.ParameterType).ToArray();
+
+            RedirectionHelper.RedirectCalls(type1.GetMethod(method.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types, null), method);
         }
     }
 
