@@ -72,6 +72,8 @@ namespace Unlimiter
                     RedirectCalls(typeof(Building), method);
                 foreach (var method in typeof(FakeZoneBlock).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
                     RedirectCalls(typeof(ZoneBlock), method);
+                foreach (var method in typeof(FakeZoneTool).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(ZoneTool), method);
                 Debug.Log("CheckSpace");
                 RedirectionHelper.RedirectCalls(typeof(ZoneManager).GetMethod("CheckSpace", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(Vector3), typeof(float), typeof(int), typeof(int), typeof(int).MakeByRefType() }, null), typeof(FakeZoneManager).GetMethod("CheckSpace", BindingFlags.Public | BindingFlags.Static));
 

@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace Unlimiter.Areas
+namespace Unlimiter.Zones
 {
     internal class FakeZoneBlock
     {
