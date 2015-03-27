@@ -1,4 +1,5 @@
 ﻿using ColossalFramework;
+using ColossalFramework.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace Unlimiter.Zones
                 {
                     var grid = new ushort[ZONEGRID_RESOLUTION * ZONEGRID_RESOLUTION];
 
-                    int diff = ZONEGRID_RESOLUTION - DEFAULT_ZONEGRID_RESOLUTION;
+                    int diff = EXTENSION;
                     for (int z = 0; z < DEFAULT_ZONEGRID_RESOLUTION; ++z)
                     {
                         for (int x = 0; x < DEFAULT_ZONEGRID_RESOLUTION; ++x)
@@ -35,13 +36,13 @@ namespace Unlimiter.Zones
         // We basically want to increase the grid resolution.
         // 
         internal const int DEFAULT_ZONEGRID_RESOLUTION = 150;
-        internal const int ZONEGRID_RESOLUTION = 210;
+        internal const int EXTENSION = 0;
+        internal const int ZONEGRID_RESOLUTION = EXTENSION * 2 + DEFAULT_ZONEGRID_RESOLUTION;
         internal const float ZONEGRID_CELL_SIZE = 64f;
         internal const float UNKNOWN_FLOAT_75 = 75.0f;
 
         private static void InitializeBlock(ZoneManager z, ushort block, ref ZoneBlock data)
         {
-            Helper.EnsureInit();
             int num = Mathf.Clamp((int)((double)data.m_position.x / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1);
             int index = Mathf.Clamp((int)((double)data.m_position.z / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1) * ZONEGRID_RESOLUTION + num;
             do
@@ -223,6 +224,133 @@ namespace Unlimiter.Zones
             }
             offset = flag2 != flag3 ? (!flag2 ? (!flag3 ? 0 : -1) : 1) : 0;
             return flag1;
+        }
+
+        internal class Data
+        {
+
+            private static void Deserialize(ZoneManager.Data d, DataSerializer s)
+            {
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginDeserialize(s, "ZoneManager");
+                ZoneManager instance = Singleton<ZoneManager>.instance;
+                ZoneBlock[] zoneBlockArray = instance.m_blocks.m_buffer;
+                ushort[] numArray = instance.m_zoneGrid;
+                int length1 = zoneBlockArray.Length;
+                int length2 = numArray.Length;
+                instance.m_blocks.ClearUnused();
+
+                Helper.EnsureInit();
+
+                if (s.version >= 205U)
+                {
+                    EncodedArray.UInt @uint = EncodedArray.UInt.BeginRead(s);
+                    for (int index = 1; index < length1; ++index)
+                        zoneBlockArray[index].m_flags = @uint.Read();
+                    @uint.EndRead();
+                }
+                else
+                {
+                    EncodedArray.UInt @uint = EncodedArray.UInt.BeginRead(s);
+                    for (int index = 1; index < 16384; ++index)
+                        zoneBlockArray[index].m_flags = @uint.Read();
+                    for (int index = 16384; index < length1; ++index)
+                        zoneBlockArray[index].m_flags = 0U;
+                    @uint.EndRead();
+                }
+                for (int index = 1; index < length1; ++index)
+                {
+                    zoneBlockArray[index].m_nextGridBlock = (ushort)0;
+                    if ((int)zoneBlockArray[index].m_flags != 0)
+                    {
+                        zoneBlockArray[index].m_buildIndex = s.ReadUInt32();
+                        zoneBlockArray[index].m_position = s.ReadVector3();
+                        zoneBlockArray[index].m_angle = s.ReadFloat();
+                        zoneBlockArray[index].m_valid = s.ReadULong64();
+                        zoneBlockArray[index].m_shared = s.ReadULong64();
+                        zoneBlockArray[index].m_occupied1 = s.ReadULong64();
+                        zoneBlockArray[index].m_occupied2 = s.version < 138U ? 0UL : s.ReadULong64();
+                        if (s.version >= 4U)
+                        {
+                            zoneBlockArray[index].m_zone1 = s.ReadULong64();
+                            zoneBlockArray[index].m_zone2 = s.ReadULong64();
+                        }
+                        else
+                        {
+                            int num1 = (int)s.ReadUInt32();
+                            int num2 = (int)s.ReadUInt32();
+                            zoneBlockArray[index].m_zone1 = 0UL;
+                            zoneBlockArray[index].m_zone2 = 0UL;
+                        }
+                        InitializeBlock(instance, (ushort)index, ref zoneBlockArray[index]);
+                    }
+                    else
+                    {
+                        zoneBlockArray[index].m_buildIndex = 0U;
+                        zoneBlockArray[index].m_position = Vector3.zero;
+                        zoneBlockArray[index].m_angle = 0.0f;
+                        zoneBlockArray[index].m_valid = 0UL;
+                        zoneBlockArray[index].m_shared = 0UL;
+                        zoneBlockArray[index].m_occupied1 = 0UL;
+                        zoneBlockArray[index].m_occupied2 = 0UL;
+                        zoneBlockArray[index].m_zone1 = 0UL;
+                        zoneBlockArray[index].m_zone2 = 0UL;
+                        instance.m_blocks.ReleaseItem((ushort)index);
+                    }
+                }
+                if (s.version >= 74U)
+                {
+                    instance.m_residentialDemand = s.ReadInt8();
+                    instance.m_commercialDemand = s.ReadInt8();
+                    instance.m_workplaceDemand = s.ReadInt8();
+                }
+                else
+                {
+                    instance.m_residentialDemand = 50;
+                    instance.m_commercialDemand = 50;
+                    instance.m_workplaceDemand = 50;
+                }
+                if (s.version >= 168U)
+                {
+                    instance.m_actualResidentialDemand = s.ReadInt8();
+                    instance.m_actualCommercialDemand = s.ReadInt8();
+                    instance.m_actualWorkplaceDemand = s.ReadInt8();
+                }
+                else
+                {
+                    instance.m_actualResidentialDemand = instance.m_residentialDemand;
+                    instance.m_actualCommercialDemand = instance.m_commercialDemand;
+                    instance.m_actualWorkplaceDemand = instance.m_workplaceDemand;
+                }
+                if (s.version >= 194U)
+                {
+                    for (int index = 0; index < 8; ++index)
+                        instance.m_goodAreaFound[index] = (short)s.ReadInt16();
+                }
+                else
+                {
+                    for (int index = 0; index < 8; ++index)
+                        instance.m_goodAreaFound[index] = (short)0;
+                }
+                if (s.version >= 82U)
+                {
+                    for (int index = 0; index < 8; ++index)
+                        instance.m_zoneNotUsed[index] = s.ReadObject<ZoneTypeGuide>();
+                    instance.m_zoneDemandResidential = s.ReadObject<ZoneTypeGuide>();
+                    instance.m_zoneDemandCommercial = s.ReadObject<ZoneTypeGuide>();
+                    instance.m_zoneDemandWorkplace = s.ReadObject<ZoneTypeGuide>();
+                }
+                else
+                {
+                    for (int index = 0; index < 8; ++index)
+                        instance.m_zoneNotUsed[index] = (ZoneTypeGuide)null;
+                    instance.m_zoneDemandResidential = (ZoneTypeGuide)null;
+                    instance.m_zoneDemandCommercial = (ZoneTypeGuide)null;
+                    instance.m_zoneDemandWorkplace = (ZoneTypeGuide)null;
+                }
+                instance.m_optionsNotUsed = s.version < 134U ? (GenericGuide)null : s.ReadObject<GenericGuide>();
+                instance.m_zonesNotUsed = s.version < 160U ? (GenericGuide)null : s.ReadObject<GenericGuide>();
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "ZoneManager");
+            }
         }
     }
 }

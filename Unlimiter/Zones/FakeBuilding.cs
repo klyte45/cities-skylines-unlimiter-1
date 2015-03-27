@@ -42,7 +42,7 @@ namespace Unlimiter.Zones
                     {
                         Vector3 vector3_7 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector3_5.x - 46f - vector3_7.x, vector3_5.z - 46f - vector3_7.z), Mathf.Max((float)((double)vector3_7.x - (double)vector3_6.x - 46.0), (float)((double)vector3_7.z - (double)vector3_6.z - 46.0))) < 0.0)
-                            CheckZoning(b, zone, ref validCells, ref instance.m_blocks.m_buffer[(int)num5]);
+                            X(b, zone, ref validCells, ref instance.m_blocks.m_buffer[num5]);
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= 32768)
                         {
@@ -63,34 +63,12 @@ namespace Unlimiter.Zones
             return true;
         }
 
-        private static void CheckZoning(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
+        public static void X(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
         {
-            int width = b.Width;
-            int length = b.Length;
-            Vector3 vector3_1 = new Vector3(Mathf.Cos(b.m_angle), 0.0f, Mathf.Sin(b.m_angle)) * 8f;
-            Vector3 vector3_2 = new Vector3(vector3_1.z, 0.0f, -vector3_1.x);
-            int rowCount = block.RowCount;
-            Vector3 vector3_3 = new Vector3(Mathf.Cos(block.m_angle), 0.0f, Mathf.Sin(block.m_angle)) * 8f;
-            Vector3 vector3_4 = new Vector3(vector3_3.z, 0.0f, -vector3_3.x);
-            Vector3 vector3_5 = block.m_position - b.m_position + vector3_1 * (float)((double)width * 0.5 - 0.5) + vector3_2 * (float)((double)length * 0.5 - 0.5);
-            for (int z = 0; z < rowCount; ++z)
-            {
-                Vector3 vector3_6 = ((float)z - 3.5f) * vector3_4;
-                for (int x = 0; (long)x < 4L; ++x)
-                {
-                    if (((long)block.m_valid & ~(long)block.m_shared & 1L << (z << 3 | x)) != 0L && block.GetZone(x, z) == zone)
-                    {
-                        Vector3 vector3_7 = ((float)x - 3.5f) * vector3_3;
-                        Vector3 vector3_8 = vector3_5 + vector3_7 + vector3_6;
-                        float num1 = (float)((double)vector3_1.x * (double)vector3_8.x + (double)vector3_1.z * (double)vector3_8.z);
-                        float num2 = (float)((double)vector3_2.x * (double)vector3_8.x + (double)vector3_2.z * (double)vector3_8.z);
-                        int num3 = Mathf.RoundToInt(num1 / 64f);
-                        int num4 = Mathf.RoundToInt(num2 / 64f);
-                        if ((num4 != 0 || x == 0) && (num3 >= 0 && num4 >= 0) && (num3 < width && num4 < length))
-                            validCells = validCells | (uint)(1 << (num4 << 3) + num3);
-                    }
-                }
-            }
+            var p = new object[] { zone, validCells, block };
+            b.GetType().GetMethod("CheckZoning", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new Type[]{typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(ZoneBlock).MakeByRefType()}, null).Invoke(b, p);
+            validCells = (uint)p[1];
+            block = (ZoneBlock)p[2];
         }
     }
 }

@@ -68,14 +68,21 @@ namespace Unlimiter
 
                 foreach (var method in typeof(FakeZoneManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
                     RedirectCalls(typeof(ZoneManager), method);
+                foreach (var method in typeof(FakeZoneManager.Data).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(ZoneManager.Data), method);
                 foreach (var method in typeof(FakeBuilding).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
                     RedirectCalls(typeof(Building), method);
+#if false
                 foreach (var method in typeof(FakeZoneBlock).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
                     RedirectCalls(typeof(ZoneBlock), method);
+#endif
+
                 foreach (var method in typeof(FakeZoneTool).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
                     RedirectCalls(typeof(ZoneTool), method);
+#if false
                 Debug.Log("CheckSpace");
                 RedirectionHelper.RedirectCalls(typeof(ZoneManager).GetMethod("CheckSpace", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(Vector3), typeof(float), typeof(int), typeof(int), typeof(int).MakeByRefType() }, null), typeof(FakeZoneManager).GetMethod("CheckSpace", BindingFlags.Public | BindingFlags.Static));
+#endif
 
                 RedirectCalls(typeof(GameAreaTool), typeof(FakeGameAreaTool), "OnToolGUI");
                 RedirectCalls(typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel), "ShowInternal");
