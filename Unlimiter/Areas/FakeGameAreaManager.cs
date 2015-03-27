@@ -28,8 +28,9 @@ namespace Unlimiter.Areas
                     }
                     GameAreaManager.instance.m_areaGrid = areas;
 
-                    GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 0;
-                    
+                    SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 3800f);
+                    SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 3800f);
+
                     //UnityEngine.Object.Destroy((Texture2D) typeof(GameAreaManager).GetField("m_areaTex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(GameAreaManager.instance));
 
                     //var m_areaTex = new Texture2D(16, 16, TextureFormat.ARGB32, false, true);
