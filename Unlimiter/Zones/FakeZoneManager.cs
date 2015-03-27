@@ -170,7 +170,7 @@ namespace Unlimiter.Zones
             }
         }
 
-        public static bool CheckSpace(ZoneManager z, Vector3 position, float angle, int width, int length, out int offset)
+        private static bool CheckSpace(ZoneManager z, Vector3 position, float angle, int width, int length, out int offset)
         {
             float num1 = Mathf.Min(72f, (float)(width + length) * 4f) + 6f;
             float num2 = position.x - num1;

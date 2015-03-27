@@ -197,23 +197,25 @@ namespace Unlimiter.Zones
             }
         }
 
-        private static void SimulationStep(ZoneBlock zb, ushort blockID)
+        // FIXME This definitively breaks upgrading for some reason.
+#if false
+        private static void SimulationStep(ZoneBlock b, ushort blockID)
         {
             ZoneManager instance1 = Singleton<ZoneManager>.instance;
-            int rowCount = zb.RowCount;
-            Vector2 xDir = new Vector2(Mathf.Cos(zb.m_angle), Mathf.Sin(zb.m_angle)) * 8f;
+            int rowCount = b.RowCount;
+            Vector2 xDir = new Vector2(Mathf.Cos(b.m_angle), Mathf.Sin(b.m_angle)) * 8f;
             Vector2 zDir = new Vector2(xDir.y, -xDir.x);
-            ulong num1 = zb.m_valid & (ulong)~((long)zb.m_occupied1 | (long)zb.m_occupied2);
+            ulong num1 = b.m_valid & (ulong)~((long)b.m_occupied1 | (long)b.m_occupied2);
             int z = 0;
             ItemClass.Zone zone = ItemClass.Zone.Unzoned;
             for (int index = 0; index < 4 && zone == ItemClass.Zone.Unzoned; ++index)
             {
                 z = Singleton<SimulationManager>.instance.m_randomizer.Int32((uint)rowCount);
                 if (((long)num1 & 1L << (z << 3)) != 0L)
-                    zone = zb.GetZone(0, z);
+                    zone = b.GetZone(0, z);
             }
             DistrictManager instance2 = Singleton<DistrictManager>.instance;
-            byte district = instance2.GetDistrict(zb.m_position);
+            byte district = instance2.GetDistrict(b.m_position);
             int num2;
             switch (zone)
             {
@@ -238,7 +240,7 @@ namespace Unlimiter.Zones
                 default:
                     return;
             }
-            Vector2 vector2_1 = VectorUtils.XZ(zb.m_position);
+            Vector2 vector2_1 = VectorUtils.XZ(b.m_position);
             Vector2 vector2_2 = vector2_1 - 3.5f * xDir + ((float)z - 3.5f) * zDir;
             int[] xBuffer = instance1.m_tmpXBuffer;
             for (int index = 0; index < 13; ++index)
@@ -250,21 +252,25 @@ namespace Unlimiter.Zones
             quad.d = vector2_1 - 4f * xDir + ((float)z + 2f) * zDir;
             Vector2 vector2_3 = quad.Min();
             Vector2 vector2_4 = quad.Max();
-            int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), 0);
-            int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), 0);
-            int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
-            int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
+            int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / 64.0 + 75.0), 0);
+            int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / 64.0 + 75.0), 0);
+            int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / 64.0 + 75.0), 149);
+            int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / 64.0 + 75.0), 149);
             for (int index1 = num4; index1 <= num6; ++index1)
             {
                 for (int index2 = num3; index2 <= num5; ++index2)
                 {
-                    ushort num7 = instance1.m_zoneGrid[index1 * FakeZoneManager.ZONEGRID_RESOLUTION + index2];
+                    ushort num7 = instance1.m_zoneGrid[index1 * 150 + index2];
                     int num8 = 0;
                     while ((int)num7 != 0)
                     {
                         Vector3 vector3 = instance1.m_blocks.m_buffer[(int)num7].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector2_3.x - 46f - vector3.x, vector2_3.y - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)vector2_4.x - 46.0), (float)((double)vector3.z - (double)vector2_4.y - 46.0))) < 0.0)
-                            zb.GetType().GetMethod("CheckBlock", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(zb, new object[]{instance1.m_blocks.m_buffer[(int)num7], xBuffer, zone, vector2_2, xDir, zDir, quad});
+                        {
+                            var p = new object[]{instance1.m_blocks.m_buffer[(int)num7], xBuffer, zone, vector2_2, xDir, zDir, quad};
+                            typeof(ZoneBlock).GetMethod("CheckBlock", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(b, p);
+                            instance1.m_blocks.m_buffer[(int)num7] = (ZoneBlock) p[0];
+                        }
                         num7 = instance1.m_blocks.m_buffer[(int)num7].m_nextGridBlock;
                         if (++num8 >= 32768)
                         {
@@ -299,7 +305,7 @@ namespace Unlimiter.Zones
             int num9 = xBuffer[6];
             if (num9 == 0)
                 return;
-            bool flag1 = (bool) zb.GetType().GetMethod("IsGoodPlace", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(zb, new object[]{vector2_2});
+            bool flag1 = (bool) typeof(ZoneBlock).GetMethod("IsGoodPlace", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(b, new object[]{vector2_2});
             if (Singleton<SimulationManager>.instance.m_randomizer.Int32(100U) >= num2)
             {
                 if (!flag1)
@@ -501,7 +507,7 @@ namespace Unlimiter.Zones
                     a = Mathf.Min(a, xBuffer[index]);
                 ItemClass.SubService subService = ItemClass.SubService.None;
                 ItemClass.Level level = ItemClass.Level.Level1;
-                Vector3 vector3 = zb.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num7 + num8 + 1) * 0.5 + (double)z - 10.0) * zDir);
+                Vector3 vector3 = b.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num7 + num8 + 1) * 0.5 + (double)z - 10.0) * zDir);
                 ItemClass.Service service;
                 switch (zone)
                 {
@@ -538,7 +544,7 @@ namespace Unlimiter.Zones
                     int num10 = num12;
                     int num11 = num13;
                     num14 = a;
-                    vector3 = zb.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num10 + num11 + 1) * 0.5 + (double)z - 10.0) * zDir);
+                    vector3 = b.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num10 + num11 + 1) * 0.5 + (double)z - 10.0) * zDir);
                     if (zone == ItemClass.Zone.Industrial)
                         ZoneBlock.GetIndustryType(vector3, out subService, out level);
                     randomBuildingInfo = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, num11 - num10 + 1, num14);
@@ -548,7 +554,7 @@ namespace Unlimiter.Zones
                 if ((double)Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double)vector3.y)
                     return;
                 ushort building;
-                if (Singleton<BuildingManager>.instance.CreateBuilding(out building, ref Singleton<SimulationManager>.instance.m_randomizer, randomBuildingInfo, vector3, zb.m_angle + 1.570796f, num14, Singleton<SimulationManager>.instance.m_currentBuildIndex))
+                if (Singleton<BuildingManager>.instance.CreateBuilding(out building, ref Singleton<SimulationManager>.instance.m_randomizer, randomBuildingInfo, vector3, b.m_angle + 1.570796f, num14, Singleton<SimulationManager>.instance.m_currentBuildIndex))
                 {
                     ++Singleton<SimulationManager>.instance.m_currentBuildIndex;
                     switch (service)
@@ -570,5 +576,6 @@ namespace Unlimiter.Zones
                 instance1.m_goodAreaFound[(int)zone] = (short)1024;
             }
         }
+#endif
     }
 }
