@@ -8,6 +8,7 @@ The following things work
 * Placing free-standing buildings that do not need road access, such as water towers
 
 Currently in development:
+
 * Zoning
-** De-zoning areas currently has no effect
-** This is limited to 5x5 and just preparation for expanding
+  * De-zoning areas currently has no effect
+  * This is limited to 5x5 and just preparation for expanding
