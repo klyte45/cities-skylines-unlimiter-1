@@ -35,8 +35,11 @@ namespace Unlimiter.Zones
                         Vector3 vector3 = instance.m_blocks.m_buffer[(int)blockIndex].m_position;
 
                         if ((double)Mathf.Max(Mathf.Max(num1 - 46f - vector3.x, num2 - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)num3 - 46.0), (float)((double)vector3.z - (double)num4 - 46.0))) < 0.0)
-                            // TODO ref?
-                            z.GetType().GetMethod("ApplyBrush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[]{typeof(ushort), typeof(ZoneBlock).MakeByRefType(), typeof(Vector3), typeof(float)}, null).Invoke(z, new object[]{blockIndex, instance.m_blocks.m_buffer[(int)blockIndex], position, brushRadius});
+                        {
+                            var p = new object[] { blockIndex, instance.m_blocks.m_buffer[(int)blockIndex], position, brushRadius };
+                            z.GetType().GetMethod("ApplyBrush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(ushort), typeof(ZoneBlock).MakeByRefType(), typeof(Vector3), typeof(float) }, null).Invoke(z, p);
+                            instance.m_blocks.m_buffer[(int)blockIndex] = (ZoneBlock) p[1];
+                        }
                         blockIndex = instance.m_blocks.m_buffer[(int)blockIndex].m_nextGridBlock;
                         if (++num9 >= 32768)
                         {
