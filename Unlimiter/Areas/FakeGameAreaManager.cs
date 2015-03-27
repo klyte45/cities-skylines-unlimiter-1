@@ -24,10 +24,18 @@ namespace Unlimiter.Areas
                         for (int x = 0; x < DEFAULT_GRID; ++x)
                         {
                             areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = GameAreaManager.instance.m_areaGrid[z * DEFAULT_GRID + x];
-                            Debug.LogFormat("{0} {1} -> {2}, {3}; {4}", z, x, (z + GRID_DIFF) * GRID + (x + GRID_DIFF), z * DEFAULT_GRID + x, GameAreaManager.instance.m_areaGrid[z * DEFAULT_GRID + x]);
                         }
                     }
                     GameAreaManager.instance.m_areaGrid = areas;
+
+                    GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 0;
+                    
+                    //UnityEngine.Object.Destroy((Texture2D) typeof(GameAreaManager).GetField("m_areaTex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(GameAreaManager.instance));
+
+                    //var m_areaTex = new Texture2D(16, 16, TextureFormat.ARGB32, false, true);
+                    //m_areaTex.filterMode = FilterMode.Point;
+                    //m_areaTex.wrapMode = TextureWrapMode.Clamp;
+                    //typeof(GameAreaManager).GetField("m_areaTex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(GameAreaManager.instance, m_areaTex);
                 }
             }
         }
@@ -254,7 +262,7 @@ namespace Unlimiter.Areas
                 m_areaMaterial.mainTexture = (Texture)m_areaTex;
                 m_areaMaterial.SetColor(ID_Color, new Color(1f, 1f, 1f, m_areaAlpha));
                 m_areaMaterial.SetVector(ID_AreaMapping, vector);
-                Bounds freeBounds = GetFreeBounds(g);
+                Bounds freeBounds = new Bounds(new Vector3(0.0f, 512f, 0.0f), new Vector3(9600f, 1024f, 9600f)); //GetFreeBounds(g);
                 freeBounds.size = freeBounds.size + new Vector3(100f, 1f, 100f);
                 ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
                 Singleton<RenderManager>.instance.OverlayEffect.DrawEffect(cameraInfo, m_areaMaterial, 0, freeBounds);
@@ -265,9 +273,9 @@ namespace Unlimiter.Areas
         {
             Vector3 zero1 = Vector3.zero;
             Vector3 zero2 = Vector3.zero;
-            for (int z = 0; z < DEFAULT_GRID; ++z)
+            for (int z = -GRID_DIFF; z < DEFAULT_GRID + GRID_DIFF; ++z)
             {
-                for (int x = 0; x < DEFAULT_GRID; ++x)
+                for (int x = -GRID_DIFF; x < DEFAULT_GRID + GRID_DIFF; ++x)
                 {
                     if (g.IsUnlocked(x, z))
                     {
@@ -501,14 +509,14 @@ namespace Unlimiter.Areas
             }
             else
             {
-                for (int _z = 0; _z <= 8; ++_z)
+                for (int _z = 0; _z <= 8; ++_z) // TODO 8 here is prolly a bug
                 {
                     for (int _x = 0; _x <= 8; ++_x)
                     {
                         int x = _x - num1;
                         int z = _z - num1;
-                        bool flag1 = x >= 0 && z >= 0 && x < DEFAULT_GRID && z < DEFAULT_GRID && g.IsUnlocked(x, z);
-                        bool flag2 = x >= 0 && z >= 0 && x < DEFAULT_GRID && z < DEFAULT_GRID && g.CanUnlock(x, z);
+                        bool flag1 = g.IsUnlocked(x, z);
+                        bool flag2 = g.CanUnlock(x, z);
                         Color color;
                         color.r = !flag1 ? 0.0f : 1f;
                         color.g = !flag2 ? 0.0f : 1f;
