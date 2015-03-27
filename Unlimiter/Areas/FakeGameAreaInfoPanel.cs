@@ -159,7 +159,7 @@ namespace Unlimiter.Areas
             m_BuildableArea.text = string.Format(Locale.Get("AREA_BUILDABLE"), (object)string.Format(Locale.Get("VALUE_PERCENTAGE"), (object)Mathf.Max(0, Mathf.Min(Mathf.FloorToInt(num2 * 100f), 100))));
             m_Price.text = (amount / 100).ToString(Settings.moneyFormat, (IFormatProvider)LocaleManager.cultureInfo);
             bool flag6 = Singleton<GameAreaManager>.instance.IsUnlocked(x, z);
-            m_Title.text = Locale.Get(!flag6 ? "AREA_NEWTILE" : "AREA_OWNEDTILE");
+            m_Title.text = string.Format("Tile {3}: {0},{1} => {2}", x, z, flag6, m_AreaIndex); // Locale.Get(!flag6 ? "AREA_NEWTILE" : "AREA_OWNEDTILE");
             m_PurchasePanel.isVisible = !flag6;
             m_PurchasePanel.isEnabled = Singleton<EconomyManager>.instance.PeekResource(EconomyManager.Resource.LandPrice, amount) == amount;
             float num3 = Mathf.Pow((float)oil / num1, g.m_OilExponent);
