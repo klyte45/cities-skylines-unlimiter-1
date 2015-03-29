@@ -16,8 +16,7 @@ namespace Unlimiter.Zones
     [Fixme]
     internal class FakeZoneBlock
     {
-#if false
-        private static void CalculateBlock2(ZoneBlock z, ushort blockID)
+        public static void CalculateBlock2(ref ZoneBlock z, ushort blockID)
         {
             if (((int)z.m_flags & 3) != 1)
                 return;
@@ -72,6 +71,7 @@ namespace Unlimiter.Zones
             z.m_shared = shared;
         }
 
+        [Fixme("Make this more lightweight, ie. only a thin wrapper.")]
         private static void CalculateImplementation2(ZoneBlock z, ushort blockID, ref ZoneBlock other, ref ulong valid, ref ulong shared, float minX, float minZ, float maxX, float maxZ)
         {
             if (((int)other.m_flags & 1) == 0 || (double)Mathf.Abs(other.m_position.x - z.m_position.x) >= 92.0 || (double)Mathf.Abs(other.m_position.z - z.m_position.z) >= 92.0)
@@ -202,9 +202,8 @@ namespace Unlimiter.Zones
                 }
             }
         }
-#endif
-        [Fixme]
-        internal static void SimulationStep(ref ZoneBlock b, ushort blockID)
+
+        public static void SimulationStep(ref ZoneBlock b, ushort blockID)
         {
                 ZoneManager instance1 = Singleton<ZoneManager>.instance;
                 int rowCount = b.RowCount;
@@ -265,7 +264,7 @@ namespace Unlimiter.Zones
                 {
                     for (int index2 = num3; index2 <= num5; ++index2)
                     {
-                        ushort num7 = instance1.m_zoneGrid[index1 * 150 + index2];
+                        ushort num7 = instance1.m_zoneGrid[index1 * FakeZoneManager.ZONEGRID_RESOLUTION + index2];
                         int num8 = 0;
                         while ((int)num7 != 0)
                         {
@@ -581,6 +580,7 @@ namespace Unlimiter.Zones
             
         }
 
+        [Fixme("Make this a lightweight wrapper")]
         internal static bool IsGoodPlace(ZoneBlock x, Vector2 position)
         {
             int num1 = Mathf.Max((int)(((double)position.x - 104.0) / 64.0 + 135.0), 0);
@@ -627,6 +627,7 @@ namespace Unlimiter.Zones
             return false;
         }
 
+        [Fixme("Make this a lightweight wrapper")]
         internal static void CheckBlock(ZoneBlock b, ref ZoneBlock other, int[] xBuffer, ItemClass.Zone zone, Vector2 startPos, Vector2 xDir, Vector2 zDir, Quad2 quad)
         {
             float f1 = Mathf.Abs(other.m_angle - b.m_angle) * 0.6366197f;

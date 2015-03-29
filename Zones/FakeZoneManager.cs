@@ -37,7 +37,7 @@ namespace Unlimiter.Zones
         // We basically want to increase the grid resolution.
         // 
         internal const int DEFAULT_ZONEGRID_RESOLUTION = 150;
-        internal const int EXTENSION = 0;
+        internal const int EXTENSION = 30;
         internal const int ZONEGRID_RESOLUTION = EXTENSION * 2 + DEFAULT_ZONEGRID_RESOLUTION;
         internal const float ZONEGRID_CELL_SIZE = 64f;
         internal const float UNKNOWN_FLOAT_75 = 75.0f;
@@ -231,6 +231,235 @@ namespace Unlimiter.Zones
             }
             offset = flag2 != flag3 ? (!flag2 ? (!flag3 ? 0 : -1) : 1) : 0;
             return flag1;
+        }
+
+        [ReplaceMethod]
+        public static void SimulationStepImpl(ZoneManager z, int subStep)
+        {
+            if (z.m_blocksUpdated)
+            {
+                int length = z.m_updatedBlocks.Length;
+                for (int index1 = 0; index1 < length; ++index1)
+                {
+                    ulong num = z.m_updatedBlocks[index1];
+                    if ((long)num != 0L)
+                    {
+                        for (int index2 = 0; index2 < 64; ++index2)
+                        {
+                            if (((long)num & 1L << index2) != 0L)
+                            {
+                                ushort blockID = (ushort)(index1 << 6 | index2);
+                                z.m_blocks.m_buffer[(int)blockID].CalculateBlock1(blockID);
+                            }
+                        }
+                    }
+                }
+                for (int index1 = 0; index1 < length; ++index1)
+                {
+                    ulong num = z.m_updatedBlocks[index1];
+                    if ((long)num != 0L)
+                    {
+                        for (int index2 = 0; index2 < 64; ++index2)
+                        {
+                            if (((long)num & 1L << index2) != 0L)
+                            {
+                                ushort blockID = (ushort)(index1 << 6 | index2);
+                                FakeZoneBlock.CalculateBlock2(ref z.m_blocks.m_buffer[(int)blockID], blockID);
+                            }
+                        }
+                    }
+                }
+                for (int index1 = 0; index1 < length; ++index1)
+                {
+                    ulong num = z.m_updatedBlocks[index1];
+                    if ((long)num != 0L)
+                    {
+                        for (int index2 = 0; index2 < 64; ++index2)
+                        {
+                            if (((long)num & 1L << index2) != 0L)
+                            {
+                                ushort blockID = (ushort)(index1 << 6 | index2);
+                                z.m_blocks.m_buffer[(int)blockID].CalculateBlock3(blockID);
+                            }
+                        }
+                    }
+                }
+                z.m_blocksUpdated = false;
+                for (int index1 = 0; index1 < length; ++index1)
+                {
+                    ulong num = z.m_updatedBlocks[index1];
+                    if ((long)num != 0L)
+                    {
+                        z.m_updatedBlocks[index1] = 0UL;
+                        for (int index2 = 0; index2 < 64; ++index2)
+                        {
+                            if (((long)num & 1L << index2) != 0L)
+                            {
+                                ushort blockID = (ushort)(index1 << 6 | index2);
+                                z.m_blocks.m_buffer[(int)blockID].UpdateBlock(blockID);
+                            }
+                        }
+                    }
+                }
+                for (int index = 0; index < z.m_cachedBlocks.m_size; ++index)
+                    z.m_cachedBlocks.m_buffer[index].UpdateBlock((ushort)0);
+                z.m_cachedBlocks.Clear();
+            }
+            GuideController guideController = Singleton<GuideManager>.instance.m_properties;
+            if (subStep != 0)
+            {
+                SimulationManager instance1 = Singleton<SimulationManager>.instance;
+                if ((int)instance1.m_currentBuildIndex == (int)z.m_lastBuildIndex)
+                {
+                    int num1 = (int)instance1.m_currentFrameIndex & 1023;
+                    int num2 = num1 * 32;
+                    int num3 = (num1 + 1) * 32 - 1;
+                    for (int index = num2; index <= num3; ++index)
+                    {
+                        if (((int)z.m_blocks.m_buffer[index].m_flags & 1) != 0)
+                        {
+                            FakeZoneBlock.SimulationStep(ref z.m_blocks.m_buffer[index], (ushort)index);
+                            if ((int)instance1.m_currentBuildIndex != (int)z.m_lastBuildIndex)
+                                break;
+                        }
+                    }
+                    for (int index = 0; index < 8; ++index)
+                    {
+                        int num4 = (int)z.m_goodAreaFound[index];
+                        if (num4 != 0 && num4 > -1024)
+                            z.m_goodAreaFound[index] = (short)(num4 - 1);
+                    }
+                }
+                if (((int)instance1.m_currentFrameIndex & 7) == 0)
+                    z.m_lastBuildIndex = instance1.m_currentBuildIndex;
+                if (((int)instance1.m_currentFrameIndex & (int)byte.MaxValue) == 0)
+                {
+                    if (z.m_fullDemand)
+                    {
+                        z.m_actualResidentialDemand = 100;
+                        z.m_actualCommercialDemand = 100;
+                        z.m_actualWorkplaceDemand = 100;
+                        z.m_residentialDemand = 100;
+                        z.m_commercialDemand = 100;
+                        z.m_workplaceDemand = 100;
+                    }
+                    else
+                    {
+                        DistrictManager instance2 = Singleton<DistrictManager>.instance;
+                        var p = new object[]{instance2.m_districts.m_buffer[0]};
+                        int target1 = (int)typeof(ZoneManager).GetMethod("CalculateResidentialDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
+                        int target2 = (int)typeof(ZoneManager).GetMethod("CalculateCommercialDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
+                        int target3 = (int)typeof(ZoneManager).GetMethod("CalculateWorkplaceDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
+                        UpdateDemand(z, ref z.m_actualResidentialDemand, target1);
+                        UpdateDemand(z, ref z.m_actualCommercialDemand, target2);
+                        UpdateDemand(z, ref z.m_actualWorkplaceDemand, target3);
+                        int target4 = z.m_actualResidentialDemand + instance2.m_districts.m_buffer[0].CalculateResidentialDemandOffset();
+                        int target5 = z.m_actualCommercialDemand + instance2.m_districts.m_buffer[0].CalculateCommercialDemandOffset();
+                        int target6 = z.m_actualWorkplaceDemand + instance2.m_districts.m_buffer[0].CalculateWorkplaceDemandOffset();
+                        UpdateDemand(z, ref z.m_residentialDemand, target4);
+                        UpdateDemand(z, ref z.m_commercialDemand, target5);
+                        UpdateDemand(z, ref z.m_workplaceDemand, target6);
+                    }
+                }
+            }
+            if (subStep <= 1 && guideController != null)
+            {
+                switch ((int)Singleton<SimulationManager>.instance.m_currentTickIndex & 1023)
+                {
+                    case 100:
+                        if (Singleton<UnlockManager>.instance.Unlocked(ItemClass.Zone.ResidentialLow))
+                        {
+                            if (z.m_residentialDemand > 80)
+                            {
+                                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(3U) == 0)
+                                {
+                                    z.m_zoneDemandResidential.Activate(guideController.m_generalDemand, ItemClass.Zone.ResidentialLow);
+                                    break;
+                                }
+                                z.m_zoneDemandResidential.Activate(guideController.m_zoningDemand, ItemClass.Zone.ResidentialLow);
+                                break;
+                            }
+                            if (z.m_residentialDemand < 80)
+                            {
+                                z.m_zoneDemandResidential.Deactivate();
+                                break;
+                            }
+                            break;
+                        }
+                        break;
+                    case 200:
+                        if (Singleton<UnlockManager>.instance.Unlocked(ItemClass.Zone.CommercialLow))
+                        {
+                            if (z.m_commercialDemand > 80)
+                            {
+                                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(3U) == 0)
+                                {
+                                    z.m_zoneDemandCommercial.Activate(guideController.m_generalDemand, ItemClass.Zone.ResidentialLow);
+                                    break;
+                                }
+                                z.m_zoneDemandCommercial.Activate(guideController.m_zoningDemand, ItemClass.Zone.CommercialLow);
+                                break;
+                            }
+                            if (z.m_commercialDemand < 80)
+                            {
+                                z.m_zoneDemandCommercial.Deactivate();
+                                break;
+                            }
+                            break;
+                        }
+                        break;
+                    case 300:
+                        if (Singleton<UnlockManager>.instance.Unlocked(ItemClass.Zone.Industrial))
+                        {
+                            if (z.m_workplaceDemand > 80)
+                            {
+                                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(3U) == 0)
+                                {
+                                    z.m_zoneDemandWorkplace.Activate(guideController.m_generalDemand, ItemClass.Zone.ResidentialLow);
+                                    break;
+                                }
+                                z.m_zoneDemandWorkplace.Activate(guideController.m_zoningDemand, ItemClass.Zone.Industrial);
+                                break;
+                            }
+                            if (z.m_workplaceDemand < 80)
+                            {
+                                z.m_zoneDemandWorkplace.Deactivate();
+                                break;
+                            }
+                            break;
+                        }
+                        break;
+                    case 400:
+                        if (Singleton<UnlockManager>.instance.Unlocked(UnlockManager.Feature.Zoning))
+                        {
+                            z.m_zonesNotUsed.Activate(guideController.m_zoningNotUsed1);
+                            break;
+                        }
+                        break;
+                }
+            }
+            if (subStep > 1 || guideController == null)
+                return;
+            int num5 = (int)Singleton<SimulationManager>.instance.m_currentTickIndex & 1023;
+            int num6 = num5 * 8 >> 10;
+            int num7 = ((num5 + 1) * 8 >> 10) - 1;
+            for (int index = num6; index <= num7; ++index)
+            {
+                if (Singleton<UnlockManager>.instance.Unlocked((ItemClass.Zone)index))
+                    z.m_zoneNotUsed[index].Activate(guideController.m_zoningNotUsed2, (ItemClass.Zone)index);
+            }
+        }
+
+        private static void UpdateDemand(ZoneManager z, ref int demand, int target)
+        {
+            int lastDemand = demand;
+            int nextDemand = demand;
+            if (target > lastDemand)
+                nextDemand = Mathf.Min(lastDemand + 2, target);
+            else if (target < demand)
+                nextDemand = Mathf.Max(lastDemand - 2, target);
+            z.m_DemandWrapper.OnUpdateDemand(lastDemand, ref nextDemand, target);
+            demand = nextDemand;
         }
 
         internal class Data
