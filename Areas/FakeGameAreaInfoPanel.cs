@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Areas
 {
     class FakeGameAreaInfoPanel
     {
-        private static void ShowInternal(GameAreaInfoPanel g, int areaIndex)
+        [ReplaceMethod]
+        public static void ShowInternal(GameAreaInfoPanel g, int areaIndex)
         {
             g.GetType().GetField("m_AreaIndex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(g, areaIndex);
             int x;
@@ -48,7 +50,9 @@ namespace Unlimiter.Areas
             ValueAnimator.Animate("Fertility", (Action<float>)(val => m_FertilityResources.value = val), new AnimatedFloat(0.0f, endValue4, g.m_InterpolationTime, g.m_InterpolationEasingType));
             g.GetType().GetMethod("UpdatePanel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(g, null);
         }
-        private static void UpdatePanel(GameAreaInfoPanel g)
+
+        [ReplaceMethod]
+        public static void UpdatePanel(GameAreaInfoPanel g)
         {
             // Start
             var m_FullscreenContainer = UIView.Find("FullScreenContainer");

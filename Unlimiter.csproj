@@ -57,6 +57,8 @@
     <Compile Include="Areas\FakeGameAreaManager.cs" />
     <Compile Include="Areas\FakeGameAreaTool.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
+    <Compile Include="Attributes\FixmeAttribute.cs" />
+    <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
     <Compile Include="Zones\FakeBuilding.cs" />
     <Compile Include="Zones\FakeBuildingTool.cs" />
     <Compile Include="Zones\FakePrivateBuildingAI.cs" />

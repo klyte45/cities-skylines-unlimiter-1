@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Areas
 {
@@ -45,8 +46,8 @@ namespace Unlimiter.Areas
         public const int GRID_DIFF = 2;
         public const int GRID = DEFAULT_GRID + 2 * GRID_DIFF;
 
-
-        private static Vector3 GetAreaPositionSmooth(GameAreaManager g, int x, int z)
+        [ReplaceMethod]
+        public static Vector3 GetAreaPositionSmooth(GameAreaManager g, int x, int z)
         {
             if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF))
                 return Vector3.zero;
@@ -58,7 +59,8 @@ namespace Unlimiter.Areas
             return worldPos;
         }
 
-        private static bool CanUnlock(GameAreaManager g, int x, int z)
+        [ReplaceMethod]
+        public static bool CanUnlock(GameAreaManager g, int x, int z)
         {
             if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF) || (g.m_areaCount >= g.MaxAreaCount || g.m_areaGrid[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] != 0))
                 return false;
@@ -67,9 +69,8 @@ namespace Unlimiter.Areas
             return result;
         }
 
-
-
-        private static void BeginOverlayImpl(GameAreaManager g, RenderManager.CameraInfo cameraInfo)
+        [ReplaceMethod]
+        public static void BeginOverlayImpl(GameAreaManager g, RenderManager.CameraInfo cameraInfo)
         {
             float m_borderAlpha = (float)g.GetType().GetField("m_borderAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             float m_areaAlpha = (float)g.GetType().GetField("m_areaAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
@@ -270,7 +271,8 @@ namespace Unlimiter.Areas
             }
         }
 
-        private static Bounds GetFreeBounds(GameAreaManager g)
+        [ReplaceMethod]
+        public static Bounds GetFreeBounds(GameAreaManager g)
         {
             Vector3 zero1 = Vector3.zero;
             Vector3 zero2 = Vector3.zero;
@@ -296,21 +298,24 @@ namespace Unlimiter.Areas
             return bounds;
         }
 
-        private static int GetArea(GameAreaManager g, int x, int z)
+        [ReplaceMethod]
+        public static int GetArea(GameAreaManager g, int x, int z)
         {
             if (x >= -GRID_DIFF && z >= -GRID_DIFF && (x < DEFAULT_GRID + GRID_DIFF && z < DEFAULT_GRID + GRID_DIFF))
                 return g.m_areaGrid[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)];
             return -2;
         }
 
-        private static bool IsUnlocked(GameAreaManager g, int x, int z)
+        [ReplaceMethod]
+        public static bool IsUnlocked(GameAreaManager g, int x, int z)
         {
             if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF))
                 return false;
             return g.m_areaGrid[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] != 0;
         }
 
-        private static int GetAreaIndex(GameAreaManager g, Vector3 p)
+        [ReplaceMethod]
+        public static int GetAreaIndex(GameAreaManager g, Vector3 p)
         {
             int x = Mathf.FloorToInt((float)((double)p.x / 1920.0 + 2.5));
             int z = Mathf.FloorToInt((float)((double)p.z / 1920.0 + 2.5));
@@ -326,18 +331,14 @@ namespace Unlimiter.Areas
             z = (tile / GRID) - GRID_DIFF;
         }
 
-        private static int GetTileIndex(GameAreaManager g, int x, int z)
+        [ReplaceMethod]
+        public static int GetTileIndex(GameAreaManager g, int x, int z)
         {
             return (z + GRID_DIFF) * GRID + (x + GRID_DIFF);
         }
 
-        public static int CalculateTilePrice(GameAreaManager g, int tile)
-        {
-            return 0;
-        }
-
-        // TODO: Fix calls to this
-        private static bool UnlockArea(GameAreaManager g, int index)
+        [ReplaceMethod]
+        public static bool UnlockArea(GameAreaManager g, int index)
         {
             g.GetType().GetField("m_unlocking", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, true);
             try
@@ -382,7 +383,8 @@ namespace Unlimiter.Areas
             }
         }
 
-        private static void UpdateData(GameAreaManager g, SimulationManager.UpdateMode mode)
+        [ReplaceMethod]
+        public static void UpdateData(GameAreaManager g, SimulationManager.UpdateMode mode)
         {
             Helper.EnsureInit();
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("GameAreaManager.UpdateData");
@@ -466,7 +468,8 @@ namespace Unlimiter.Areas
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndLoading();
         }
 
-        private static float CalculateBuildableArea(int tileX, int tileZ)
+        [ReplaceMethod]
+        public static float CalculateBuildableArea(int tileX, int tileZ)
         {
             uint ore;
             uint oil;
@@ -478,7 +481,9 @@ namespace Unlimiter.Areas
             float num = (float)(3686400.0 / (18225.0 / 16.0) * (double)byte.MaxValue);
             return tileFlatness * (float)(1.0 - (double)water / (double)num);
         }
-        private static void UpdateAreaTexture(GameAreaManager g)
+
+        [ReplaceMethod]
+        public static void UpdateAreaTexture(GameAreaManager g)
         {
             Texture2D m_areaTex = (Texture2D)g.GetType().GetField("m_areaTex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             g.GetType().GetField("m_areasUpdated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, false);

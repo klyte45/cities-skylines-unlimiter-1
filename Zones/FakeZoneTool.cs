@@ -6,12 +6,14 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using Unlimiter.Areas;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
 {
     internal class FakeZoneTool
     {
-        private static void ApplyBrush(ZoneTool z)
+        [ReplaceMethod]
+        public static void ApplyBrush(ZoneTool z)
         {
             float brushRadius = z.m_brushSize * 0.5f;
             Vector3 position = (Vector3)z.GetType().GetField("m_mousePosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
@@ -51,7 +53,8 @@ namespace Unlimiter.Zones
             }
         }
 
-        private static void ApplyFill(ZoneTool z)
+        [ReplaceMethod]
+        public static void ApplyFill(ZoneTool z)
         {
             bool m_validPosition = (bool)z.GetType().GetField("m_validPosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
             if (!m_validPosition)

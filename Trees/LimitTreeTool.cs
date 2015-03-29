@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Trees
 {
     internal static class LimitTreeTool
     {
-        private static void ApplyBrush(TreeTool tt)
+        [ReplaceMethod]
+        public static void ApplyBrush(TreeTool tt)
         {
             Randomizer r = (Randomizer)tt.GetType().GetField("m_randomizer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(tt);
             ToolController m_toolController = (ToolController)tt.GetType().GetField("m_toolController", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(tt);

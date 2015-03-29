@@ -6,12 +6,14 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
 {
-#if false
+    [Fixme]
     internal class FakeBuildingTool
     {
+#if false
         private static void SimulationStep(BuildingTool b)
         {
             BuildingInfo info;
@@ -274,6 +276,6 @@ namespace Unlimiter.Zones
                 relocating = 0;
             }
         }
-    }
 #endif
+    }
 }

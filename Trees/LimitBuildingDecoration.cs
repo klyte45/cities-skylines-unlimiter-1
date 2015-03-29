@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Trees
 {
     public static class LimitBuildingDecoration
     {
-        private static void ClearDecorations()
+        [ReplaceMethod]
+        public static void ClearDecorations()
         {
             NetManager instance1 = Singleton<NetManager>.instance;
             for (int index = 1; index < 32768; ++index)
@@ -36,7 +38,8 @@ namespace Unlimiter.Trees
             }
         }
 
-        private static void SaveProps(BuildingInfo info, ushort buildingID, ref Building data)
+        [ReplaceMethod]
+        public static void SaveProps(BuildingInfo info, ushort buildingID, ref Building data)
         {
             FastList<BuildingInfo.Prop> fastList = new FastList<BuildingInfo.Prop>();
             Vector3 pos = data.m_position;

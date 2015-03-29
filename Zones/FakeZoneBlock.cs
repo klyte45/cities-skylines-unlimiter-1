@@ -6,12 +6,14 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
 {
     /// <summary>
     /// None of these methods are exported, as ZoneBlock is a struct.
     /// </summary>
+    [Fixme]
     internal class FakeZoneBlock
     {
 #if false
@@ -201,8 +203,8 @@ namespace Unlimiter.Zones
             }
         }
 #endif
-
-        public static void SimulationStep(ref ZoneBlock b, ushort blockID)
+        [Fixme]
+        internal static void SimulationStep(ref ZoneBlock b, ushort blockID)
         {
                 ZoneManager instance1 = Singleton<ZoneManager>.instance;
                 int rowCount = b.RowCount;
@@ -255,10 +257,10 @@ namespace Unlimiter.Zones
                 quad.d = vector2_1 - 4f * xDir + ((float)z + 2f) * zDir;
                 Vector2 vector2_3 = quad.Min();
                 Vector2 vector2_4 = quad.Max();
-                int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / 64.0 + 75.0), 0);
-                int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / 64.0 + 75.0), 0);
-                int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / 64.0 + 75.0), 149);
-                int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / 64.0 + 75.0), 149);
+                int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), 0);
+                int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), 0);
+                int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
+                int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.UNKNOWN_FLOAT_75), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
                 for (int index1 = num4; index1 <= num6; ++index1)
                 {
                     for (int index2 = num3; index2 <= num5; ++index2)
@@ -579,7 +581,7 @@ namespace Unlimiter.Zones
             
         }
 
-        public static bool IsGoodPlace(ZoneBlock x, Vector2 position)
+        internal static bool IsGoodPlace(ZoneBlock x, Vector2 position)
         {
             int num1 = Mathf.Max((int)(((double)position.x - 104.0) / 64.0 + 135.0), 0);
             int num2 = Mathf.Max((int)(((double)position.y - 104.0) / 64.0 + 135.0), 0);
@@ -625,7 +627,7 @@ namespace Unlimiter.Zones
             return false;
         }
 
-        public static void CheckBlock(ZoneBlock b, ref ZoneBlock other, int[] xBuffer, ItemClass.Zone zone, Vector2 startPos, Vector2 xDir, Vector2 zDir, Quad2 quad)
+        internal static void CheckBlock(ZoneBlock b, ref ZoneBlock other, int[] xBuffer, ItemClass.Zone zone, Vector2 startPos, Vector2 xDir, Vector2 zDir, Quad2 quad)
         {
             float f1 = Mathf.Abs(other.m_angle - b.m_angle) * 0.6366197f;
             float num1 = f1 - Mathf.Floor(f1);

@@ -9,9 +9,12 @@ using Unlimiter.Areas;
 
 namespace Unlimiter.Zones
 {
+    /// <summary>
+    /// Building is a struct. Calls to this may not work with Replacing the method handle.
+    /// </summary>
     class FakeBuilding
     {
-        public static bool CheckZoning(Building b, ItemClass.Zone zone)
+        internal static bool CheckZoning(Building b, ItemClass.Zone zone)
         {
             int width = b.Width;
             int length = b.Length;
@@ -42,7 +45,7 @@ namespace Unlimiter.Zones
                     {
                         Vector3 vector3_7 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector3_5.x - 46f - vector3_7.x, vector3_5.z - 46f - vector3_7.z), Mathf.Max((float)((double)vector3_7.x - (double)vector3_6.x - 46.0), (float)((double)vector3_7.z - (double)vector3_6.z - 46.0))) < 0.0)
-                            X(b, zone, ref validCells, ref instance.m_blocks.m_buffer[num5]);
+                            CallCheckZoning(b, zone, ref validCells, ref instance.m_blocks.m_buffer[num5]);
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= 32768)
                         {
@@ -63,7 +66,7 @@ namespace Unlimiter.Zones
             return true;
         }
 
-        public static void X(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
+        private static void CallCheckZoning(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
         {
             var p = new object[] { zone, validCells, block };
             b.GetType().GetMethod("CheckZoning", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new Type[]{typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(ZoneBlock).MakeByRefType()}, null).Invoke(b, p);

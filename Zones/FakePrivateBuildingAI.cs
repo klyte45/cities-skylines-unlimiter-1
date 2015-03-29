@@ -7,12 +7,15 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
 {
     class FakePrivateBuildingAI
     {
-        private static void CheckNearbyBuildingZones(Vector3 position)
+        [ReplaceMethod]
+        [Fixme("This uses the building grid, which is ENTIRELY different? That -may- be left to fix after zones technically work")]
+        public static void CheckNearbyBuildingZones(Vector3 position)
         {
             int num1 = Mathf.Max((int)(((double)position.x - 35.0) / 64.0 + 135.0), 0);
             int num2 = Mathf.Max((int)(((double)position.z - 35.0) / 64.0 + 135.0), 0);
@@ -54,7 +57,8 @@ namespace Unlimiter.Zones
             }
         }
 
-        private static void SimulationStep(PrivateBuildingAI ai, ushort buildingID, ref Building buildingData, ref Building.Frame frameData)
+        [ReplaceMethod]
+        public static void SimulationStep(PrivateBuildingAI ai, ushort buildingID, ref Building buildingData, ref Building.Frame frameData)
         {
             BaseSimulationStep(ai, buildingID, ref buildingData, ref frameData);
 
@@ -131,7 +135,7 @@ namespace Unlimiter.Zones
             }
         }
 
-        public static void BaseSimulationStep(PrivateBuildingAI ai, ushort buildingID, ref Building buildingData, ref Building.Frame frameData)
+        private static void BaseSimulationStep(PrivateBuildingAI ai, ushort buildingID, ref Building buildingData, ref Building.Frame frameData)
         {
             if ((buildingData.m_flags & Building.Flags.Abandoned) != Building.Flags.None)
             {

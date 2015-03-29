@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using Unlimiter.Areas;
+using Unlimiter.Attributes;
 using Unlimiter.Trees;
 using Unlimiter.Zones;
 
@@ -41,50 +42,37 @@ namespace Unlimiter
         {
             try
             {
-                // All of these should behave identical to the vanilla variant if the mod is not enabled. Probably. Somewhat.
-                RedirectCalls(typeof(BuildingDecoration), typeof(LimitBuildingDecoration), "ClearDecorations");
-                RedirectCalls(typeof(BuildingDecoration), typeof(LimitBuildingDecoration), "SaveProps");
-                RedirectCalls(typeof(NaturalResourceManager), typeof(LimitNaturalResourceManager), "TreesModified");
-                //RedirectCalls(typeof(NaturalResourceManager), typeof(LimitNaturalResourceManager), "GetTileResources");
-                RedirectCalls(typeof(TreeTool), typeof(LimitTreeTool), "ApplyBrush");
-                RedirectCalls(typeof(TreeManager.Data), typeof(LimitTreeManager.Data), "Serialize");
-                RedirectCalls(typeof(TreeManager.Data), typeof(LimitTreeManager.Data), "Deserialize");
-                //RedirectCalls(typeof(TreeInstance), typeof(RotatingTreeInstance), "RenderLod");
+                var toReplace = new Type[]
+                {
+                    typeof(BuildingDecoration), typeof(LimitBuildingDecoration),
+                    typeof(NaturalResourceManager), typeof(LimitNaturalResourceManager),
+                    typeof(TreeTool), typeof(LimitTreeTool),
+                    typeof(TreeManager), typeof(LimitTreeManager),
+                    typeof(TreeManager.Data), typeof(LimitTreeManager.Data),
+                    typeof(GameAreaManager), typeof(FakeGameAreaManager),
+                    typeof(NetManager), typeof(FakeNetManager),
+                    typeof(ZoneManager), typeof(FakeZoneManager),
+                    typeof(ZoneManager.Data), typeof(FakeZoneManager.Data),
+                    typeof(ZoneTool), typeof(FakeZoneTool),
+                    typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
+                    typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
+                    typeof(GameAreaTool), typeof(FakeGameAreaTool)
+                };
 
-                Debug.Log("RenderInstance");
-                RedirectionHelper.RedirectCalls(typeof(TreeInstance).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static),
-                    typeof(RotatingTreeInstance).GetMethod("RenderInstance", BindingFlags.NonPublic | BindingFlags.Static));
+                for (int i = 0; i < toReplace.Length; i += 2 )
+                {
+                    var from = toReplace[i];
+                    var to = toReplace[i + 1];
 
-                foreach (var method in typeof(LimitTreeManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(TreeManager), method);
+                    foreach(var method in to.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                    {
+                        if (method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1)
+                            RedirectCalls(from, method);
+                    }
+                }
 
-                foreach (var method in typeof(FakeGameAreaManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(GameAreaManager), method);
-                Debug.Log("CalculateTilePrice");
-                RedirectionHelper.RedirectCalls(typeof(GameAreaManager).GetMethod("CalculateTilePrice", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, new Type[] { typeof(int) }, null), typeof(FakeGameAreaManager).GetMethod("CalculateTilePrice", BindingFlags.Public | BindingFlags.Static));
-                
-                foreach (var method in typeof(FakeNetManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(NetManager), method);
-
-                foreach (var method in typeof(FakeZoneManager).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(ZoneManager), method);
-                foreach (var method in typeof(FakeZoneManager.Data).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(ZoneManager.Data), method);
-                foreach (var method in typeof(FakeBuilding).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(Building), method);
-                foreach (var method in typeof(FakeZoneBlock).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(ZoneBlock), method);
-                foreach (var method in typeof(FakeZoneTool).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(ZoneTool), method);
-                foreach (var method in typeof(FakePrivateBuildingAI).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
-                    RedirectCalls(typeof(PrivateBuildingAI), method);
-
-                RedirectCalls(typeof(GameAreaTool), typeof(FakeGameAreaTool), "OnToolGUI");
-                RedirectCalls(typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel), "ShowInternal");
-                RedirectCalls(typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel), "UpdatePanel");
-                
                 // We should probably check if we're enabled
-                PluginsChanged();
+                    PluginsChanged();
                 PluginManager.instance.eventPluginsChanged += PluginsChanged;
                 PluginManager.instance.eventPluginsStateChanged += PluginsChanged;
             }
@@ -117,19 +105,13 @@ namespace Unlimiter
             }
         }
 
-        private void RedirectCalls(Type type1, Type type2, string p)
-        {
-            Debug.LogFormat("{0}/{1}/{2}", type1, type2, p);
-            RedirectionHelper.RedirectCalls(type1.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static), type2.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Static));
-        }
-
         private void RedirectCalls(Type type1, MethodInfo method)
         {
             Debug.LogFormat("{0} ~> {1}", type1, method);
             var parameters = method.GetParameters();
 
             Type[] types;
-            if (parameters[0].ParameterType == type1)
+            if (parameters.Length > 0 && parameters[0].ParameterType == type1)
                 types = parameters.Skip(1).Select(p => p.ParameterType).ToArray();
             else
                 types = parameters.Select(p => p.ParameterType).ToArray();

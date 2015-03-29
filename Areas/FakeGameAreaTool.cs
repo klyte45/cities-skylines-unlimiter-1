@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Areas
 {
     class FakeGameAreaTool
     {
-        protected static void OnToolGUI(GameAreaTool g)
+        [ReplaceMethod]
+        public static void OnToolGUI(GameAreaTool g)
         {
             ToolController m_toolController = (ToolController) g.GetType().GetField("m_toolController", System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(g);
 

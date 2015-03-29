@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Trees
 {
     internal static class LimitNaturalResourceManager
     {
-        // FIXME m_naturalResources?
-        private static void TreesModified(NaturalResourceManager nrm, Vector3 position)
+        [ReplaceMethod]
+        public static void TreesModified(NaturalResourceManager nrm, Vector3 position)
         {
             int num1 = Mathf.Clamp((int)((double)position.x / 33.75 + 256.0), 0, 511);
             int num2 = Mathf.Clamp((int)((double)position.z / 33.75 + 256.0), 0, 511);
@@ -64,19 +65,5 @@ namespace Unlimiter.Trees
                 return;
             nrm.AreaModified(num1, num2, num1, num2);
         }
-
-#if false
-        private static void GetTileResources(NaturalResourceManager nm, int x, int z, out uint ore, out uint oil, out uint forest, out uint fertility, out uint water)
-        {
-            //int num = 2;
-            ore = 0U;
-            oil = 0U;
-            forest = 0U;
-            fertility = 0U;
-            water = 0U;
-            Debug.LogFormat("NMR {0} {1}", x, z);
-            //nm.GetTileResourcesImpl(x + num, z + num, ref ore, ref oil, ref forest, ref fertility, ref water);
-        }
-#endif
     }
 }

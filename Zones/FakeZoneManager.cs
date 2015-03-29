@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
 {
@@ -41,7 +42,9 @@ namespace Unlimiter.Zones
         internal const float ZONEGRID_CELL_SIZE = 64f;
         internal const float UNKNOWN_FLOAT_75 = 75.0f;
 
-        private static void InitializeBlock(ZoneManager z, ushort block, ref ZoneBlock data)
+
+        [ReplaceMethod]
+        public static void InitializeBlock(ZoneManager z, ushort block, ref ZoneBlock data)
         {
             int num = Mathf.Clamp((int)((double)data.m_position.x / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1);
             int index = Mathf.Clamp((int)((double)data.m_position.z / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1) * ZONEGRID_RESOLUTION + num;
@@ -59,7 +62,8 @@ namespace Unlimiter.Zones
             }
         }
 
-        private static void ReleaseBlockImplementation(ZoneManager z, ushort block, ref ZoneBlock data)
+        [ReplaceMethod]
+        public static void ReleaseBlockImplementation(ZoneManager z, ushort block, ref ZoneBlock data)
         {
             if ((int)data.m_flags == 0)
                 return;
@@ -106,7 +110,8 @@ namespace Unlimiter.Zones
             z.m_blockCount = (int)z.m_blocks.ItemCount() - 1;
         }
 
-        private static void UpdateBlocks(ZoneManager z, float minX, float minZ, float maxX, float maxZ)
+        [ReplaceMethod]
+        public static void UpdateBlocks(ZoneManager z, float minX, float minZ, float maxX, float maxZ)
         {
             // Where the hell does this 46 come from
             int num1 = Mathf.Max((int)(((double)minX - 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0);
@@ -138,7 +143,8 @@ namespace Unlimiter.Zones
             }
         }
 
-        private static void TerrainUpdated(ZoneManager z, TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
+        [ReplaceMethod]
+        public static void TerrainUpdated(ZoneManager z, TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
         {
             float minX = zoneArea.m_min.x;
             float minZ = zoneArea.m_min.z;
@@ -170,7 +176,8 @@ namespace Unlimiter.Zones
             }
         }
 
-        private static bool CheckSpace(ZoneManager z, Vector3 position, float angle, int width, int length, out int offset)
+        [ReplaceMethod]
+        public static bool CheckSpace(ZoneManager z, Vector3 position, float angle, int width, int length, out int offset)
         {
             float num1 = Mathf.Min(72f, (float)(width + length) * 4f) + 6f;
             float num2 = position.x - num1;
@@ -228,8 +235,8 @@ namespace Unlimiter.Zones
 
         internal class Data
         {
-
-            private static void Deserialize(ZoneManager.Data d, DataSerializer s)
+            [ReplaceMethod]
+            public static void Deserialize(ZoneManager.Data d, DataSerializer s)
             {
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginDeserialize(s, "ZoneManager");
                 ZoneManager instance = Singleton<ZoneManager>.instance;
