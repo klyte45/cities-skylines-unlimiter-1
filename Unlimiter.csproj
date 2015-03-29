@@ -59,6 +59,7 @@
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="Zones\FakeBuilding.cs" />
     <Compile Include="Zones\FakeBuildingTool.cs" />
+    <Compile Include="Zones\FakePrivateBuildingAI.cs" />
     <Compile Include="Zones\FakeZoneBlock.cs" />
     <Compile Include="Zones\FakeZoneManager.cs" />
     <Compile Include="Trees\LimitBuildingDecoration.cs" />

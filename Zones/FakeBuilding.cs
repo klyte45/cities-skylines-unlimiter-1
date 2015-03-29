@@ -11,9 +11,7 @@ namespace Unlimiter.Zones
 {
     class FakeBuilding
     {
-        // FIXME This definitively breaks downgrading for some reason.
-#if false
-        private static bool CheckZoning(Building b, ItemClass.Zone zone)
+        public static bool CheckZoning(Building b, ItemClass.Zone zone)
         {
             int width = b.Width;
             int length = b.Length;
@@ -72,6 +70,5 @@ namespace Unlimiter.Zones
             validCells = (uint)p[1];
             block = (ZoneBlock)p[2];
         }
-#endif
     }
 }

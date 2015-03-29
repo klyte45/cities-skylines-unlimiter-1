@@ -76,6 +76,8 @@ namespace Unlimiter
                     RedirectCalls(typeof(ZoneBlock), method);
                 foreach (var method in typeof(FakeZoneTool).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
                     RedirectCalls(typeof(ZoneTool), method);
+                foreach (var method in typeof(FakePrivateBuildingAI).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.NonPublic))
+                    RedirectCalls(typeof(PrivateBuildingAI), method);
 
                 RedirectCalls(typeof(GameAreaTool), typeof(FakeGameAreaTool), "OnToolGUI");
                 RedirectCalls(typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel), "ShowInternal");
