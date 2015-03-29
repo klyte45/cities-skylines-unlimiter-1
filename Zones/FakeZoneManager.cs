@@ -37,10 +37,10 @@ namespace Unlimiter.Zones
         // We basically want to increase the grid resolution.
         // 
         internal const int DEFAULT_ZONEGRID_RESOLUTION = 150;
-        internal const int EXTENSION = 0;
+        internal const int EXTENSION = 30;
         internal const int ZONEGRID_RESOLUTION = EXTENSION * 2 + DEFAULT_ZONEGRID_RESOLUTION;
         internal const float ZONEGRID_CELL_SIZE = 64f;
-        internal const float UNKNOWN_FLOAT_75 = 75.0f;
+        internal const float UNKNOWN_FLOAT_75 = (float) ZONEGRID_RESOLUTION / 2f;
 
 
         [ReplaceMethod]
