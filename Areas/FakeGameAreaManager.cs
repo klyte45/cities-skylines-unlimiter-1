@@ -20,6 +20,7 @@ namespace Unlimiter.Areas
                 if(GameAreaManager.instance.m_areaGrid.Length != GRID * GRID)
                 {
                     int[] areas = new int[GRID * GRID];
+#if false
                     for (int z = 0; z < DEFAULT_GRID; z++)
                     {
                         for (int x = 0; x < DEFAULT_GRID; ++x)
@@ -27,7 +28,15 @@ namespace Unlimiter.Areas
                             areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = GameAreaManager.instance.m_areaGrid[z * DEFAULT_GRID + x];
                         }
                     }
-                    GameAreaManager.instance.m_areaGrid = areas;
+#endif
+                    for (int z = -1; z < DEFAULT_GRID + 1; ++ z )
+                    {
+                        for (int x = -1; x < DEFAULT_GRID + 1; ++ x)
+                        {
+                            areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = (z + 1) * 7 + (x + 1) + 1;
+                        }
+                    }
+                        GameAreaManager.instance.m_areaGrid = areas;
 
                     SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 3800f);
                     SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 3800f);
