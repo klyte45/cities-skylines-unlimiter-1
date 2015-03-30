@@ -37,17 +37,17 @@ namespace Unlimiter.Zones
         // We basically want to increase the grid resolution.
         // 
         internal const int DEFAULT_ZONEGRID_RESOLUTION = 150;
-        internal const int EXTENSION = 30;
+        internal const int EXTENSION = 60;
         internal const int ZONEGRID_RESOLUTION = EXTENSION * 2 + DEFAULT_ZONEGRID_RESOLUTION;
         internal const float ZONEGRID_CELL_SIZE = 64f;
-        internal const float UNKNOWN_FLOAT_75 = (float) ZONEGRID_RESOLUTION / 2f;
+        internal const float HALF_ZONEGRID_RESOLUTION = (float) ZONEGRID_RESOLUTION / 2f;
 
 
         [ReplaceMethod]
         public static void InitializeBlock(ZoneManager z, ushort block, ref ZoneBlock data)
         {
-            int num = Mathf.Clamp((int)((double)data.m_position.x / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1);
-            int index = Mathf.Clamp((int)((double)data.m_position.z / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1) * ZONEGRID_RESOLUTION + num;
+            int num = Mathf.Clamp((int)((double)data.m_position.x / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0, ZONEGRID_RESOLUTION - 1);
+            int index = Mathf.Clamp((int)((double)data.m_position.z / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0, ZONEGRID_RESOLUTION - 1) * ZONEGRID_RESOLUTION + num;
             do
             { }
             while (!Monitor.TryEnter((object)z.m_zoneGrid, SimulationManager.SYNCHRONIZE_TIMEOUT));
@@ -70,8 +70,8 @@ namespace Unlimiter.Zones
             data.m_flags |= 2U;
             z.m_cachedBlocks.Add(data);
             data.m_flags = 0U;
-            int num1 = Mathf.Clamp((int)((double)data.m_position.x / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1);
-            int index = Mathf.Clamp((int)((double)data.m_position.z / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0, ZONEGRID_RESOLUTION - 1) * ZONEGRID_RESOLUTION + num1;
+            int num1 = Mathf.Clamp((int)((double)data.m_position.x / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0, ZONEGRID_RESOLUTION - 1);
+            int index = Mathf.Clamp((int)((double)data.m_position.z / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0, ZONEGRID_RESOLUTION - 1) * ZONEGRID_RESOLUTION + num1;
             do
             { }
             while (!Monitor.TryEnter((object)z.m_zoneGrid, SimulationManager.SYNCHRONIZE_TIMEOUT));
@@ -114,10 +114,10 @@ namespace Unlimiter.Zones
         public static void UpdateBlocks(ZoneManager z, float minX, float minZ, float maxX, float maxZ)
         {
             // Where the hell does this 46 come from
-            int num1 = Mathf.Max((int)(((double)minX - 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0);
-            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0);
-            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), ZONEGRID_RESOLUTION - 1);
-            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), ZONEGRID_RESOLUTION - 1);
+            int num1 = Mathf.Max((int)(((double)minX - 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0);
+            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0);
+            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), ZONEGRID_RESOLUTION - 1);
+            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), ZONEGRID_RESOLUTION - 1);
             for (int index1 = num2; index1 <= num4; ++index1)
             {
                 for (int index2 = num1; index2 <= num3; ++index2)
@@ -150,10 +150,10 @@ namespace Unlimiter.Zones
             float minZ = zoneArea.m_min.z;
             float maxX = zoneArea.m_max.x;
             float maxZ = zoneArea.m_max.z;
-            int num1 = Mathf.Max((int)(((double)minX - 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0);
-            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0);
-            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), ZONEGRID_RESOLUTION - 1);
-            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), ZONEGRID_RESOLUTION - 1);
+            int num1 = Mathf.Max((int)(((double)minX - 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0);
+            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0);
+            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), ZONEGRID_RESOLUTION - 1);
+            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), ZONEGRID_RESOLUTION - 1);
             for (int index1 = num2; index1 <= num4; ++index1)
             {
                 for (int index2 = num1; index2 <= num3; ++index2)
@@ -188,10 +188,10 @@ namespace Unlimiter.Zones
             ulong space2 = 0UL;
             ulong space3 = 0UL;
             ulong space4 = 0UL;
-            int num6 = Mathf.Max((int)(((double)num2 - 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0);
-            int num7 = Mathf.Max((int)(((double)num3 - 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), 0);
-            int num8 = Mathf.Min((int)(((double)num4 + 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), ZONEGRID_RESOLUTION - 1);
-            int num9 = Mathf.Min((int)(((double)num5 + 46.0) / ZONEGRID_CELL_SIZE + UNKNOWN_FLOAT_75), ZONEGRID_RESOLUTION - 1);
+            int num6 = Mathf.Max((int)(((double)num2 - 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0);
+            int num7 = Mathf.Max((int)(((double)num3 - 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), 0);
+            int num8 = Mathf.Min((int)(((double)num4 + 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), ZONEGRID_RESOLUTION - 1);
+            int num9 = Mathf.Min((int)(((double)num5 + 46.0) / ZONEGRID_CELL_SIZE + HALF_ZONEGRID_RESOLUTION), ZONEGRID_RESOLUTION - 1);
             for (int index1 = num7; index1 <= num9; ++index1)
             {
                 for (int index2 = num6; index2 <= num8; ++index2)
