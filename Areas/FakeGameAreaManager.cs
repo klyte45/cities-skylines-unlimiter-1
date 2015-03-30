@@ -1,11 +1,4 @@
 ﻿using ColossalFramework;
-using ColossalFramework.Math;
-using ColossalFramework.Threading;
-using ColossalFramework.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Unlimiter.Attributes;
 
@@ -17,7 +10,7 @@ namespace Unlimiter.Areas
         {
             internal static void EnsureInit()
             {
-                if(GameAreaManager.instance.m_areaGrid.Length != GRID * GRID)
+                if (GameAreaManager.instance.m_areaGrid.Length != GRID * GRID)
                 {
                     int[] areas = new int[GRID * GRID];
 #if false
@@ -29,14 +22,14 @@ namespace Unlimiter.Areas
                         }
                     }
 #endif
-                    for (int z = -1; z < DEFAULT_GRID + 1; ++ z )
+                    for (int z = -1; z < DEFAULT_GRID + 1; ++z)
                     {
-                        for (int x = -1; x < DEFAULT_GRID + 1; ++ x)
+                        for (int x = -1; x < DEFAULT_GRID + 1; ++x)
                         {
                             areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = (z + 1) * 7 + (x + 1) + 1;
                         }
                     }
-                        GameAreaManager.instance.m_areaGrid = areas;
+                    GameAreaManager.instance.m_areaGrid = areas;
 
                     SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 3800f);
                     SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 3800f);
@@ -87,9 +80,9 @@ namespace Unlimiter.Areas
             Material m_areaMaterial = (Material)g.GetType().GetField("m_areaMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             Material m_decorationMaterial = (Material)g.GetType().GetField("m_decorationMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             Mesh m_borderMesh = (Mesh)g.GetType().GetField("m_borderMesh", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            
-            int ID_Color = (int) g.GetType().GetField("ID_Color", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            int ID_AreaMapping = (int) g.GetType().GetField("ID_AreaMapping", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+
+            int ID_Color = (int)g.GetType().GetField("ID_Color", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+            int ID_AreaMapping = (int)g.GetType().GetField("ID_AreaMapping", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             int ID_DecorationArea = (int)g.GetType().GetField("ID_DecorationArea", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             int ID_DecorationAlpha = (int)g.GetType().GetField("ID_DecorationAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             Texture2D m_areaTex = (Texture2D)g.GetType().GetField("m_areaTex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
@@ -434,14 +427,17 @@ namespace Unlimiter.Areas
                                 m_buildableArea0 += CalculateBuildableArea(tileX, tileZ);
                                 ++num1;
                                 break;
+
                             case 1:
                                 m_buildableArea1 += CalculateBuildableArea(tileX, tileZ);
                                 ++num2;
                                 break;
+
                             case 2:
                                 m_buildableArea2 += CalculateBuildableArea(tileX, tileZ);
                                 ++num3;
                                 break;
+
                             case 3:
                                 m_buildableArea3 += CalculateBuildableArea(tileX, tileZ);
                                 ++num4;

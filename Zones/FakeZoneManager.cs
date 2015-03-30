@@ -1,9 +1,5 @@
 ﻿using ColossalFramework;
 using ColossalFramework.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 using Unlimiter.Attributes;
@@ -35,13 +31,13 @@ namespace Unlimiter.Zones
         }
 
         // We basically want to increase the grid resolution.
-        // 
+        //
         internal const int DEFAULT_ZONEGRID_RESOLUTION = 150;
+
         internal const int EXTENSION = 60;
         internal const int ZONEGRID_RESOLUTION = EXTENSION * 2 + DEFAULT_ZONEGRID_RESOLUTION;
         internal const float ZONEGRID_CELL_SIZE = 64f;
-        internal const float HALF_ZONEGRID_RESOLUTION = (float) ZONEGRID_RESOLUTION / 2f;
-
+        internal const float HALF_ZONEGRID_RESOLUTION = (float)ZONEGRID_RESOLUTION / 2f;
 
         [ReplaceMethod]
         public static void InitializeBlock(ZoneManager z, ushort block, ref ZoneBlock data)
@@ -346,7 +342,7 @@ namespace Unlimiter.Zones
                     else
                     {
                         DistrictManager instance2 = Singleton<DistrictManager>.instance;
-                        var p = new object[]{instance2.m_districts.m_buffer[0]};
+                        var p = new object[] { instance2.m_districts.m_buffer[0] };
                         int target1 = (int)typeof(ZoneManager).GetMethod("CalculateResidentialDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
                         int target2 = (int)typeof(ZoneManager).GetMethod("CalculateCommercialDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
                         int target3 = (int)typeof(ZoneManager).GetMethod("CalculateWorkplaceDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
@@ -387,6 +383,7 @@ namespace Unlimiter.Zones
                             break;
                         }
                         break;
+
                     case 200:
                         if (Singleton<UnlockManager>.instance.Unlocked(ItemClass.Zone.CommercialLow))
                         {
@@ -408,6 +405,7 @@ namespace Unlimiter.Zones
                             break;
                         }
                         break;
+
                     case 300:
                         if (Singleton<UnlockManager>.instance.Unlocked(ItemClass.Zone.Industrial))
                         {
@@ -429,6 +427,7 @@ namespace Unlimiter.Zones
                             break;
                         }
                         break;
+
                     case 400:
                         if (Singleton<UnlockManager>.instance.Unlocked(UnlockManager.Feature.Zoning))
                         {

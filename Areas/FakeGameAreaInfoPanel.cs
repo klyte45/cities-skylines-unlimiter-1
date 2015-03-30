@@ -2,15 +2,12 @@
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Unlimiter.Attributes;
 
 namespace Unlimiter.Areas
 {
-    class FakeGameAreaInfoPanel
+    internal class FakeGameAreaInfoPanel
     {
         [ReplaceMethod]
         public static void ShowInternal(GameAreaInfoPanel g, int areaIndex)
@@ -88,7 +85,6 @@ namespace Unlimiter.Areas
             var m_NoPlane = m_Plane.Find<UISprite>("NoNoNo");
             var m_InPlane = m_Plane.Find<UISprite>("Incoming");
             var m_OutPlane = m_Plane.Find<UISprite>("Outgoing");
-
 
             // UpdatePanel
             int m_AreaIndex = (int)g.GetType().GetField("m_AreaIndex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(g);

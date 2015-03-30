@@ -1,10 +1,5 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using UnityEngine;
 using Unlimiter.Attributes;
 
@@ -205,196 +200,159 @@ namespace Unlimiter.Zones
 
         public static void SimulationStep(ref ZoneBlock b, ushort blockID)
         {
-                ZoneManager instance1 = Singleton<ZoneManager>.instance;
-                int rowCount = b.RowCount;
-                Vector2 xDir = new Vector2(Mathf.Cos(b.m_angle), Mathf.Sin(b.m_angle)) * 8f;
-                Vector2 zDir = new Vector2(xDir.y, -xDir.x);
-                ulong num1 = b.m_valid & (ulong)~((long)b.m_occupied1 | (long)b.m_occupied2);
-                int z = 0;
-                ItemClass.Zone zone = ItemClass.Zone.Unzoned;
-                for (int index = 0; index < 4 && zone == ItemClass.Zone.Unzoned; ++index)
-                {
-                    z = Singleton<SimulationManager>.instance.m_randomizer.Int32((uint)rowCount);
-                    if (((long)num1 & 1L << (z << 3)) != 0L)
-                        zone = b.GetZone(0, z);
-                }
-                DistrictManager instance2 = Singleton<DistrictManager>.instance;
-                byte district = instance2.GetDistrict(b.m_position);
-                int num2;
-                switch (zone)
-                {
-                    case ItemClass.Zone.ResidentialLow:
-                        num2 = instance1.m_actualResidentialDemand + instance2.m_districts.m_buffer[(int)district].CalculateResidentialLowDemandOffset();
-                        break;
-                    case ItemClass.Zone.ResidentialHigh:
-                        num2 = instance1.m_actualResidentialDemand + instance2.m_districts.m_buffer[(int)district].CalculateResidentialHighDemandOffset();
-                        break;
-                    case ItemClass.Zone.CommercialLow:
-                        num2 = instance1.m_actualCommercialDemand + instance2.m_districts.m_buffer[(int)district].CalculateCommercialLowDemandOffset();
-                        break;
-                    case ItemClass.Zone.CommercialHigh:
-                        num2 = instance1.m_actualCommercialDemand + instance2.m_districts.m_buffer[(int)district].CalculateCommercialHighDemandOffset();
-                        break;
-                    case ItemClass.Zone.Industrial:
-                        num2 = instance1.m_actualWorkplaceDemand + instance2.m_districts.m_buffer[(int)district].CalculateIndustrialDemandOffset();
-                        break;
-                    case ItemClass.Zone.Office:
-                        num2 = instance1.m_actualWorkplaceDemand + instance2.m_districts.m_buffer[(int)district].CalculateOfficeDemandOffset();
-                        break;
-                    default:
-                        return;
-                }
-                Vector2 vector2_1 = VectorUtils.XZ(b.m_position);
-                Vector2 vector2_2 = vector2_1 - 3.5f * xDir + ((float)z - 3.5f) * zDir;
-                int[] xBuffer = instance1.m_tmpXBuffer;
-                for (int index = 0; index < 13; ++index)
-                    xBuffer[index] = 0;
-                Quad2 quad = new Quad2();
-                quad.a = vector2_1 - 4f * xDir + ((float)z - 10f) * zDir;
-                quad.b = vector2_1 + 3f * xDir + ((float)z - 10f) * zDir;
-                quad.c = vector2_1 + 3f * xDir + ((float)z + 2f) * zDir;
-                quad.d = vector2_1 - 4f * xDir + ((float)z + 2f) * zDir;
-                Vector2 vector2_3 = quad.Min();
-                Vector2 vector2_4 = quad.Max();
-                int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-                int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-                int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
-                int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
-                for (int index1 = num4; index1 <= num6; ++index1)
-                {
-                    for (int index2 = num3; index2 <= num5; ++index2)
-                    {
-                        ushort num7 = instance1.m_zoneGrid[index1 * FakeZoneManager.ZONEGRID_RESOLUTION + index2];
-                        int num8 = 0;
-                        while ((int)num7 != 0)
-                        {
-                            Vector3 vector3 = instance1.m_blocks.m_buffer[(int)num7].m_position;
-                            if ((double)Mathf.Max(Mathf.Max(vector2_3.x - 46f - vector3.x, vector2_3.y - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)vector2_4.x - 46.0), (float)((double)vector3.z - (double)vector2_4.y - 46.0))) < 0.0)
-                            {
-                                CheckBlock(b, ref instance1.m_blocks.m_buffer[(int)num7], xBuffer, zone, vector2_2, xDir, zDir, quad);
-                            }
-                            num7 = instance1.m_blocks.m_buffer[(int)num7].m_nextGridBlock;
-                            if (++num8 >= 32768)
-                            {
-                                CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
-                                break;
-                            }
-                        }
-                    }
-                }
-                for (int index = 0; index < 13; ++index)
-                {
-                    uint num7 = (uint)xBuffer[index];
-                    int num8 = 0;
-                    bool flag = false;
-                    while (((int)num7 & 1) != 0)
-                    {
-                        ++num8;
-                        flag = ((int)num7 & 65536) != 0;
-                        num7 >>= 1;
-                    }
-                    if (num8 == 5 || num8 == 6)
-                    {
-                        if (flag)
-                            num8 -= Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) + 2;
-                        else
-                            num8 = 4;
-                    }
-                    else if (num8 == 7)
-                        num8 = 4;
-                    xBuffer[index] = num8;
-                }
-                int num9 = xBuffer[6];
-                if (num9 == 0)
+            ZoneManager instance1 = Singleton<ZoneManager>.instance;
+            int rowCount = b.RowCount;
+            Vector2 xDir = new Vector2(Mathf.Cos(b.m_angle), Mathf.Sin(b.m_angle)) * 8f;
+            Vector2 zDir = new Vector2(xDir.y, -xDir.x);
+            ulong num1 = b.m_valid & (ulong)~((long)b.m_occupied1 | (long)b.m_occupied2);
+            int z = 0;
+            ItemClass.Zone zone = ItemClass.Zone.Unzoned;
+            for (int index = 0; index < 4 && zone == ItemClass.Zone.Unzoned; ++index)
+            {
+                z = Singleton<SimulationManager>.instance.m_randomizer.Int32((uint)rowCount);
+                if (((long)num1 & 1L << (z << 3)) != 0L)
+                    zone = b.GetZone(0, z);
+            }
+            DistrictManager instance2 = Singleton<DistrictManager>.instance;
+            byte district = instance2.GetDistrict(b.m_position);
+            int num2;
+            switch (zone)
+            {
+                case ItemClass.Zone.ResidentialLow:
+                    num2 = instance1.m_actualResidentialDemand + instance2.m_districts.m_buffer[(int)district].CalculateResidentialLowDemandOffset();
+                    break;
+
+                case ItemClass.Zone.ResidentialHigh:
+                    num2 = instance1.m_actualResidentialDemand + instance2.m_districts.m_buffer[(int)district].CalculateResidentialHighDemandOffset();
+                    break;
+
+                case ItemClass.Zone.CommercialLow:
+                    num2 = instance1.m_actualCommercialDemand + instance2.m_districts.m_buffer[(int)district].CalculateCommercialLowDemandOffset();
+                    break;
+
+                case ItemClass.Zone.CommercialHigh:
+                    num2 = instance1.m_actualCommercialDemand + instance2.m_districts.m_buffer[(int)district].CalculateCommercialHighDemandOffset();
+                    break;
+
+                case ItemClass.Zone.Industrial:
+                    num2 = instance1.m_actualWorkplaceDemand + instance2.m_districts.m_buffer[(int)district].CalculateIndustrialDemandOffset();
+                    break;
+
+                case ItemClass.Zone.Office:
+                    num2 = instance1.m_actualWorkplaceDemand + instance2.m_districts.m_buffer[(int)district].CalculateOfficeDemandOffset();
+                    break;
+
+                default:
                     return;
-                bool flag1 = IsGoodPlace(b, vector2_2);
-                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(100U) >= num2)
+            }
+            Vector2 vector2_1 = VectorUtils.XZ(b.m_position);
+            Vector2 vector2_2 = vector2_1 - 3.5f * xDir + ((float)z - 3.5f) * zDir;
+            int[] xBuffer = instance1.m_tmpXBuffer;
+            for (int index = 0; index < 13; ++index)
+                xBuffer[index] = 0;
+            Quad2 quad = new Quad2();
+            quad.a = vector2_1 - 4f * xDir + ((float)z - 10f) * zDir;
+            quad.b = vector2_1 + 3f * xDir + ((float)z - 10f) * zDir;
+            quad.c = vector2_1 + 3f * xDir + ((float)z + 2f) * zDir;
+            quad.d = vector2_1 - 4f * xDir + ((float)z + 2f) * zDir;
+            Vector2 vector2_3 = quad.Min();
+            Vector2 vector2_4 = quad.Max();
+            int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
+            int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
+            int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
+            int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
+            for (int index1 = num4; index1 <= num6; ++index1)
+            {
+                for (int index2 = num3; index2 <= num5; ++index2)
                 {
-                    if (!flag1)
-                        return;
-                    instance1.m_goodAreaFound[(int)zone] = (short)1024;
-                }
-                else if (!flag1 && (int)instance1.m_goodAreaFound[(int)zone] > -1024)
-                {
-                    if ((int)instance1.m_goodAreaFound[(int)zone] != 0)
-                        return;
-                    instance1.m_goodAreaFound[(int)zone] = (short)-1;
-                }
-                else
-                {
-                    int num7 = 6;
-                    int num8 = 6;
-                    bool flag2 = true;
-                    while (true)
+                    ushort num7 = instance1.m_zoneGrid[index1 * FakeZoneManager.ZONEGRID_RESOLUTION + index2];
+                    int num8 = 0;
+                    while ((int)num7 != 0)
                     {
-                        if (flag2)
+                        Vector3 vector3 = instance1.m_blocks.m_buffer[(int)num7].m_position;
+                        if ((double)Mathf.Max(Mathf.Max(vector2_3.x - 46f - vector3.x, vector2_3.y - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)vector2_4.x - 46.0), (float)((double)vector3.z - (double)vector2_4.y - 46.0))) < 0.0)
                         {
-                            while (num7 != 0 && xBuffer[num7 - 1] == num9)
-                                --num7;
-                            while (num8 != 12 && xBuffer[num8 + 1] == num9)
-                                ++num8;
+                            CheckBlock(b, ref instance1.m_blocks.m_buffer[(int)num7], xBuffer, zone, vector2_2, xDir, zDir, quad);
                         }
-                        else
+                        num7 = instance1.m_blocks.m_buffer[(int)num7].m_nextGridBlock;
+                        if (++num8 >= 32768)
                         {
-                            while (num7 != 0 && xBuffer[num7 - 1] >= num9)
-                                --num7;
-                            while (num8 != 12 && xBuffer[num8 + 1] >= num9)
-                                ++num8;
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
+                            break;
                         }
-                        int num10 = num7;
-                        int num11 = num8;
-                        while (num10 != 0 && xBuffer[num10 - 1] >= 2)
-                            --num10;
-                        while (num11 != 12 && xBuffer[num11 + 1] >= 2)
-                            ++num11;
-                        bool flag3 = num10 != 0 && num10 == num7 - 1;
-                        bool flag4 = num11 != 12 && num11 == num8 + 1;
-                        if (flag3 && flag4)
-                        {
-                            if (num8 - num7 <= 2)
-                            {
-                                if (num9 <= 2)
-                                {
-                                    if (!flag2)
-                                        goto label_88;
-                                }
-                                else
-                                    --num9;
-                            }
-                            else
-                                break;
-                        }
-                        else if (flag3)
-                        {
-                            if (num8 - num7 <= 1)
-                            {
-                                if (num9 <= 2)
-                                {
-                                    if (!flag2)
-                                        goto label_88;
-                                }
-                                else
-                                    --num9;
-                            }
-                            else
-                                goto label_73;
-                        }
-                        else if (flag4)
-                        {
-                            if (num8 - num7 <= 1)
-                            {
-                                if (num9 <= 2)
-                                {
-                                    if (!flag2)
-                                        goto label_88;
-                                }
-                                else
-                                    --num9;
-                            }
-                            else
-                                goto label_79;
-                        }
-                        else if (num7 == num8)
+                    }
+                }
+            }
+            for (int index = 0; index < 13; ++index)
+            {
+                uint num7 = (uint)xBuffer[index];
+                int num8 = 0;
+                bool flag = false;
+                while (((int)num7 & 1) != 0)
+                {
+                    ++num8;
+                    flag = ((int)num7 & 65536) != 0;
+                    num7 >>= 1;
+                }
+                if (num8 == 5 || num8 == 6)
+                {
+                    if (flag)
+                        num8 -= Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) + 2;
+                    else
+                        num8 = 4;
+                }
+                else if (num8 == 7)
+                    num8 = 4;
+                xBuffer[index] = num8;
+            }
+            int num9 = xBuffer[6];
+            if (num9 == 0)
+                return;
+            bool flag1 = IsGoodPlace(b, vector2_2);
+            if (Singleton<SimulationManager>.instance.m_randomizer.Int32(100U) >= num2)
+            {
+                if (!flag1)
+                    return;
+                instance1.m_goodAreaFound[(int)zone] = (short)1024;
+            }
+            else if (!flag1 && (int)instance1.m_goodAreaFound[(int)zone] > -1024)
+            {
+                if ((int)instance1.m_goodAreaFound[(int)zone] != 0)
+                    return;
+                instance1.m_goodAreaFound[(int)zone] = (short)-1;
+            }
+            else
+            {
+                int num7 = 6;
+                int num8 = 6;
+                bool flag2 = true;
+                while (true)
+                {
+                    if (flag2)
+                    {
+                        while (num7 != 0 && xBuffer[num7 - 1] == num9)
+                            --num7;
+                        while (num8 != 12 && xBuffer[num8 + 1] == num9)
+                            ++num8;
+                    }
+                    else
+                    {
+                        while (num7 != 0 && xBuffer[num7 - 1] >= num9)
+                            --num7;
+                        while (num8 != 12 && xBuffer[num8 + 1] >= num9)
+                            ++num8;
+                    }
+                    int num10 = num7;
+                    int num11 = num8;
+                    while (num10 != 0 && xBuffer[num10 - 1] >= 2)
+                        --num10;
+                    while (num11 != 12 && xBuffer[num11 + 1] >= 2)
+                        ++num11;
+                    bool flag3 = num10 != 0 && num10 == num7 - 1;
+                    bool flag4 = num11 != 12 && num11 == num8 + 1;
+                    if (flag3 && flag4)
+                    {
+                        if (num8 - num7 <= 2)
                         {
                             if (num9 <= 2)
                             {
@@ -405,179 +363,230 @@ namespace Unlimiter.Zones
                                 --num9;
                         }
                         else
-                            goto label_88;
-                        flag2 = false;
+                            break;
                     }
-                    ++num7;
-                    --num8;
-                    goto label_88;
-                label_73:
-                    ++num7;
-                    goto label_88;
-                label_79:
-                    --num8;
-                label_88:
-                    int num12;
-                    int num13;
-                    if (num9 == 1 && num8 - num7 >= 1)
+                    else if (flag3)
                     {
-                        num7 += Singleton<SimulationManager>.instance.m_randomizer.Int32((uint)(num8 - num7));
-                        num8 = num7 + 1;
-                        num12 = num7 + Singleton<SimulationManager>.instance.m_randomizer.Int32(2U);
-                        num13 = num12;
+                        if (num8 - num7 <= 1)
+                        {
+                            if (num9 <= 2)
+                            {
+                                if (!flag2)
+                                    goto label_88;
+                            }
+                            else
+                                --num9;
+                        }
+                        else
+                            goto label_73;
+                    }
+                    else if (flag4)
+                    {
+                        if (num8 - num7 <= 1)
+                        {
+                            if (num9 <= 2)
+                            {
+                                if (!flag2)
+                                    goto label_88;
+                            }
+                            else
+                                --num9;
+                        }
+                        else
+                            goto label_79;
+                    }
+                    else if (num7 == num8)
+                    {
+                        if (num9 <= 2)
+                        {
+                            if (!flag2)
+                                goto label_88;
+                        }
+                        else
+                            --num9;
                     }
                     else
-                    {
-                        do
-                        {
-                            num12 = num7;
-                            num13 = num8;
-                            if (num8 - num7 == 2)
-                            {
-                                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
-                                    --num13;
-                                else
-                                    ++num12;
-                            }
-                            else if (num8 - num7 == 3)
-                            {
-                                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
-                                    num13 -= 2;
-                                else
-                                    num12 += 2;
-                            }
-                            else if (num8 - num7 == 4)
-                            {
-                                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
-                                {
-                                    num8 -= 2;
-                                    num13 -= 3;
-                                }
-                                else
-                                {
-                                    num7 += 2;
-                                    num12 += 3;
-                                }
-                            }
-                            else if (num8 - num7 == 5)
-                            {
-                                if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
-                                {
-                                    num8 -= 3;
-                                    num13 -= 2;
-                                }
-                                else
-                                {
-                                    num7 += 3;
-                                    num12 += 2;
-                                }
-                            }
-                            else if (num8 - num7 >= 6)
-                            {
-                                if (num7 == 0 || num8 == 12)
-                                {
-                                    if (num7 == 0)
-                                    {
-                                        num7 = 3;
-                                        num12 = 2;
-                                    }
-                                    if (num8 == 12)
-                                    {
-                                        num8 = 9;
-                                        num13 = 10;
-                                    }
-                                }
-                                else if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
-                                {
-                                    num8 = num7 + 3;
-                                    num13 = num12 + 2;
-                                }
-                                else
-                                {
-                                    num7 = num8 - 3;
-                                    num12 = num13 - 2;
-                                }
-                            }
-                        }
-                        while (num8 - num7 > 3 || num13 - num12 > 3);
-                    }
-                    int num14 = 4;
-                    for (int index = num7; index <= num8; ++index)
-                        num14 = Mathf.Min(num14, xBuffer[index]);
-                    int a = 4;
-                    for (int index = num12; index <= num13; ++index)
-                        a = Mathf.Min(a, xBuffer[index]);
-                    ItemClass.SubService subService = ItemClass.SubService.None;
-                    ItemClass.Level level = ItemClass.Level.Level1;
-                    Vector3 vector3 = b.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num7 + num8 + 1) * 0.5 + (double)z - 10.0) * zDir);
-                    ItemClass.Service service;
-                    switch (zone)
-                    {
-                        case ItemClass.Zone.ResidentialLow:
-                            service = ItemClass.Service.Residential;
-                            subService = ItemClass.SubService.ResidentialLow;
-                            break;
-                        case ItemClass.Zone.ResidentialHigh:
-                            service = ItemClass.Service.Residential;
-                            subService = ItemClass.SubService.ResidentialHigh;
-                            break;
-                        case ItemClass.Zone.CommercialLow:
-                            service = ItemClass.Service.Commercial;
-                            subService = ItemClass.SubService.CommercialLow;
-                            break;
-                        case ItemClass.Zone.CommercialHigh:
-                            service = ItemClass.Service.Commercial;
-                            subService = ItemClass.SubService.CommercialHigh;
-                            break;
-                        case ItemClass.Zone.Industrial:
-                            service = ItemClass.Service.Industrial;
-                            ZoneBlock.GetIndustryType(vector3, out subService, out level);
-                            break;
-                        case ItemClass.Zone.Office:
-                            service = ItemClass.Service.Office;
-                            subService = ItemClass.SubService.None;
-                            break;
-                        default:
-                            return;
-                    }
-                    BuildingInfo randomBuildingInfo = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, num8 - num7 + 1, num14);
-                    if (randomBuildingInfo == null)
-                    {
-                        int num10 = num12;
-                        int num11 = num13;
-                        num14 = a;
-                        vector3 = b.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num10 + num11 + 1) * 0.5 + (double)z - 10.0) * zDir);
-                        if (zone == ItemClass.Zone.Industrial)
-                            ZoneBlock.GetIndustryType(vector3, out subService, out level);
-                        randomBuildingInfo = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, num11 - num10 + 1, num14);
-                        if (randomBuildingInfo == null)
-                            return;
-                    }
-                    if ((double)Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double)vector3.y)
-                        return;
-                    ushort building;
-                    if (Singleton<BuildingManager>.instance.CreateBuilding(out building, ref Singleton<SimulationManager>.instance.m_randomizer, randomBuildingInfo, vector3, b.m_angle + 1.570796f, num14, Singleton<SimulationManager>.instance.m_currentBuildIndex))
-                    {
-                        ++Singleton<SimulationManager>.instance.m_currentBuildIndex;
-                        switch (service)
-                        {
-                            case ItemClass.Service.Residential:
-                                instance1.m_actualResidentialDemand = Mathf.Max(0, instance1.m_actualResidentialDemand - 5);
-                                break;
-                            case ItemClass.Service.Commercial:
-                                instance1.m_actualCommercialDemand = Mathf.Max(0, instance1.m_actualCommercialDemand - 5);
-                                break;
-                            case ItemClass.Service.Industrial:
-                                instance1.m_actualWorkplaceDemand = Mathf.Max(0, instance1.m_actualWorkplaceDemand - 5);
-                                break;
-                            case ItemClass.Service.Office:
-                                instance1.m_actualWorkplaceDemand = Mathf.Max(0, instance1.m_actualWorkplaceDemand - 5);
-                                break;
-                        }
-                    }
-                    instance1.m_goodAreaFound[(int)zone] = (short)1024;
+                        goto label_88;
+                    flag2 = false;
                 }
-            
+                ++num7;
+                --num8;
+                goto label_88;
+            label_73:
+                ++num7;
+                goto label_88;
+            label_79:
+                --num8;
+            label_88:
+                int num12;
+                int num13;
+                if (num9 == 1 && num8 - num7 >= 1)
+                {
+                    num7 += Singleton<SimulationManager>.instance.m_randomizer.Int32((uint)(num8 - num7));
+                    num8 = num7 + 1;
+                    num12 = num7 + Singleton<SimulationManager>.instance.m_randomizer.Int32(2U);
+                    num13 = num12;
+                }
+                else
+                {
+                    do
+                    {
+                        num12 = num7;
+                        num13 = num8;
+                        if (num8 - num7 == 2)
+                        {
+                            if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
+                                --num13;
+                            else
+                                ++num12;
+                        }
+                        else if (num8 - num7 == 3)
+                        {
+                            if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
+                                num13 -= 2;
+                            else
+                                num12 += 2;
+                        }
+                        else if (num8 - num7 == 4)
+                        {
+                            if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
+                            {
+                                num8 -= 2;
+                                num13 -= 3;
+                            }
+                            else
+                            {
+                                num7 += 2;
+                                num12 += 3;
+                            }
+                        }
+                        else if (num8 - num7 == 5)
+                        {
+                            if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
+                            {
+                                num8 -= 3;
+                                num13 -= 2;
+                            }
+                            else
+                            {
+                                num7 += 3;
+                                num12 += 2;
+                            }
+                        }
+                        else if (num8 - num7 >= 6)
+                        {
+                            if (num7 == 0 || num8 == 12)
+                            {
+                                if (num7 == 0)
+                                {
+                                    num7 = 3;
+                                    num12 = 2;
+                                }
+                                if (num8 == 12)
+                                {
+                                    num8 = 9;
+                                    num13 = 10;
+                                }
+                            }
+                            else if (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) == 0)
+                            {
+                                num8 = num7 + 3;
+                                num13 = num12 + 2;
+                            }
+                            else
+                            {
+                                num7 = num8 - 3;
+                                num12 = num13 - 2;
+                            }
+                        }
+                    }
+                    while (num8 - num7 > 3 || num13 - num12 > 3);
+                }
+                int num14 = 4;
+                for (int index = num7; index <= num8; ++index)
+                    num14 = Mathf.Min(num14, xBuffer[index]);
+                int a = 4;
+                for (int index = num12; index <= num13; ++index)
+                    a = Mathf.Min(a, xBuffer[index]);
+                ItemClass.SubService subService = ItemClass.SubService.None;
+                ItemClass.Level level = ItemClass.Level.Level1;
+                Vector3 vector3 = b.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num7 + num8 + 1) * 0.5 + (double)z - 10.0) * zDir);
+                ItemClass.Service service;
+                switch (zone)
+                {
+                    case ItemClass.Zone.ResidentialLow:
+                        service = ItemClass.Service.Residential;
+                        subService = ItemClass.SubService.ResidentialLow;
+                        break;
+
+                    case ItemClass.Zone.ResidentialHigh:
+                        service = ItemClass.Service.Residential;
+                        subService = ItemClass.SubService.ResidentialHigh;
+                        break;
+
+                    case ItemClass.Zone.CommercialLow:
+                        service = ItemClass.Service.Commercial;
+                        subService = ItemClass.SubService.CommercialLow;
+                        break;
+
+                    case ItemClass.Zone.CommercialHigh:
+                        service = ItemClass.Service.Commercial;
+                        subService = ItemClass.SubService.CommercialHigh;
+                        break;
+
+                    case ItemClass.Zone.Industrial:
+                        service = ItemClass.Service.Industrial;
+                        ZoneBlock.GetIndustryType(vector3, out subService, out level);
+                        break;
+
+                    case ItemClass.Zone.Office:
+                        service = ItemClass.Service.Office;
+                        subService = ItemClass.SubService.None;
+                        break;
+
+                    default:
+                        return;
+                }
+                BuildingInfo randomBuildingInfo = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, num8 - num7 + 1, num14);
+                if (randomBuildingInfo == null)
+                {
+                    int num10 = num12;
+                    int num11 = num13;
+                    num14 = a;
+                    vector3 = b.m_position + VectorUtils.X_Y((float)((double)num14 * 0.5 - 4.0) * xDir + (float)((double)(num10 + num11 + 1) * 0.5 + (double)z - 10.0) * zDir);
+                    if (zone == ItemClass.Zone.Industrial)
+                        ZoneBlock.GetIndustryType(vector3, out subService, out level);
+                    randomBuildingInfo = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, num11 - num10 + 1, num14);
+                    if (randomBuildingInfo == null)
+                        return;
+                }
+                if ((double)Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double)vector3.y)
+                    return;
+                ushort building;
+                if (Singleton<BuildingManager>.instance.CreateBuilding(out building, ref Singleton<SimulationManager>.instance.m_randomizer, randomBuildingInfo, vector3, b.m_angle + 1.570796f, num14, Singleton<SimulationManager>.instance.m_currentBuildIndex))
+                {
+                    ++Singleton<SimulationManager>.instance.m_currentBuildIndex;
+                    switch (service)
+                    {
+                        case ItemClass.Service.Residential:
+                            instance1.m_actualResidentialDemand = Mathf.Max(0, instance1.m_actualResidentialDemand - 5);
+                            break;
+
+                        case ItemClass.Service.Commercial:
+                            instance1.m_actualCommercialDemand = Mathf.Max(0, instance1.m_actualCommercialDemand - 5);
+                            break;
+
+                        case ItemClass.Service.Industrial:
+                            instance1.m_actualWorkplaceDemand = Mathf.Max(0, instance1.m_actualWorkplaceDemand - 5);
+                            break;
+
+                        case ItemClass.Service.Office:
+                            instance1.m_actualWorkplaceDemand = Mathf.Max(0, instance1.m_actualWorkplaceDemand - 5);
+                            break;
+                    }
+                }
+                instance1.m_goodAreaFound[(int)zone] = (short)1024;
+            }
         }
 
         [Fixme("Make this a lightweight wrapper")]

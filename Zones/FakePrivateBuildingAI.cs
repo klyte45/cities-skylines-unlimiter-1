@@ -1,17 +1,12 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using UnityEngine;
 using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
 {
-    class FakePrivateBuildingAI
+    internal class FakePrivateBuildingAI
     {
         [ReplaceMethod]
         [Fixme("This uses the building grid, which is ENTIRELY different? That -may- be left to fix after zones technically work")]
@@ -86,15 +81,19 @@ namespace Unlimiter.Zones
                     case ItemClass.Service.Residential:
                         num = instance2.m_actualResidentialDemand;
                         break;
+
                     case ItemClass.Service.Commercial:
                         num = instance2.m_actualCommercialDemand;
                         break;
+
                     case ItemClass.Service.Industrial:
                         num = instance2.m_actualWorkplaceDemand;
                         break;
+
                     case ItemClass.Service.Office:
                         num = instance2.m_actualWorkplaceDemand;
                         break;
+
                     default:
                         num = 0;
                         break;
@@ -120,12 +119,15 @@ namespace Unlimiter.Zones
                         case ItemClass.Service.Residential:
                             instance2.m_actualResidentialDemand = Mathf.Max(0, instance2.m_actualResidentialDemand - 5);
                             break;
+
                         case ItemClass.Service.Commercial:
                             instance2.m_actualCommercialDemand = Mathf.Max(0, instance2.m_actualCommercialDemand - 5);
                             break;
+
                         case ItemClass.Service.Industrial:
                             instance2.m_actualWorkplaceDemand = Mathf.Max(0, instance2.m_actualWorkplaceDemand - 5);
                             break;
+
                         case ItemClass.Service.Office:
                             instance2.m_actualWorkplaceDemand = Mathf.Max(0, instance2.m_actualWorkplaceDemand - 5);
                             break;
@@ -167,7 +169,7 @@ namespace Unlimiter.Zones
                 {
                     var p = new object[] { buildingID, buildingData };
                     ai.GetType().GetMethod("BuildingCompleted", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Invoke(ai, p);
-                    buildingData = (Building) p[1];
+                    buildingData = (Building)p[1];
 
                     if (Singleton<GuideManager>.instance.m_properties != null)
                         Singleton<BuildingManager>.instance.m_buildingLevelUp.Deactivate(buildingID, true);
@@ -183,8 +185,8 @@ namespace Unlimiter.Zones
 
                 var x = new object[] { buildingID, buildingData, frameData };
                 ai.GetType().GetMethod("SimulationStepActive", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Invoke(ai, x);
-                buildingData = (Building) x[1];
-                frameData = (Building.Frame) x[2];
+                buildingData = (Building)x[1];
+                frameData = (Building.Frame)x[2];
             }
             else
             {

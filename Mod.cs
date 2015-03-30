@@ -2,10 +2,8 @@
 using ColossalFramework.Plugins;
 using ICities;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using Unlimiter.Areas;
 using Unlimiter.Attributes;
@@ -59,12 +57,12 @@ namespace Unlimiter
                     typeof(GameAreaTool), typeof(FakeGameAreaTool)
                 };
 
-                for (int i = 0; i < toReplace.Length; i += 2 )
+                for (int i = 0; i < toReplace.Length; i += 2)
                 {
                     var from = toReplace[i];
                     var to = toReplace[i + 1];
 
-                    foreach(var method in to.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                    foreach (var method in to.GetMethods(BindingFlags.Public | BindingFlags.Static))
                     {
                         if (method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1)
                             RedirectCalls(from, method);
@@ -72,11 +70,11 @@ namespace Unlimiter
                 }
 
                 // We should probably check if we're enabled
-                    PluginsChanged();
+                PluginsChanged();
                 PluginManager.instance.eventPluginsChanged += PluginsChanged;
                 PluginManager.instance.eventPluginsStateChanged += PluginsChanged;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Error, e.ToString());
                 Debug.LogException(e);

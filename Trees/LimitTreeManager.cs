@@ -4,7 +4,6 @@ using ColossalFramework.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 using Unlimiter.Attributes;
@@ -19,9 +18,9 @@ namespace Unlimiter.Trees
             {
                 get
                 {
-                    if(!UseModifiedTreeCap)
+                    if (!UseModifiedTreeCap)
                         return Mod.DEFAULT_TREE_COUNT;
-                    
+
                     return Mod.MOD_TREE_SCALE * Mod.DEFAULT_TREE_COUNT;
                 }
             }
@@ -106,7 +105,7 @@ namespace Unlimiter.Trees
                     TreeInstance.RenderLod(cameraInfo, prefab);
             }
         }
-        
+
         [ReplaceMethod]
         public static float SampleSmoothHeight(TreeManager tm, Vector3 worldPos)
         {
@@ -607,7 +606,6 @@ namespace Unlimiter.Trees
             {
                 if ((int)tm.m_trees.m_buffer[index].m_flags != 0 && tm.m_trees.m_buffer[index].Info == null)
                     tm.ReleaseTree((uint)index);
-                
             }
             int num = PrefabCollection<TreeInfo>.PrefabCount();
             int tiles = 1;
@@ -700,7 +698,7 @@ namespace Unlimiter.Trees
 
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "TreeManager");
             }
-            
+
             [ReplaceMethod]
             public static void Deserialize(TreeManager.Data data, DataSerializer s)
             {
@@ -785,7 +783,7 @@ namespace Unlimiter.Trees
                 {
                     TreeInstance element = treeInstanceArray[i];
                     data.Add(element.m_flags);
-                    if(element.m_flags != 0)
+                    if (element.m_flags != 0)
                     {
                         data.Add(element.m_infoIndex);
                         data.Add((ushort)element.m_posX);
@@ -852,7 +850,7 @@ namespace Unlimiter.Trees
                             if (pos == shorts.Length)
                                 break;
                         }
-                        catch(Exception e)
+                        catch (Exception e)
                         {
                             Debug.LogFormat("[TreeLimit]While fetching tree {0} in pos {1} of {2}", index, savedPos, shorts.Length);
                             Debug.LogException(e);

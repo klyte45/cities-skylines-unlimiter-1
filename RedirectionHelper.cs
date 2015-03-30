@@ -50,9 +50,9 @@ namespace CitiesSkylinesDetour
         /// <param name="to"></param>
         internal static void RedirectCalls(MethodInfo from, MethodInfo to)
         {
-            if(from == null)
+            if (from == null)
                 Debug.LogError("No From.");
-            else if(to == null)
+            else if (to == null)
                 Debug.LogError("No To.");
 
             // GetFunctionPointer enforces compilation of the method.
@@ -130,7 +130,6 @@ namespace CitiesSkylinesDetour
                 {
                     return;
                 }
-
 
                 // copy over code_start, used_regs, code_size and ignore the rest for now.
                 // code_start beings at +0x10, code_size goes til +0x20

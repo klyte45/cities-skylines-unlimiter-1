@@ -1,20 +1,16 @@
 ﻿using ColossalFramework;
 using ColossalFramework.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Unlimiter.Attributes;
 
 namespace Unlimiter.Areas
 {
-    class FakeGameAreaTool
+    internal class FakeGameAreaTool
     {
         [ReplaceMethod]
         public static void OnToolGUI(GameAreaTool g)
         {
-            ToolController m_toolController = (ToolController) g.GetType().GetField("m_toolController", System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(g);
+            ToolController m_toolController = (ToolController)g.GetType().GetField("m_toolController", System.Reflection.BindingFlags.FlattenHierarchy | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(g);
 
             if (m_toolController.IsInsideUI)
                 return;
@@ -23,7 +19,7 @@ namespace Unlimiter.Areas
                 return;
             if (current.button == 0)
             {
-                int m_mouseAreaIndex = (int) g.GetType().GetField("m_mouseAreaIndex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(g);
+                int m_mouseAreaIndex = (int)g.GetType().GetField("m_mouseAreaIndex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(g);
                 if (m_mouseAreaIndex != -1)
                 {
                     if (m_toolController != null && (m_toolController.m_mode & ItemClass.Availability.MapEditor) != ItemClass.Availability.None)

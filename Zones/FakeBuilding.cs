@@ -1,18 +1,14 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using Unlimiter.Areas;
 
 namespace Unlimiter.Zones
 {
     /// <summary>
     /// Building is a struct. Calls to this may not work with Replacing the method handle.
     /// </summary>
-    class FakeBuilding
+    internal class FakeBuilding
     {
         internal static bool CheckZoning(Building b, ItemClass.Zone zone)
         {
@@ -69,7 +65,7 @@ namespace Unlimiter.Zones
         private static void CallCheckZoning(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
         {
             var p = new object[] { zone, validCells, block };
-            b.GetType().GetMethod("CheckZoning", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new Type[]{typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(ZoneBlock).MakeByRefType()}, null).Invoke(b, p);
+            b.GetType().GetMethod("CheckZoning", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new Type[] { typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(ZoneBlock).MakeByRefType() }, null).Invoke(b, p);
             validCells = (uint)p[1];
             block = (ZoneBlock)p[2];
         }

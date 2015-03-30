@@ -1,11 +1,7 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using Unlimiter.Areas;
 using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
@@ -40,7 +36,7 @@ namespace Unlimiter.Zones
                         {
                             var p = new object[] { blockIndex, instance.m_blocks.m_buffer[(int)blockIndex], position, brushRadius };
                             z.GetType().GetMethod("ApplyBrush", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(ushort), typeof(ZoneBlock).MakeByRefType(), typeof(Vector3), typeof(float) }, null).Invoke(z, p);
-                            instance.m_blocks.m_buffer[(int)blockIndex] = (ZoneBlock) p[1];
+                            instance.m_blocks.m_buffer[(int)blockIndex] = (ZoneBlock)p[1];
                         }
                         blockIndex = instance.m_blocks.m_buffer[(int)blockIndex].m_nextGridBlock;
                         if (++num9 >= 32768)
@@ -98,7 +94,7 @@ namespace Unlimiter.Zones
 
             bool m_zoning = (bool)z.GetType().GetField("m_validPosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
             if (m_zoning)
-                z.GetType().GetMethod("UsedZone", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, new object[]{ z.m_zone });
+                z.GetType().GetMethod("UsedZone", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, new object[] { z.m_zone });
             EffectInfo effect = instance1.m_properties.m_fillEffect;
             if (effect == null)
                 return;
@@ -183,9 +179,9 @@ namespace Unlimiter.Zones
 
         public static bool ApplyZoning(ZoneTool z, ushort blockIndex, ref ZoneBlock zoneBlock, Quad2 quad2)
         {
-            var parameters = new object[]{blockIndex, zoneBlock, quad2};
-            bool b = (bool) z.GetType().GetMethod("ApplyZoning", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(ushort), typeof(ZoneBlock).MakeByRefType(), typeof(Quad2) }, null).Invoke(z, parameters);
-            zoneBlock = (ZoneBlock) parameters[1];
+            var parameters = new object[] { blockIndex, zoneBlock, quad2 };
+            bool b = (bool)z.GetType().GetMethod("ApplyZoning", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(ushort), typeof(ZoneBlock).MakeByRefType(), typeof(Quad2) }, null).Invoke(z, parameters);
+            zoneBlock = (ZoneBlock)parameters[1];
             return b;
         }
 
@@ -193,8 +189,8 @@ namespace Unlimiter.Zones
 
         private static bool CalculateFillBuffer(ZoneTool z, Vector3 position, Vector3 direction, ItemClass.Zone requiredZone, bool occupied1, bool occupied2)
         {
-            var m_fillBuffer1 = (ulong[]) typeof(ZoneTool).GetField("m_fillBuffer1", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(z);
-            
+            var m_fillBuffer1 = (ulong[])typeof(ZoneTool).GetField("m_fillBuffer1", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(z);
+
             for (int index = 0; index < 64; ++index)
                 m_fillBuffer1[index] = 0UL;
             if (!occupied2)
@@ -308,7 +304,6 @@ namespace Unlimiter.Zones
                 m_fillBuffer1[index] = 0UL;
             return false;
         }
-
 
         private static void CalculateFillBuffer(ZoneTool zt, Vector3 position, Vector3 direction, float angle, ushort blockIndex, ref ZoneBlock block, ItemClass.Zone requiredZone, bool occupied1, bool occupied2)
         {

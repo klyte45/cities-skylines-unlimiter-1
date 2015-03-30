@@ -1,14 +1,10 @@
 ﻿using ColossalFramework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using Unlimiter.Attributes;
 
 namespace Unlimiter.Areas
 {
-    class FakeNetManager
+    internal class FakeNetManager
     {
         private static int[] m_tileNodesCount = new int[17 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
 
