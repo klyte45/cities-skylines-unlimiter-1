@@ -48,6 +48,7 @@ namespace Unlimiter
                     typeof(TreeManager), typeof(LimitTreeManager),
                     typeof(TreeManager.Data), typeof(LimitTreeManager.Data),
                     typeof(GameAreaManager), typeof(FakeGameAreaManager),
+                    typeof(GameAreaManager.Data), typeof(FakeGameAreaManager.Data),
                     typeof(NetManager), typeof(FakeNetManager),
                     typeof(ZoneManager), typeof(FakeZoneManager),
                     typeof(ZoneManager.Data), typeof(FakeZoneManager.Data),

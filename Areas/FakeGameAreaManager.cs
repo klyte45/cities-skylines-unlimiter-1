@@ -1,4 +1,5 @@
 ﻿using ColossalFramework;
+using ColossalFramework.IO;
 using UnityEngine;
 using Unlimiter.Attributes;
 
@@ -21,14 +22,20 @@ namespace Unlimiter.Areas
                             areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = GameAreaManager.instance.m_areaGrid[z * DEFAULT_GRID + x];
                         }
                     }
-#endif
-                    for (int z = -1; z < DEFAULT_GRID + 1; ++z)
+#else
+                    const int f = GRID_DIFF;
+                    const int f2 = f * 2 + DEFAULT_GRID;
+                    for (int z = -f; z < DEFAULT_GRID + f; ++z)
                     {
-                        for (int x = -1; x < DEFAULT_GRID + 1; ++x)
+                        for (int x = -f; x < DEFAULT_GRID + f; ++x)
                         {
-                            areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = (z + 1) * 7 + (x + 1) + 1;
+                            areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = (z + f) * f2 + (x + f) + 1;
                         }
                     }
+                    GameAreaManager.instance.m_areaCount = f2 * f2;
+                    GameAreaManager.instance.m_maxAreaCount = f2 * f2;
+#endif
+
                     GameAreaManager.instance.m_areaGrid = areas;
 
                     SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 3800f);
@@ -538,6 +545,44 @@ namespace Unlimiter.Areas
                 }
             }
             m_areaTex.Apply(false);
+        }
+
+        public class Data
+        {
+            [ReplaceMethod]
+            public void Deserialize(Data d, DataSerializer s)
+            {
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginDeserialize(s, "GameAreaManager");
+                GameAreaManager instance = Singleton<GameAreaManager>.instance;
+                int[] numArray = instance.m_areaGrid;
+                int length = numArray.Length;
+                instance.m_areaCount = (int)s.ReadUInt8();
+                instance.m_maxAreaCount = Mathf.Max(instance.MaxAreaCount, instance.m_areaCount);
+                instance.SetStartTile(s.version < 137U ? 12 : (int)s.ReadUInt8());
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
+                for (int index = 0; index < length; ++index)
+                    numArray[index] = (int)@byte.Read();
+                @byte.EndRead();
+
+                Helper.EnsureInit();
+
+                instance.m_areaNotUnlocked = s.version < 87U ? (GenericGuide)null : s.ReadObject<GenericGuide>();
+                if (s.version >= 199U)
+                {
+                    instance.GetType().GetField("m_buildableArea0", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
+                    instance.GetType().GetField("m_buildableArea1", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
+                    instance.GetType().GetField("m_buildableArea2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
+                    instance.GetType().GetField("m_buildableArea3", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
+                }
+                else
+                {
+                    instance.GetType().GetField("m_buildableArea0", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
+                    instance.GetType().GetField("m_buildableArea1", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
+                    instance.GetType().GetField("m_buildableArea2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
+                    instance.GetType().GetField("m_buildableArea3", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
+                }
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "GameAreaManager");
+            }
         }
     }
 }
