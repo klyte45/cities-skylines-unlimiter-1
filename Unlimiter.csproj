@@ -60,6 +60,7 @@
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="Attributes\FixmeAttribute.cs" />
     <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
+    <Compile Include="DataExtension.cs" />
     <Compile Include="Terrain\FakeTerrainManager.cs" />
     <Compile Include="Zones\FakeBuilding.cs" />
     <Compile Include="Zones\FakeBuildingTool.cs" />

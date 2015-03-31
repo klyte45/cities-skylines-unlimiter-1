@@ -753,7 +753,7 @@ namespace Unlimiter.Trees
                 for (int index = 0; index < Helper.TreeLimit; ++index)
                 {
                     if ((int)treeInstanceArray[index].m_flags != 0)
-                        LimitTreeManager.InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
+                        InitializeTree(instance, (uint)index, ref treeInstanceArray[index], assetEditor);
                     else
                         instance.m_trees.ReleaseItem((uint)index);
                 }

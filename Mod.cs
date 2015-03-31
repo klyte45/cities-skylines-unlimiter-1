@@ -120,17 +120,4 @@ namespace Unlimiter
             RedirectionHelper.RedirectCalls(type1.GetMethod(method.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, types, null), method);
         }
     }
-
-    public class DataExtension : SerializableDataExtensionBase
-    {
-        public override void OnLoadData()
-        {
-            // Deserialize is called from within LimitTreeManager.Data.Deserialize
-        }
-
-        public override void OnSaveData()
-        {
-            LimitTreeManager.CustomSerializer.Serialize();
-        }
-    }
 }
