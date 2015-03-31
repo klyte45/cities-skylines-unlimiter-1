@@ -7,6 +7,7 @@ using System.Reflection;
 using UnityEngine;
 using Unlimiter.Areas;
 using Unlimiter.Attributes;
+using Unlimiter.Terrain;
 using Unlimiter.Trees;
 using Unlimiter.Zones;
 
@@ -55,7 +56,8 @@ namespace Unlimiter
                     typeof(ZoneTool), typeof(FakeZoneTool),
                     typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
                     typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
-                    typeof(GameAreaTool), typeof(FakeGameAreaTool)
+                    typeof(GameAreaTool), typeof(FakeGameAreaTool),
+                    typeof(TerrainManager), typeof(FakeTerrainManager)
                 };
 
                 for (int i = 0; i < toReplace.Length; i += 2)

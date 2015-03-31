@@ -300,8 +300,6 @@ namespace Unlimiter.Areas
                 }
             }
 
-            //new Bounds(new Vector3(0.0f, 512f, 0.0f), new Vector3(9600f, 1024f, 9600f))
-
             Bounds bounds = new Bounds();
             bounds.SetMinMax(zero1, zero2);
             return bounds;
