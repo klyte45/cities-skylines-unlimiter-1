@@ -9,6 +9,5 @@ The following things work
 
 Currently in development:
 
-* Zoning
-  * De-zoning areas currently has no effect
-  * This is limited to 5x5 and just preparation for expanding
+* Water, Electricity, Ploppables
+* Notificationmanager is able to group notifications to be rendered from afar, but that only seems to work for the "default" grid size
