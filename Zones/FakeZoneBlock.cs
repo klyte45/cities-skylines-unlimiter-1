@@ -31,22 +31,22 @@ namespace Unlimiter.Zones
             ulong shared = 0UL;
             ZoneManager instance = Singleton<ZoneManager>.instance;
             for (int index = 0; index < instance.m_cachedBlocks.m_size; ++index)
-                CalculateImplementation2(z, blockID, ref instance.m_cachedBlocks.m_buffer[index], ref valid, ref shared, minX, minZ, maxX, maxZ);
-            int num1 = Mathf.Max((int)(((double)minX - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
-            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
+                CalculateImplementation2(ref z, blockID, ref instance.m_cachedBlocks.m_buffer[index], ref valid, ref shared, minX, minZ, maxX, maxZ);
+            int num1 = Mathf.Max((int)(((double)minX - 46.0) / 64f + FakeZoneManager.HALFGRID), 0);
+            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / 64f + FakeZoneManager.HALFGRID), 0);
+            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
             for (int index1 = num2; index1 <= num4; ++index1)
             {
                 for (int index2 = num1; index2 <= num3; ++index2)
                 {
-                    ushort num5 = instance.m_zoneGrid[index1 * FakeZoneManager.ZONEGRID_RESOLUTION + index2];
+                    ushort num5 = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     int num6 = 0;
                     while ((int)num5 != 0)
                     {
                         Vector3 vector3 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(minX - 46f - vector3.x, minZ - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)maxX - 46.0), (float)((double)vector3.z - (double)maxZ - 46.0))) < 0.0 && (int)num5 != (int)blockID)
-                            CalculateImplementation2(z, blockID, ref instance.m_blocks.m_buffer[(int)num5], ref valid, ref shared, minX, minZ, maxX, maxZ);
+                            CalculateImplementation2(ref z, blockID, ref instance.m_blocks.m_buffer[(int)num5], ref valid, ref shared, minX, minZ, maxX, maxZ);
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= 32768)
                         {
@@ -67,7 +67,7 @@ namespace Unlimiter.Zones
         }
 
         [Fixme("Make this more lightweight, ie. only a thin wrapper.")]
-        private static void CalculateImplementation2(ZoneBlock z, ushort blockID, ref ZoneBlock other, ref ulong valid, ref ulong shared, float minX, float minZ, float maxX, float maxZ)
+        private static void CalculateImplementation2(ref ZoneBlock z, ushort blockID, ref ZoneBlock other, ref ulong valid, ref ulong shared, float minX, float minZ, float maxX, float maxZ)
         {
             if (((int)other.m_flags & 1) == 0 || (double)Mathf.Abs(other.m_position.x - z.m_position.x) >= 92.0 || (double)Mathf.Abs(other.m_position.z - z.m_position.z) >= 92.0)
                 return;
@@ -257,15 +257,15 @@ namespace Unlimiter.Zones
             quad.d = vector2_1 - 4f * xDir + ((float)z + 2f) * zDir;
             Vector2 vector2_3 = quad.Min();
             Vector2 vector2_4 = quad.Max();
-            int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-            int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-            int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
-            int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
+            int num3 = Mathf.Max((int)(((double)vector2_3.x - 46.0) / 64f + FakeZoneManager.HALFGRID), 0);
+            int num4 = Mathf.Max((int)(((double)vector2_3.y - 46.0) / 64f + FakeZoneManager.HALFGRID), 0);
+            int num5 = Mathf.Min((int)(((double)vector2_4.x + 46.0) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+            int num6 = Mathf.Min((int)(((double)vector2_4.y + 46.0) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
             for (int index1 = num4; index1 <= num6; ++index1)
             {
                 for (int index2 = num3; index2 <= num5; ++index2)
                 {
-                    ushort num7 = instance1.m_zoneGrid[index1 * FakeZoneManager.ZONEGRID_RESOLUTION + index2];
+                    ushort num7 = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     int num8 = 0;
                     while ((int)num7 != 0)
                     {

@@ -1,13 +1,13 @@
-﻿using CitiesSkylinesDetour;
-using ColossalFramework.Plugins;
+﻿using ColossalFramework.Plugins;
 using ICities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Unlimiter.Areas;
 using Unlimiter.Attributes;
-using Unlimiter.Terrain;
+using Unlimiter.ResourceManagers;
 using Unlimiter.Trees;
 using Unlimiter.Zones;
 
@@ -27,88 +27,71 @@ namespace Unlimiter
         {
             get
             {
-                Setup();
                 return "Tree Unlimiter";
             }
         }
+    }
 
+    public class ModLoad : LoadingExtensionBase
+    {
         public static bool IsEnabled;
-
-        internal const int MOD_TREE_SCALE = 4;
-        internal const int DEFAULT_TREE_COUNT = 262144;
-
-        private void Setup()
+        private static Dictionary<MethodInfo, RedirectCallsState> redirects;
+        public override void OnLevelLoaded(LoadMode mode)
         {
-            try
+            EnableHooks();
+        }
+
+        private void EnableHooks()
+        {
+            if (IsEnabled)
             {
-                var toReplace = new Type[]
+                return;
+            }
+            IsEnabled = true;
+            FakeGameAreaManager.Init();
+            FakeElectricityManager.Init();
+            FakeWaterManager.Init();
+            var toReplace = new Type[]
                 {
-                    typeof(BuildingDecoration), typeof(LimitBuildingDecoration),
-                    typeof(NaturalResourceManager), typeof(LimitNaturalResourceManager),
-                    typeof(TreeTool), typeof(LimitTreeTool),
-                    typeof(TreeManager), typeof(LimitTreeManager),
-                    typeof(TreeManager.Data), typeof(LimitTreeManager.Data),
+                    //typeof(BuildingDecoration), typeof(LimitBuildingDecoration),
+                    //typeof(NaturalResourceManager), typeof(LimitNaturalResourceManager),
+                    //typeof(TreeTool), typeof(LimitTreeTool),
+                    //typeof(TreeManager), typeof(LimitTreeManager),
+                    //typeof(TreeManager.Data), typeof(LimitTreeManager.Data),
                     typeof(GameAreaManager), typeof(FakeGameAreaManager),
-                    typeof(GameAreaManager.Data), typeof(FakeGameAreaManager.Data),
                     typeof(NetManager), typeof(FakeNetManager),
                     typeof(ZoneManager), typeof(FakeZoneManager),
-                    typeof(ZoneManager.Data), typeof(FakeZoneManager.Data),
+                    typeof(BuildingTool ), typeof(FakeBuildingTool),
                     typeof(ZoneTool), typeof(FakeZoneTool),
                     typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
-                    typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
-                    typeof(GameAreaTool), typeof(FakeGameAreaTool),
-                    typeof(TerrainManager), typeof(FakeTerrainManager)
+                    ////typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
+                    ////typeof(GameAreaTool), typeof(FakeGameAreaTool),
+                    //typeof(TerrainManager), typeof(FakeTerrainManager)
+
+                    typeof(ElectricityManager), typeof(FakeElectricityManager),
+                    typeof(WaterManager), typeof(FakeWaterManager),
+                    typeof(ImmaterialResourceManager), typeof(FakeImmaterialResourceManager),
                 };
 
-                for (int i = 0; i < toReplace.Length; i += 2)
-                {
-                    var from = toReplace[i];
-                    var to = toReplace[i + 1];
+            redirects = new Dictionary<MethodInfo, RedirectCallsState>();
+            for (int i = 0; i < toReplace.Length; i += 2)
+            {
+                var from = toReplace[i];
+                var to = toReplace[i + 1];
 
-                    foreach (var method in to.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                foreach (var method in to.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic))
+                {
+                    if (method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1)
                     {
-                        if (method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1)
-                            RedirectCalls(from, method);
+                        AddRedirect(from, method);
                     }
                 }
-
-                // We should probably check if we're enabled
-                PluginsChanged();
-                PluginManager.instance.eventPluginsChanged += PluginsChanged;
-                PluginManager.instance.eventPluginsStateChanged += PluginsChanged;
             }
-            catch (Exception e)
-            {
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Error, e.ToString());
-                Debug.LogException(e);
-            }
+            FakeGameAreaManager.UnlockAll();
         }
 
-        private void PluginsChanged()
+        private void AddRedirect(Type type1, MethodInfo method)
         {
-            try
-            {
-                PluginManager.PluginInfo pi = PluginManager.instance.GetPluginsInfo().Where(p => p.publishedFileID.AsUInt64 == 413502249L).FirstOrDefault();
-                if (pi != null)
-                {
-                    IsEnabled = pi.isEnabled;
-                }
-                else
-                {
-                    IsEnabled = false;
-                    DebugOutputPanel.AddMessage(PluginManager.MessageType.Message, "[TreeLimit] Can't find self. No idea if this mod is enabled.");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                DebugOutputPanel.AddMessage(PluginManager.MessageType.Warning, "[TreeLimit] " + e.GetType() + ": " + e.Message);
-            }
-        }
-
-        private void RedirectCalls(Type type1, MethodInfo method)
-        {
-            Debug.LogFormat("{0} ~> {1}", type1, method);
             var parameters = method.GetParameters();
 
             Type[] types;
@@ -117,7 +100,32 @@ namespace Unlimiter
             else
                 types = parameters.Select(p => p.ParameterType).ToArray();
 
-            RedirectionHelper.RedirectCalls(type1.GetMethod(method.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, types, null), method);
+            var originalMethod = type1.GetMethod(method.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types, null);
+            if (originalMethod == null)
+            {
+                Debug.Log("Cannot find " + method.Name);
+            }
+
+            Debug.LogFormat("{0} ~> {1}", originalMethod.Name, method.Name);
+            redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, method));
+        }
+
+        public override void OnLevelUnloading()
+        {
+            DisableHooks();
+        }
+
+        private void DisableHooks()
+        {
+            if (!IsEnabled)
+            {
+                return;
+            }
+            IsEnabled = false;
+            foreach (var kvp in redirects)
+            {
+                RedirectionHelper.RevertRedirect(kvp.Key, kvp.Value);
+            }
         }
     }
 }

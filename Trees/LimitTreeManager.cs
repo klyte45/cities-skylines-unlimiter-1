@@ -12,6 +12,9 @@ namespace Unlimiter.Trees
 {
     internal static class LimitTreeManager
     {
+        internal const int MOD_TREE_SCALE = 4;
+        internal const int DEFAULT_TREE_COUNT = 262144;
+
         internal static class Helper
         {
             internal static int TreeLimit
@@ -19,18 +22,16 @@ namespace Unlimiter.Trees
                 get
                 {
                     if (!UseModifiedTreeCap)
-                        return Mod.DEFAULT_TREE_COUNT;
+                        return DEFAULT_TREE_COUNT;
 
-                    return Mod.MOD_TREE_SCALE * Mod.DEFAULT_TREE_COUNT;
+                    return MOD_TREE_SCALE * DEFAULT_TREE_COUNT;
                 }
             }
 
             internal static bool UseModifiedTreeCap
             {
                 get
-                {
-                    if (!Mod.IsEnabled)
-                        return false;
+                {                    
 
                     var mode = Singleton<SimulationManager>.instance.m_metaData.m_updateMode;
                     return mode == SimulationManager.UpdateMode.LoadGame || mode == SimulationManager.UpdateMode.NewGame;
@@ -39,7 +40,7 @@ namespace Unlimiter.Trees
 
             internal static void EnsureInit()
             {
-                Debug.LogFormat("[TreeLimit] This mod is {0}. Tree limit is {0}.", Mod.IsEnabled ? "enabled" : "disabled", UseModifiedTreeCap ? "enabled" : "disabled");
+                
                 if (!UseModifiedTreeCap)
                     return;
 
@@ -48,7 +49,7 @@ namespace Unlimiter.Trees
                     Debug.LogFormat("[TreeLimit] Scaling up TreeManager");
 
                     TreeManager.instance.m_trees = new Array32<TreeInstance>((uint)TreeLimit);
-                    TreeManager.instance.m_updatedTrees = new ulong[4096 * Mod.MOD_TREE_SCALE];
+                    TreeManager.instance.m_updatedTrees = new ulong[4096 * MOD_TREE_SCALE];
 
                     uint num;
                     TreeManager.instance.m_trees.CreateItem(out num);
@@ -663,7 +664,7 @@ namespace Unlimiter.Trees
             {
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginSerialize(s, "TreeManager");
                 TreeInstance[] treeInstanceArray = Singleton<TreeManager>.instance.m_trees.m_buffer;
-                int length = Mod.DEFAULT_TREE_COUNT; //treeInstanceArray.Length;
+                int length = DEFAULT_TREE_COUNT; //treeInstanceArray.Length;
                 EncodedArray.UShort @ushort = EncodedArray.UShort.BeginWrite(s);
                 for (int index = 1; index < length; ++index)
                     @ushort.Write(treeInstanceArray[index].m_flags);
@@ -708,7 +709,7 @@ namespace Unlimiter.Trees
                 TreeManager instance = Singleton<TreeManager>.instance;
                 TreeInstance[] treeInstanceArray = instance.m_trees.m_buffer;
                 uint[] numArray = instance.m_treeGrid;
-                int length1 = Mod.DEFAULT_TREE_COUNT;// treeInstanceArray.Length;
+                int length1 = DEFAULT_TREE_COUNT;// treeInstanceArray.Length;
                 int length2 = numArray.Length;
                 instance.m_trees.ClearUnused();
                 SimulationManager.UpdateMode updateMode = Singleton<SimulationManager>.instance.m_metaData.m_updateMode;
@@ -779,7 +780,7 @@ namespace Unlimiter.Trees
                 data.Add(1);
 
                 int serialized = 0;
-                for (int i = Mod.DEFAULT_TREE_COUNT; i < Helper.TreeLimit; ++i)
+                for (int i = DEFAULT_TREE_COUNT; i < Helper.TreeLimit; ++i)
                 {
                     TreeInstance element = treeInstanceArray[i];
                     data.Add(element.m_flags);
@@ -793,7 +794,7 @@ namespace Unlimiter.Trees
                 }
 
                 // FIXME is it possible to loose trees here? CheckLimits() uses (LIMIT-5) by default
-                Debug.LogFormat("[TreeLimit] used {0} of {1} extra trees, size in savegame: {2} bytes", serialized, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT, data.Count * 2);
+                Debug.LogFormat("[TreeLimit] used {0} of {1} extra trees, size in savegame: {2} bytes", serialized, Helper.TreeLimit - DEFAULT_TREE_COUNT, data.Count * 2);
                 SimulationManager.instance.m_serializableDataStorage["mabako/unlimiter"] = data.SelectMany(v => BitConverter.GetBytes(v)).ToArray();
             }
 
@@ -831,7 +832,7 @@ namespace Unlimiter.Trees
                     }
 
                     int loaded = 0;
-                    for (int index = Mod.DEFAULT_TREE_COUNT; index < Helper.TreeLimit; ++index)
+                    for (int index = DEFAULT_TREE_COUNT; index < Helper.TreeLimit; ++index)
                     {
                         uint savedPos = pos;
                         try
@@ -857,7 +858,7 @@ namespace Unlimiter.Trees
                             throw e;
                         }
                     }
-                    Debug.LogFormat("[TreeLimit] Loaded {0} additional trees (out of {1} possible)", loaded, Helper.TreeLimit - Mod.DEFAULT_TREE_COUNT);
+                    Debug.LogFormat("[TreeLimit] Loaded {0} additional trees (out of {1} possible)", loaded, Helper.TreeLimit - DEFAULT_TREE_COUNT);
                     return true;
                 }
                 else

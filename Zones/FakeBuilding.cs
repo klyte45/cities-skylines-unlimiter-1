@@ -10,7 +10,7 @@ namespace Unlimiter.Zones
     /// </summary>
     internal class FakeBuilding
     {
-        internal static bool CheckZoning(Building b, ItemClass.Zone zone)
+        public static bool CheckZoning(Building b, ItemClass.Zone zone)
         {
             int width = b.Width;
             int length = b.Length;
@@ -25,17 +25,17 @@ namespace Unlimiter.Zones
             quad3.d = b.m_position - vector3_3 + vector3_4;
             Vector3 vector3_5 = quad3.Min();
             Vector3 vector3_6 = quad3.Max();
-            int num1 = Mathf.Max((int)(((double)vector3_5.x - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-            int num2 = Mathf.Max((int)(((double)vector3_5.z - 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), 0);
-            int num3 = Mathf.Min((int)(((double)vector3_6.x + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
-            int num4 = Mathf.Min((int)(((double)vector3_6.z + 46.0) / FakeZoneManager.ZONEGRID_CELL_SIZE + FakeZoneManager.HALF_ZONEGRID_RESOLUTION), FakeZoneManager.ZONEGRID_RESOLUTION - 1);
+            int num1= Mathf.Max((int)((vector3_5.x - 46f) / 64f + FakeZoneManager.HALFGRID), 0);
+            int num2 = Mathf.Max((int)((vector3_5.z - 46f) / 64f + FakeZoneManager.HALFGRID), 0);
+            int num3 = Mathf.Min((int)((vector3_6.x + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+            int num4 = Mathf.Min((int)((vector3_6.z + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
             uint validCells = 0U;
             ZoneManager instance = Singleton<ZoneManager>.instance;
             for (int index1 = num2; index1 <= num4; ++index1)
             {
                 for (int index2 = num1; index2 <= num3; ++index2)
                 {
-                    ushort num5 = instance.m_zoneGrid[index1 * FakeZoneManager.ZONEGRID_RESOLUTION + index2];
+                    ushort num5 = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     int num6 = 0;
                     while ((int)num5 != 0)
                     {

@@ -1,5 +1,6 @@
 ﻿using ColossalFramework;
 using ColossalFramework.IO;
+using ColossalFramework.Math;
 using UnityEngine;
 using Unlimiter.Attributes;
 
@@ -7,375 +8,168 @@ namespace Unlimiter.Areas
 {
     internal class FakeGameAreaManager
     {
-        private static class Helper
+        public const int GRID = 9;
+        public static int[] areaGrid = new int[GRID * GRID];
+
+        public static void Init()
         {
-            internal static void EnsureInit()
+            GameAreaManager.instance.m_maxAreaCount = 82;
+            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 3800f);
+            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 3800f);
+        }
+        public static void UnlockAll()
+        {
+            for (int i = 0; i < 8; i += 1)
             {
-                if (GameAreaManager.instance.m_areaGrid.Length != GRID * GRID)
+                for (int j = 0; j < 8; j += 1)
                 {
-                    int[] areas = new int[GRID * GRID];
-#if false
-                    for (int z = 0; z < DEFAULT_GRID; z++)
-                    {
-                        for (int x = 0; x < DEFAULT_GRID; ++x)
-                        {
-                            areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = GameAreaManager.instance.m_areaGrid[z * DEFAULT_GRID + x];
-                        }
-                    }
-#else
-                    const int f = GRID_DIFF;
-                    const int f2 = f * 2 + DEFAULT_GRID;
-                    for (int z = -f; z < DEFAULT_GRID + f; ++z)
-                    {
-                        for (int x = -f; x < DEFAULT_GRID + f; ++x)
-                        {
-                            areas[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] = (z + f) * f2 + (x + f) + 1;
-                        }
-                    }
-                    GameAreaManager.instance.m_areaCount = f2 * f2;
-                    GameAreaManager.instance.m_maxAreaCount = f2 * f2;
-#endif
-
-                    GameAreaManager.instance.m_areaGrid = areas;
-
-                    SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 3800f);
-                    SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 3800f);
-
-                    //UnityEngine.Object.Destroy((Texture2D) typeof(GameAreaManager).GetField("m_areaTex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(GameAreaManager.instance));
-
-                    //var m_areaTex = new Texture2D(16, 16, TextureFormat.ARGB32, false, true);
-                    //m_areaTex.filterMode = FilterMode.Point;
-                    //m_areaTex.wrapMode = TextureWrapMode.Clamp;
-                    //typeof(GameAreaManager).GetField("m_areaTex", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(GameAreaManager.instance, m_areaTex);
+                    var index = j * GRID + i;
+                    GameAreaManager.instance.UnlockArea(index);
                 }
             }
         }
 
-        public const int DEFAULT_GRID = 5;
-        public const int GRID_DIFF = 2;
-        public const int GRID = DEFAULT_GRID + 2 * GRID_DIFF;
-
         [ReplaceMethod]
-        public static Vector3 GetAreaPositionSmooth(GameAreaManager g, int x, int z)
+        public Vector3 GetAreaPositionSmooth(int x, int z)
         {
-            if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF))
-                return Vector3.zero;
-            Vector3 worldPos;
-            worldPos.x = (float)(((double)x - 2.5 + 0.5) * 1920.0);
-            worldPos.y = 0.0f;
-            worldPos.z = (float)(((double)z - 2.5 + 0.5) * 1920.0);
-            worldPos.y = Singleton<TerrainManager>.instance.SampleRawHeightSmoothWithWater(worldPos, true, 0.0f);
-            return worldPos;
+            Vector3 vector;
+            vector.x = ((float)x - 4.5f + 0.5f) * 1920f;
+            vector.y = 0f;
+            vector.z = ((float)z - 4.5f + 0.5f) * 1920f;
+            vector.y = Singleton<TerrainManager>.instance.SampleRawHeightSmoothWithWater(vector, true, 0f);
+            return vector;
         }
 
         [ReplaceMethod]
-        public static bool CanUnlock(GameAreaManager g, int x, int z)
+        public bool CanUnlock(int x, int z)
         {
-            if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF) || (g.m_areaCount >= g.MaxAreaCount || g.m_areaGrid[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] != 0))
+            var instance = GameAreaManager.instance;
+            if (x < 0 || z < 0 || x >= GRID || z >= GRID)
+            {
                 return false;
-            bool result = g.IsUnlocked(x, z - 1) || g.IsUnlocked(x - 1, z) || g.IsUnlocked(x + 1, z) || g.IsUnlocked(x, z + 1);
-            g.m_AreasWrapper.OnCanUnlockArea(x, z, ref result);
-            return result;
+            }
+            if (areaGrid[z * GRID + x] != 0)
+            {
+                return false;
+            }
+            return true;
         }
 
         [ReplaceMethod]
-        public static void BeginOverlayImpl(GameAreaManager g, RenderManager.CameraInfo cameraInfo)
+        private Bounds GetFreeBounds()
         {
-            float m_borderAlpha = (float)g.GetType().GetField("m_borderAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            float m_areaAlpha = (float)g.GetType().GetField("m_areaAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            Material m_borderMaterial = (Material)g.GetType().GetField("m_borderMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            Material m_areaMaterial = (Material)g.GetType().GetField("m_areaMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            Material m_decorationMaterial = (Material)g.GetType().GetField("m_decorationMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            Mesh m_borderMesh = (Mesh)g.GetType().GetField("m_borderMesh", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-
-            int ID_Color = (int)g.GetType().GetField("ID_Color", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            int ID_AreaMapping = (int)g.GetType().GetField("ID_AreaMapping", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            int ID_DecorationArea = (int)g.GetType().GetField("ID_DecorationArea", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            int ID_DecorationAlpha = (int)g.GetType().GetField("ID_DecorationAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-            Texture2D m_areaTex = (Texture2D)g.GetType().GetField("m_areaTex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
-
-            ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
-            if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
-            {
-#if false
-                if ((double)m_borderAlpha < 1.0 / 1000.0)
-                    return;
-                PrefabInfo prefabInfo = Singleton<ToolManager>.instance.m_properties.m_editPrefabInfo;
-                if (!((UnityEngine.Object)prefabInfo != (UnityEngine.Object)null))
-                    return;
-                Bounds bounds = new Bounds(new Vector3(0.0f, 512f, 0.0f), new Vector3(17280f, 1224f, 17280f));
-                int width;
-                int length;
-                float offset;
-                prefabInfo.GetDecorationArea(out width, out length, out offset);
-                bool negX;
-                bool posX;
-                bool negZ;
-                bool posZ;
-                prefabInfo.GetDecorationDirections(out negX, out posX, out negZ, out posZ);
-                float z = (float)width * 4f;
-                float num = (float)length * 4f;
-                m_decorationMaterial.SetVector(ID_DecorationArea, new Vector4(-z, offset - num, z, offset + num));
-                m_decorationMaterial.SetFloat(ID_DecorationAlpha, m_borderAlpha);
-                ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                Singleton<RenderManager>.instance.OverlayEffect.DrawEffect(cameraInfo, m_decorationMaterial, 0, bounds);
-                if (!posZ)
-                    return;
-                Color color = new Color(1f, 1f, 1f, 0.25f);
-                Quad3 quad;
-                quad.a = new Vector3(-10f, 60f, (float)((double)num + 16.0 + 10.0));
-                quad.b = new Vector3(-10f, 60f, (float)((double)num + 16.0 - 10.0));
-                quad.c = new Vector3(10f, 60f, (float)((double)num + 16.0 - 10.0));
-                quad.d = new Vector3(10f, 60f, (float)((double)num + 16.0 + 10.0));
-                ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                Singleton<RenderManager>.instance.OverlayEffect.DrawQuad(cameraInfo, g.m_properties.m_directionArrow, color, quad, 50f, 70f, false, true);
-#endif
-            }
-            else if ((availability & ItemClass.Availability.MapEditor) != ItemClass.Availability.None)
-            {
-#if false
-                if ((double)m_borderAlpha >= 1.0 / 1000.0 && (UnityEngine.Object)m_borderMaterial != (UnityEngine.Object)null)
-                {
-                    Quaternion rotation = Quaternion.AngleAxis(90f, Vector3.up);
-                    int x1;
-                    int z1;
-                    g.GetStartTile(out x1, out z1);
-                    Color color1 = new Color(1f, 1f, 1f, m_borderAlpha);
-                    Color color2 = new Color(1f, 1f, 1f, m_borderAlpha);
-                    Color color3 = new Color(1f, 1f, 1f, 0.25f * m_borderAlpha);
-                    for (int z2 = 0; z2 <= 5; ++z2)
-                    {
-                        for (int x2 = 0; x2 <= 5; ++x2)
-                        {
-                            bool flag1 = g.GetArea(x2, z2) > 0;
-                            bool flag2 = g.GetArea(x2, z2 - 1) > 0;
-                            bool flag3 = g.GetArea(x2 - 1, z2) > 0;
-                            if (x2 != 5)
-                            {
-                                Vector3 vector3 = new Vector3((float)(((double)x2 - 2.5 + 0.5) * 1920.0), 0.0f, (float)(((double)z2 - 2.5) * 1920.0));
-                                Vector3 size = new Vector3(1920f, 1024f, 100f);
-                                Bounds bounds = new Bounds(vector3 + new Vector3(0.0f, size.y * 0.5f, 0.0f), size);
-                                if (cameraInfo.Intersect(bounds))
-                                {
-                                    Singleton<TerrainManager>.instance.SetWaterMaterialProperties(vector3, m_borderMaterial);
-                                    if (z2 >= z1 && z2 <= z1 + 1 && x2 == x1 || flag1 != flag2)
-                                        m_borderMaterial.SetColor(ID_Color, color1);
-                                    else if (z2 == 0 || z2 == 5)
-                                        m_borderMaterial.SetColor(ID_Color, color2);
-                                    else
-                                        m_borderMaterial.SetColor(ID_Color, color3);
-                                    if (m_borderMaterial.SetPass(0))
-                                    {
-                                        ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                                        Graphics.DrawMeshNow(m_borderMesh, vector3, rotation);
-                                    }
-                                }
-                            }
-                            if (z2 != 5)
-                            {
-                                Vector3 vector3 = new Vector3((float)(((double)x2 - 2.5) * 1920.0), 0.0f, (float)(((double)z2 - 2.5 + 0.5) * 1920.0));
-                                Vector3 size = new Vector3(100f, 1024f, 1920f);
-                                Bounds bounds = new Bounds(vector3 + new Vector3(0.0f, size.y * 0.5f, 0.0f), size);
-                                if (cameraInfo.Intersect(bounds))
-                                {
-                                    Singleton<TerrainManager>.instance.SetWaterMaterialProperties(vector3, m_borderMaterial);
-                                    if (x2 >= x1 && x2 <= x1 + 1 && z2 == z1 || flag1 != flag3)
-                                        m_borderMaterial.SetColor(ID_Color, color1);
-                                    else if (x2 == 0 || x2 == 5)
-                                        m_borderMaterial.SetColor(ID_Color, color2);
-                                    else
-                                        m_borderMaterial.SetColor(ID_Color, color3);
-                                    if (m_borderMaterial.SetPass(0))
-                                    {
-                                        ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                                        Graphics.DrawMeshNow(m_borderMesh, vector3, Quaternion.identity);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if ((double)m_areaAlpha < 1.0 / 1000.0 || !((UnityEngine.Object)m_areaMaterial != (UnityEngine.Object)null))
-                    return;
-                Vector4 vector;
-                vector.z = 6.510417E-05f;
-                vector.x = 7.0f / 16.0f;
-                vector.y = 7.0f / 16.0f;
-                vector.w = 0.125f;
-                m_areaMaterial.mainTexture = (Texture)m_areaTex;
-                m_areaMaterial.SetColor(ID_Color, new Color(1f, 1f, 1f, m_areaAlpha));
-                m_areaMaterial.SetVector(ID_AreaMapping, vector);
-                Bounds bounds1 = new Bounds(new Vector3(0.0f, 512f, 0.0f), new Vector3(9600f, 1024f, 9600f));
-                bounds1.size = bounds1.size + new Vector3(100f, 1f, 100f);
-                ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                Singleton<RenderManager>.instance.OverlayEffect.DrawEffect(cameraInfo, m_areaMaterial, 0, bounds1);
-#endif
-            }
-            else
-            {
-                if ((double)m_borderAlpha >= 1.0 / 1000.0 && (UnityEngine.Object)m_borderMaterial != (UnityEngine.Object)null)
-                {
-                    Quaternion rotation = Quaternion.AngleAxis(90f, Vector3.up);
-                    Color color = Color.white;
-                    ToolController toolController = Singleton<ToolManager>.instance.m_properties;
-                    if ((UnityEngine.Object)toolController != (UnityEngine.Object)null && (toolController.CurrentTool.GetErrors() & ToolBase.ToolErrors.OutOfArea) != ToolBase.ToolErrors.None)
-                        color = Color.red;
-                    color.a = m_borderAlpha;
-                    for (int z = -GRID_DIFF; z <= DEFAULT_GRID + GRID_DIFF; ++z)
-                    {
-                        for (int x = -GRID_DIFF; x <= DEFAULT_GRID + GRID_DIFF; ++x)
-                        {
-                            bool flag1 = g.GetArea(x, z) > 0;
-                            bool flag2 = g.GetArea(x, z - 1) > 0;
-                            bool flag3 = g.GetArea(x - 1, z) > 0;
-                            if (flag1 != flag2)
-                            {
-                                Vector3 vector3 = new Vector3((float)(((double)x - 2.5 + 0.5) * 1920.0), 0.0f, (float)(((double)z - 2.5) * 1920.0));
-                                Vector3 size = new Vector3(1920f, 1024f, 100f);
-                                Bounds bounds = new Bounds(vector3 + new Vector3(0.0f, size.y * 0.5f, 0.0f), size);
-                                if (cameraInfo.Intersect(bounds))
-                                {
-                                    Singleton<TerrainManager>.instance.SetWaterMaterialProperties(vector3, m_borderMaterial);
-                                    m_borderMaterial.SetColor(ID_Color, color);
-                                    if (m_borderMaterial.SetPass(0))
-                                    {
-                                        ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                                        Graphics.DrawMeshNow(m_borderMesh, vector3, rotation);
-                                    }
-                                }
-                            }
-                            if (flag1 != flag3)
-                            {
-                                Vector3 vector3 = new Vector3((float)(((double)x - 2.5) * 1920.0), 0.0f, (float)(((double)z - 2.5 + 0.5) * 1920.0));
-                                Vector3 size = new Vector3(100f, 1024f, 1920f);
-                                Bounds bounds = new Bounds(vector3 + new Vector3(0.0f, size.y * 0.5f, 0.0f), size);
-                                if (cameraInfo.Intersect(bounds))
-                                {
-                                    Singleton<TerrainManager>.instance.SetWaterMaterialProperties(vector3, m_borderMaterial);
-                                    m_borderMaterial.SetColor(ID_Color, color);
-                                    if (m_borderMaterial.SetPass(0))
-                                    {
-                                        ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                                        Graphics.DrawMeshNow(m_borderMesh, vector3, Quaternion.identity);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (m_areaAlpha < 1.0 / 1000.0 || !((UnityEngine.Object)m_areaMaterial != (UnityEngine.Object)null))
-                    return;
-                Vector4 vector;
-                vector.z = 6.510417E-05f;
-                vector.x = 7.0f / 16.0f;
-                vector.y = 7.0f / 16.0f;
-                vector.w = 0.125f;
-                m_areaMaterial.mainTexture = (Texture)m_areaTex;
-                m_areaMaterial.SetColor(ID_Color, new Color(1f, 1f, 1f, m_areaAlpha));
-                m_areaMaterial.SetVector(ID_AreaMapping, vector);
-                Bounds freeBounds = new Bounds(new Vector3(0.0f, 512f, 0.0f), new Vector3(9600f, 1024f, 9600f)); //GetFreeBounds(g);
-                freeBounds.size = freeBounds.size + new Vector3(100f, 1f, 100f);
-                ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
-                Singleton<RenderManager>.instance.OverlayEffect.DrawEffect(cameraInfo, m_areaMaterial, 0, freeBounds);
-            }
-        }
-
-        [ReplaceMethod]
-        public static Bounds GetFreeBounds(GameAreaManager g)
-        {
-            Vector3 zero1 = Vector3.zero;
+            Vector3 zero = Vector3.zero;
             Vector3 zero2 = Vector3.zero;
-            for (int z = -GRID_DIFF; z < DEFAULT_GRID + GRID_DIFF; ++z)
+            for (int i = 0; i < GRID; i++)
             {
-                for (int x = -GRID_DIFF; x < DEFAULT_GRID + GRID_DIFF; ++x)
+                for (int j = 0; j < GRID; j++)
                 {
-                    if (g.IsUnlocked(x, z))
+                    if (this.IsUnlocked(j, i))
                     {
-                        zero1.x = Mathf.Min(zero1.x, (float)(((x - 1) - 2.5) * 1920.0));
-                        zero2.x = Mathf.Max(zero2.x, (float)(((x + 2) - 2.5) * 1920.0));
-                        zero1.z = Mathf.Min(zero1.z, (float)(((z - 1) - 2.5) * 1920.0));
-                        zero2.z = Mathf.Max(zero2.z, (float)(((z + 2) - 2.5) * 1920.0));
+                        zero.x = Mathf.Min(zero.x, ((float)(j - 1) - 4.5f) * 1920f);
+                        zero2.x = Mathf.Max(zero2.x, ((float)(j + 2) - 4.5f) * 1920f);
+                        zero.z = Mathf.Min(zero.z, ((float)(i - 1) - 4.5f) * 1920f);
+                        zero2.z = Mathf.Max(zero2.z, ((float)(i + 2) - 4.5f) * 1920f);
                         zero2.y = Mathf.Max(zero2.y, 1024f);
                     }
                 }
             }
-
-            Bounds bounds = new Bounds();
-            bounds.SetMinMax(zero1, zero2);
-            return bounds;
+            Bounds result = default(Bounds);
+            result.SetMinMax(zero, zero2);
+            return result;
         }
 
         [ReplaceMethod]
-        public static int GetArea(GameAreaManager g, int x, int z)
+        public int GetArea(int x, int z)
         {
-            if (x >= -GRID_DIFF && z >= -GRID_DIFF && (x < DEFAULT_GRID + GRID_DIFF && z < DEFAULT_GRID + GRID_DIFF))
-                return g.m_areaGrid[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)];
+            if (x >= 0 && z >= 0 && x < GRID && z < GRID)
+            {
+                return areaGrid[z * GRID + x];
+            }
             return -2;
         }
 
         [ReplaceMethod]
-        public static bool IsUnlocked(GameAreaManager g, int x, int z)
+        public bool IsUnlocked(int x, int z)
         {
-            if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF))
-                return false;
-            return g.m_areaGrid[(z + GRID_DIFF) * GRID + (x + GRID_DIFF)] != 0;
+            return x >= 0 && z >= 0 && x < GRID && z < GRID && areaGrid[z * GRID + x] != 0;
         }
 
         [ReplaceMethod]
-        public static int GetAreaIndex(GameAreaManager g, Vector3 p)
+        public int GetAreaIndex(Vector3 p)
         {
-            int x = Mathf.FloorToInt((float)((double)p.x / 1920.0 + 2.5));
-            int z = Mathf.FloorToInt((float)((double)p.z / 1920.0 + 2.5));
-            if (x < -GRID_DIFF || z < -GRID_DIFF || (x >= DEFAULT_GRID + GRID_DIFF || z >= DEFAULT_GRID + GRID_DIFF))
+            int num = Mathf.FloorToInt(p.x / 1920f + 4.5f);
+            int num2 = Mathf.FloorToInt(p.z / 1920f + 4.5f);
+            if (num < 0 || num2 < 0 || num >= GRID || num2 >= GRID)
+            {
                 return -1;
-
-            return (z + GRID_DIFF) * GRID + (x + GRID_DIFF);
-        }
-
-        internal static void GetTileXZ(GameAreaManager g, int tile, out int x, out int z)
-        {
-            x = (tile % GRID) - GRID_DIFF;
-            z = (tile / GRID) - GRID_DIFF;
+            }
+            return num2 * GRID + num;
         }
 
         [ReplaceMethod]
-        public static int GetTileIndex(GameAreaManager g, int x, int z)
+        public void GetTileXZ(int tile, out int x, out int z)
         {
-            return (z + GRID_DIFF) * GRID + (x + GRID_DIFF);
+            x = tile % GRID;
+            z = tile / GRID;
         }
 
         [ReplaceMethod]
-        public static bool UnlockArea(GameAreaManager g, int index)
+        static int GetTileIndex(GameAreaManager g,int x, int z)
         {
+            Debug.Log(x.ToString() + " " + z.ToString());
+            return z * GRID + x;
+        }
+
+        [ReplaceMethod]
+        public bool PointOutOfArea(Vector3 p)
+        {
+                int x = Mathf.FloorToInt(p.x / 1920f + 4.5f);
+                int z = Mathf.FloorToInt(p.z / 1920f + 4.5f);
+                int area = this.GetArea(x, z);
+                if (area == -2)
+                {
+                    return true;
+                }
+                return false;
+        }
+
+        [ReplaceMethod]
+        public bool UnlockArea( int index)
+        {
+            var g = GameAreaManager.instance;
             g.GetType().GetField("m_unlocking", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, true);
+
+            Debug.Log(index.ToString());
             try
             {
-                int x = (index % GRID) - GRID_DIFF;
-                int z = (index / GRID) - GRID_DIFF;
-                DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Message, string.Format("unlock {0} {1}", x, z));
+                int x = index % GRID;
+                int z = index / GRID;
                 if (g.CanUnlock(x, z))
                 {
                     g.m_areaNotUnlocked.Deactivate();
                     CODebugBase<LogChannel>.Log(LogChannel.Core, "Unlocking new area");
-                    g.m_areaGrid[index] = ++g.m_areaCount;
+                    areaGrid[index] = ++g.m_areaCount;
                     g.GetType().GetField("m_areasUpdated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, true);
 
-                    float minX = (float)(((double)x - 2.5f) * 1920.0);
-                    float maxX = (float)(((double)(x + 1) - 2.5f) * 1920.0);
-                    float minZ = (float)(((double)z - 2.5f) * 1920.0);
-                    float maxZ = (float)(((double)(z + 1) - 2.5f) * 1920.0);
+                    float minX = (float)(((double)x - 4.5f) * 1920.0);
+                    float maxX = (float)(((double)(x + 1) - 4.5f) * 1920.0);
+                    float minZ = (float)(((double)z - 4.5f) * 1920.0);
+                    float maxZ = (float)(((double)(z + 1) - 4.5f) * 1920.0);
+                    Debug.Log("aaa");
                     Singleton<ZoneManager>.instance.UpdateBlocks(minX, minZ, maxX, maxZ);
-                    int num = 2;
-                    if (Singleton<TerrainManager>.instance.SetDetailedPatch(x + num, z + num))
+                    
+                    if (Singleton<TerrainManager>.instance.SetDetailedPatch(x, z))
                     {
                         Singleton<MessageManager>.instance.TryCreateMessage(g.m_properties.m_unlockMessage, Singleton<MessageManager>.instance.GetRandomResidentID());
                         g.m_AreasWrapper.OnUnlockArea(x, z);
                         return true;
-                    }
-                    --g.m_areaCount;
-                    g.m_areaGrid[index] = 0;
 
-                    DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Warning, "Areas updated failed");
+                    }
+                    Debug.Log("out " + x.ToString() + " " + z.ToString());
+                    --g.m_areaCount;
+                    areaGrid[index] = 0;
+
                     g.GetType().GetField("m_areasUpdated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, true);
                 }
                 else
@@ -390,10 +184,25 @@ namespace Unlimiter.Areas
             }
         }
 
-        [ReplaceMethod]
-        public static void UpdateData(GameAreaManager g, SimulationManager.UpdateMode mode)
+        private float CalculateBuildableArea(int tileX, int tileZ)
         {
-            Helper.EnsureInit();
+            uint num;
+            uint num2;
+            uint num3;
+            uint num4;
+            uint num5;
+            Singleton<NaturalResourceManager>.instance.GetTileResources(tileX, tileZ, out num, out num2, out num3, out num4, out num5);
+            float tileFlatness = Singleton<TerrainManager>.instance.GetTileFlatness(tileX - 2, tileZ - 2);
+            float num6 = 3686400f;
+            float num7 = 1139.0625f;
+            float num8 = num6 / num7 * 255f;
+            return tileFlatness * (1f - num5 / num8);
+        }
+
+        [ReplaceMethod]
+        public void UpdateData(SimulationManager.UpdateMode mode)
+        {
+            var g = GameAreaManager.instance;
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("GameAreaManager.UpdateData");
             //base.UpdateData(mode);
             if (mode == SimulationManager.UpdateMode.NewGame || mode == SimulationManager.UpdateMode.NewAsset || mode == SimulationManager.UpdateMode.LoadAsset)
@@ -405,7 +214,7 @@ namespace Unlimiter.Areas
                     for (int index2 = 0; index2 < GRID; ++index2)
                     {
                         int index3 = index1 * GRID + index2;
-                        g.m_areaGrid[index3] = index3 != num ? 0 : ++g.m_areaCount;
+                        areaGrid[index3] = index3 != num ? 0 : ++g.m_areaCount;
                     }
                 }
             }
@@ -422,9 +231,9 @@ namespace Unlimiter.Areas
                 float num2 = 0.0f;
                 float num3 = 0.0f;
                 float num4 = 0.0f;
-                for (int tileZ = -GRID_DIFF; tileZ < DEFAULT_GRID + GRID_DIFF; ++tileZ)
+                for (int tileZ = 0; tileZ < GRID; tileZ += 1)
                 {
-                    for (int tileX = -GRID_DIFF; tileX < DEFAULT_GRID + GRID_DIFF; ++tileX)
+                    for (int tileX = 0; tileX < GRID; tileX += 1)
                     {
                         switch (Mathf.Abs(tileX - x1) + Mathf.Abs(tileZ - z1))
                         {
@@ -469,8 +278,8 @@ namespace Unlimiter.Areas
             {
                 for (int x2 = 0; x2 < GRID; ++x2)
                 {
-                    if (g.GetArea(x2 - GRID_DIFF, z2 - GRID_DIFF) > 0)
-                        Singleton<TerrainManager>.instance.SetDetailedPatch(x2 + num5, z2 + num5);
+                    if (g.GetArea(x2, z2) > 0)
+                        Singleton<TerrainManager>.instance.SetDetailedPatch(x2 , z2 );
                 }
             }
             if (mode == SimulationManager.UpdateMode.NewGame || g.m_areaNotUnlocked == null)
@@ -479,108 +288,221 @@ namespace Unlimiter.Areas
         }
 
         [ReplaceMethod]
-        public static float CalculateBuildableArea(int tileX, int tileZ)
+        protected void BeginOverlayImpl(RenderManager.CameraInfo cameraInfo)
         {
-            uint ore;
-            uint oil;
-            uint forest;
-            uint fertility;
-            uint water;
-            Singleton<NaturalResourceManager>.instance.GetTileResources(tileX, tileZ, out ore, out oil, out forest, out fertility, out water);
-            float tileFlatness = Singleton<TerrainManager>.instance.GetTileFlatness(tileX, tileZ);
-            float num = (float)(3686400.0 / (18225.0 / 16.0) * (double)byte.MaxValue);
-            return tileFlatness * (float)(1.0 - (double)water / (double)num);
-        }
+            return;
 
+            var g = GameAreaManager.instance;
+            float m_borderAlpha = (float)g.GetType().GetField("m_borderAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+            float m_areaAlpha = (float)g.GetType().GetField("m_areaAlpha", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+            Material m_borderMaterial = (Material)g.GetType().GetField("m_borderMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+            Material m_areaMaterial = (Material)g.GetType().GetField("m_areaMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+            Material m_decorationMaterial = (Material)g.GetType().GetField("m_decorationMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+            Mesh m_borderMesh = (Mesh)g.GetType().GetField("m_borderMesh", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+
+            int ID_Color = (int)g.GetType().GetField("ID_Color", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+            int ID_AreaMapping = (int)g.GetType().GetField("ID_AreaMapping", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+
+
+            Texture2D m_areaTex = (Texture2D)g.GetType().GetField("m_areaTex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
+
+            ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
+
+            if ((double)m_borderAlpha >= 1.0 / 1000.0 && (UnityEngine.Object)m_borderMaterial != (UnityEngine.Object)null)
+            {
+                Quaternion rotation = Quaternion.AngleAxis(90f, Vector3.up);
+                Color color = Color.white;
+                ToolController toolController = Singleton<ToolManager>.instance.m_properties;
+                if ((UnityEngine.Object)toolController != (UnityEngine.Object)null && (toolController.CurrentTool.GetErrors() & ToolBase.ToolErrors.OutOfArea) != ToolBase.ToolErrors.None)
+                    color = Color.red;
+                color.a = m_borderAlpha;
+                for (int z = 0; z < GRID; z +=1)
+                {
+                    for (int x = 0; x < GRID; x +=1)
+                    {
+                        //bool flag1 = g.GetArea(x, z) > 0;
+                        //bool flag2 = g.GetArea(x, z - 1) > 0;
+                        //bool flag3 = g.GetArea(x - 1, z) > 0;
+                        //if (flag1 != flag2)
+                        //{
+                        //    Vector3 vector3 = new Vector3((float)(((double)x - 4.5 + 0.5) * 1920.0), 0.0f, (float)(((double)z - 4.5) * 1920.0));
+                        //    Vector3 size = new Vector3(1920f, 1024f, 100f);
+                        //    Bounds bounds = new Bounds(vector3 + new Vector3(0.0f, size.y * 0.5f, 0.0f), size);
+                        //    if (cameraInfo.Intersect(bounds))
+                        //    {
+                        //        Singleton<TerrainManager>.instance.SetWaterMaterialProperties(vector3, m_borderMaterial);
+                        //        m_borderMaterial.SetColor(ID_Color, color);
+                        //        if (m_borderMaterial.SetPass(0))
+                        //        {
+                        //            ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
+                        //            Graphics.DrawMeshNow(m_borderMesh, vector3, rotation);
+                        //        }
+                        //    }
+                        //}
+                        //if (flag1 != flag3)
+                        //{
+                            //Vector3 vector3 = new Vector3((float)(((double)x - 4.5) * 1920.0), 0.0f, (float)(((double)z - 4.5 + 0.5) * 1920.0));
+                            //Vector3 size = new Vector3(100f, 1024f, 1920f);
+                            //Bounds bounds = new Bounds(vector3 + new Vector3(0.0f, size.y * 0.5f, 0.0f), size);
+                            //if (cameraInfo.Intersect(bounds))
+                            //{
+                            //    Singleton<TerrainManager>.instance.SetWaterMaterialProperties(vector3, m_borderMaterial);
+                            //    m_borderMaterial.SetColor(ID_Color, color);
+                            //    if (m_borderMaterial.SetPass(0))
+                            //    {
+                            //        ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
+                            //        Graphics.DrawMeshNow(m_borderMesh, vector3, Quaternion.identity);
+                            //    }
+                            //}
+                        //}
+                    }
+                }
+            }
+            if (m_areaAlpha < 1.0 / 1000.0 || !((UnityEngine.Object)m_areaMaterial != (UnityEngine.Object)null))
+                return;
+            Vector4 vector;
+            vector.z = 6.510417E-05f;
+            vector.x = 5.0f / 16.0f;
+            vector.y = 5.0f / 16.0f;
+            vector.w = 0.125f;
+            m_areaMaterial.mainTexture = (Texture)m_areaTex;
+            m_areaMaterial.SetColor(ID_Color, new Color(1f, 1f, 1f, m_areaAlpha));
+            //m_areaMaterial.SetVector(ID_AreaMapping, vector);
+            Bounds freeBounds = GetFreeBounds();
+            freeBounds.size = freeBounds.size + new Vector3(100f, 1f, 100f);
+            ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
+            Singleton<RenderManager>.instance.OverlayEffect.DrawEffect(cameraInfo, m_areaMaterial, 0, freeBounds);
+        }
         [ReplaceMethod]
-        public static void UpdateAreaTexture(GameAreaManager g)
+        private void UpdateAreaTexture()
         {
+            var g = GameAreaManager.instance;
             Texture2D m_areaTex = (Texture2D)g.GetType().GetField("m_areaTex", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(g);
             g.GetType().GetField("m_areasUpdated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, false);
             int num1 = 1;
 
-            if ((Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.MapEditor) != ItemClass.Availability.None)
+            for (int _z = 0; _z <= 8; ++_z) 
             {
-#if false
-                int startX;
-                int startZ;
-                g.GetStartTile(out startX, out startZ);
-                for (int y = 0; y <= 8; ++y)
+                for (int _x = 0; _x <= 8; ++_x)
                 {
-                    for (int x2 = 0; x2 <= 8; ++x2)
+                    int x = _x - num1;
+                    int z = _z - num1;
+                    bool flag1 = g.IsUnlocked(x, z);
+                    bool flag2 = g.CanUnlock(x, z);
+                    Color color;
+                    color.r = !flag1 ? 0.0f : 1f;
+                    color.g = !flag2 ? 0.0f : 1f;
+                    if (g.HighlightAreaIndex == z * GRID + x)
                     {
-                        int num2 = x2 - num1;
-                        int num3 = y - num1;
-                        bool flag1 = num2 == startX && num3 == startZ;
-                        bool flag2 = !flag1 && num2 >= 0 && (num3 >= 0 && num2 < 5) && num3 < 5;
-                        Color color;
-                        color.r = !flag1 ? 0.0f : 1f;
-                        color.g = !flag2 ? 0.0f : 1f;
-                        color.b = !flag2 || m_highlightAreaIndex != num3 * 5 + num2 ? 0.0f : 1f;
-                        color.a = 1f;
-                        m_areaTex.SetPixel(x2, y, color);
+                        if (flag1)
+                        {
+                            color.b = 0.5f;
+                        }
+                        else if (flag2)
+                        {
+                            color.b = 0.5f;
+                        }
+                        else
+                        {
+                            color.b = 0f;
+                        }
                     }
-                }
-#endif
-            }
-            else
-            {
-                for (int _z = 0; _z <= 8; ++_z) // TODO 8 here is prolly a bug
-                {
-                    for (int _x = 0; _x <= 8; ++_x)
+                    else
                     {
-                        int x = _x - num1;
-                        int z = _z - num1;
-                        bool flag1 = g.IsUnlocked(x, z);
-                        bool flag2 = g.CanUnlock(x, z);
-                        Color color;
-                        color.r = !flag1 ? 0.0f : 1f;
-                        color.g = !flag2 ? 0.0f : 1f;
-                        color.b = g.HighlightAreaIndex != (z + GRID_DIFF) * GRID + (x + GRID_DIFF) ? 0.0f : (!flag2 ? (!flag1 ? 0.0f : 0.5f) : 0.5f);
-                        color.a = 1f;
-                        m_areaTex.SetPixel(_x, _z, color);
+                        color.b = 0f;
                     }
+                    color.a = 1f;
+                    m_areaTex.SetPixel(_x, _z, color);
                 }
             }
+
             m_areaTex.Apply(false);
         }
 
-        public class Data
-        {
-            [ReplaceMethod]
-            public void Deserialize(Data d, DataSerializer s)
-            {
-                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginDeserialize(s, "GameAreaManager");
-                GameAreaManager instance = Singleton<GameAreaManager>.instance;
-                int[] numArray = instance.m_areaGrid;
-                int length = numArray.Length;
-                instance.m_areaCount = (int)s.ReadUInt8();
-                instance.m_maxAreaCount = Mathf.Max(instance.MaxAreaCount, instance.m_areaCount);
-                instance.SetStartTile(s.version < 137U ? 12 : (int)s.ReadUInt8());
-                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
-                for (int index = 0; index < length; ++index)
-                    numArray[index] = (int)@byte.Read();
-                @byte.EndRead();
-
-                Helper.EnsureInit();
-
-                instance.m_areaNotUnlocked = s.version < 87U ? (GenericGuide)null : s.ReadObject<GenericGuide>();
-                if (s.version >= 199U)
+        [ReplaceMethod]
+        public bool ClampPoint(ref Vector3 position)
+        {            
+                int num7 = Mathf.FloorToInt(position.x / 1920f + 4.5f);
+                int num8 = Mathf.FloorToInt(position.z / 1920f + 4.5f);
+                if (this.GetArea(num7, num8) > 0)
                 {
-                    instance.GetType().GetField("m_buildableArea0", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
-                    instance.GetType().GetField("m_buildableArea1", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
-                    instance.GetType().GetField("m_buildableArea2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
-                    instance.GetType().GetField("m_buildableArea3", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, s.ReadFloat());
+                    return true;
                 }
-                else
+                Rect rect = default(Rect);
+                rect.xMin = -8640;
+                rect.yMin = -8640;
+                rect.xMax = 8640;
+                rect.yMax = 8640;
+                float num9 = 1000000f;
+                for (int i = -1; i <= 1; i++)
                 {
-                    instance.GetType().GetField("m_buildableArea0", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
-                    instance.GetType().GetField("m_buildableArea1", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
-                    instance.GetType().GetField("m_buildableArea2", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
-                    instance.GetType().GetField("m_buildableArea3", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(instance, -1f);
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        if (this.GetArea(num7 + j, num8 + i) > 0)
+                        {
+                            Rect rect2 = default(Rect);
+                            rect2.xMin = ((float)(num7 + j) - 4.5f) * 1920f;
+                            rect2.yMin = ((float)(num8 + i) - 4.5f) * 1920f;
+                            rect2.xMax = rect2.xMin + 1920f;
+                            rect2.yMax = rect2.yMin + 1920f;
+                            float num10 = Mathf.Max(Mathf.Max(position.x - rect2.xMax, rect2.xMin - position.x), Mathf.Max(position.z - rect2.yMax, rect2.yMin - position.z));
+                            if (num10 < num9)
+                            {
+                                rect = rect2;
+                                num9 = num10;
+                            }
+                        }
+                    }
                 }
-                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "GameAreaManager");
-            }
+                if (position.x < rect.xMin)
+                {
+                    position.x = rect.xMin;
+                }
+                if (position.x > rect.xMax)
+                {
+                    position.x = rect.xMax;
+                }
+                if (position.z < rect.yMin)
+                {
+                    position.z = rect.yMin;
+                }
+                if (position.z > rect.yMax)
+                {
+                    position.z = rect.yMax;
+                }
+                return num9 != 1000000f;
+            
         }
+
+        [ReplaceMethod]
+        public bool QuadOutOfArea(Quad2 quad)
+        {
+                Vector2 vector = quad.Min();
+                Vector2 vector2 = quad.Max();
+                int num6 = Mathf.FloorToInt((vector.x - 8f) / 1920f + 4.5f);
+                int num7 = Mathf.FloorToInt((vector.y - 8f) / 1920f + 4.5f);
+                int num8 = Mathf.FloorToInt((vector2.x + 8f) / 1920f + 4.5f);
+                int num9 = Mathf.FloorToInt((vector2.y + 8f) / 1920f + 4.5f);
+                for (int i = num7; i <= num9; i++)
+                {
+                    for (int j = num6; j <= num8; j++)
+                    {
+                        int area = this.GetArea(j, i);
+                        if ((area == -2 ) && quad.Intersect(new Quad2
+                        {
+                            a = new Vector2(((float)j - 4.5f) * 1920f - 8f, ((float)i - 4.5f) * 1920f - 8f),
+                            b = new Vector2(((float)j - 4.5f) * 1920f - 8f, ((float)i - 4.5f + 1f) * 1920f + 8f),
+                            c = new Vector2(((float)j - 4.5f + 1f) * 1920f + 8f, ((float)i - 4.5f + 1f) * 1920f + 8f),
+                            d = new Vector2(((float)j - 4.5f + 1f) * 1920f + 8f, ((float)i - 4.5f) * 1920f - 8f)
+                        }))
+                        {
+                            return true;
+                        }
+                    }
+                }            
+            return false;
+        }
+
+
     }
 }
