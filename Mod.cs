@@ -58,19 +58,12 @@ namespace Unlimiter
 
             var toReplace = new Type[]
                 {
-                    //typeof(BuildingDecoration), typeof(LimitBuildingDecoration),
-                    //typeof(NaturalResourceManager), typeof(LimitNaturalResourceManager),
-                    //typeof(TreeTool), typeof(LimitTreeTool),
-                    //typeof(TreeManager), typeof(LimitTreeManager),
-                    //typeof(TreeManager.Data), typeof(LimitTreeManager.Data),
                     typeof(GameAreaManager), typeof(FakeGameAreaManager),
                     typeof(NetManager), typeof(FakeNetManager),
                     typeof(ZoneManager), typeof(FakeZoneManager),
                     typeof(BuildingTool ), typeof(FakeBuildingTool),
                     typeof(ZoneTool), typeof(FakeZoneTool),
                     typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
-                    ////typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
-                    ////typeof(GameAreaTool), typeof(FakeGameAreaTool),
                     typeof(TerrainManager), typeof(FakeTerrainManager),
 
                     typeof(ElectricityManager), typeof(FakeElectricityManager),
