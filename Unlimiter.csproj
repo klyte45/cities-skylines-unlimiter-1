@@ -58,7 +58,6 @@
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="Attributes\FixmeAttribute.cs" />
     <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
-    <Compile Include="DataExtension.cs" />
     <Compile Include="ResourceManagers\FakeDistrictTool.cs" />
     <Compile Include="ResourceManagers\FakeElectricityManager.cs" />
     <Compile Include="ResourceManagers\FakeDistrictManager.cs" />
@@ -67,7 +66,6 @@
     <Compile Include="Terrain\FakeTerrainManager.cs" />
     <Compile Include="Zones\FakeBuilding.cs" />
     <Compile Include="Zones\FakeBuildingTool.cs" />
-    <Compile Include="Zones\FakePrivateBuildingAI.cs" />
     <Compile Include="Zones\FakeZoneBlock.cs" />
     <Compile Include="Zones\FakeZoneManager.cs" />
     <Compile Include="Mod.cs" />

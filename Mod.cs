@@ -66,7 +66,7 @@ namespace Unlimiter
                     typeof(ZoneManager), typeof(FakeZoneManager),
                     typeof(BuildingTool ), typeof(FakeBuildingTool),
                     typeof(ZoneTool), typeof(FakeZoneTool),
-                    typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
+                    //typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
                     typeof(TerrainManager), typeof(FakeTerrainManager),
 
                     typeof(ElectricityManager), typeof(FakeElectricityManager),

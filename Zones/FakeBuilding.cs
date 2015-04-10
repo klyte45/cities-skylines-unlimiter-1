@@ -2,6 +2,7 @@
 using ColossalFramework.Math;
 using System;
 using UnityEngine;
+using Unlimiter.Attributes;
 
 namespace Unlimiter.Zones
 {
@@ -10,6 +11,8 @@ namespace Unlimiter.Zones
     /// </summary>
     internal class FakeBuilding
     {
+
+        [ReplaceMethod]
         public static bool CheckZoning(Building b, ItemClass.Zone zone)
         {
             int width = b.Width;
@@ -41,7 +44,7 @@ namespace Unlimiter.Zones
                     {
                         Vector3 vector3_7 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector3_5.x - 46f - vector3_7.x, vector3_5.z - 46f - vector3_7.z), Mathf.Max((float)((double)vector3_7.x - (double)vector3_6.x - 46.0), (float)((double)vector3_7.z - (double)vector3_6.z - 46.0))) < 0.0)
-                            CallCheckZoning(b, zone, ref validCells, ref instance.m_blocks.m_buffer[num5]);
+                            CheckZoning(b,zone, ref validCells, ref instance.m_blocks.m_buffer[num5]);
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= 32768)
                         {
@@ -62,12 +65,38 @@ namespace Unlimiter.Zones
             return true;
         }
 
-        private static void CallCheckZoning(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
+        private static void CheckZoning(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
         {
-            var p = new object[] { zone, validCells, block };
-            b.GetType().GetMethod("CheckZoning", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, null, new Type[] { typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(ZoneBlock).MakeByRefType() }, null).Invoke(b, p);
-            validCells = (uint)p[1];
-            block = (ZoneBlock)p[2];
+            int width = b.Width;
+            int length = b.Length;
+            Vector3 a = new Vector3(Mathf.Cos(b.m_angle), 0f, Mathf.Sin(b.m_angle)) * 8f;
+            Vector3 a2 = new Vector3(a.z, 0f, -a.x);
+            int rowCount = block.RowCount;
+            Vector3 a3 = new Vector3(Mathf.Cos(block.m_angle), 0f, Mathf.Sin(block.m_angle)) * 8f;
+            Vector3 a4 = new Vector3(a3.z, 0f, -a3.x);
+            Vector3 a5 = block.m_position - b.m_position + a * ((float)width * 0.5f - 0.5f) + a2 * ((float)length * 0.5f - 0.5f);
+            for (int i = 0; i < rowCount; i++)
+            {
+                Vector3 bb = ((float)i - 3.5f) * a4;
+                int num = 0;
+                while ((long)num < 4L)
+                {
+                    if ((block.m_valid & ~block.m_shared & 1uL << (i << 3 | num)) != 0uL && block.GetZone(num, i) == zone)
+                    {
+                        Vector3 b2 = ((float)num - 3.5f) * a3;
+                        Vector3 vector = a5 + b2 + bb;
+                        float num2 = a.x * vector.x + a.z * vector.z;
+                        float num3 = a2.x * vector.x + a2.z * vector.z;
+                        int num4 = Mathf.RoundToInt(num2 / 64f);
+                        int num5 = Mathf.RoundToInt(num3 / 64f);
+                        if ((num5 != 0 || num == 0) && num4 >= 0 && num5 >= 0 && num4 < width && num5 < length)
+                        {
+                            validCells |= 1u << (num5 << 3) + num4;
+                        }
+                    }
+                    num++;
+                }
+            }
         }
     }
 }
