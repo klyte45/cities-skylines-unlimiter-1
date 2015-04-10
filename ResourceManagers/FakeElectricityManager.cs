@@ -65,13 +65,23 @@ namespace Unlimiter.ResourceManagers
             m_electricityTexture.filterMode = FilterMode.Point;
             m_electricityTexture.wrapMode = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_ElectricityTexture", m_electricityTexture);
-            UpdateElectricityMapping();
+            UpdateElectricityMapping(ElectricityManager.instance);
         }
 
-        private static void UpdateElectricityMapping()
+        internal static void OnDestroy()
+        {
+            if (m_electricityTexture != null)
+            {
+                UnityEngine.Object.Destroy(m_electricityTexture);
+                m_electricityTexture = null;
+            }
+        }
+
+        [ReplaceMethod]
+        private static void UpdateElectricityMapping(ElectricityManager em)
         {
             Vector4 vec;
-            vec.z = 0.000102124184f;
+            vec.z = 1 / (38.25f * GRID);
             vec.x = 0.5f;
             vec.y = 0.5f;
             vec.w = 0.00390625f;
@@ -822,5 +832,6 @@ namespace Unlimiter.ResourceManagers
             }
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndLoading();
         }
+
     }
 }

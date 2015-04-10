@@ -91,10 +91,20 @@ namespace Unlimiter.ResourceManagers
             m_waterTexture.filterMode = FilterMode.Point;
             m_waterTexture.wrapMode = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_ElectricityTexture", m_waterTexture);
-            UpdateWaterMapping();
+            UpdateWaterMapping(WaterManager.instance);
+        }
+        
+        internal static void OnDestroy()
+        {
+            if (m_waterTexture != null)
+            {
+                UnityEngine.Object.Destroy(m_waterTexture);
+                m_waterTexture = null;
+            }
         }
 
-        private static void UpdateWaterMapping()
+        [ReplaceMethod]
+        private static void UpdateWaterMapping(WaterManager wm)
         {
             var cam = (Camera)undergroundCamera.GetValue(WaterManager.instance);
             if (cam != null)
@@ -109,7 +119,7 @@ namespace Unlimiter.ResourceManagers
                 }
             }
             Vector4 vec;
-            vec.z = 0.000102124184f;
+            vec.z = 1 / (38.25f * GRID);
             vec.x = 0.5f;
             vec.y = 0.5f;
             vec.w = 0.00390625f;

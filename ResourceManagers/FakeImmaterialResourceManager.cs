@@ -25,7 +25,7 @@ namespace Unlimiter.ResourceManagers
         private static int[] m_modifiedX2 = new int[GRID];
         private static bool m_modified = true;
 
-        protected static void Init()
+        public static void Init()
         {
             m_resourceTexture = new Texture2D(GRID, GRID, TextureFormat.Alpha8, false, true);
             m_resourceTexture.wrapMode = TextureWrapMode.Clamp;
@@ -45,7 +45,7 @@ namespace Unlimiter.ResourceManagers
         private void UpdateResourceMapping()
         {
             Vector4 vec;
-            vec.z = 0.000101725258f;
+            vec.z = 1 / (38.4f * GRID);
             vec.x = 0.5f;
             vec.y = 0.5f;
             vec.w = 0.25f;
@@ -77,6 +77,7 @@ namespace Unlimiter.ResourceManagers
             }
         }
 
+        [ReplaceMethod]
         private void UpdateTexture()
         {
             for (int i = 0; i < GRID; i++)

@@ -8,6 +8,7 @@ using UnityEngine;
 using Unlimiter.Areas;
 using Unlimiter.Attributes;
 using Unlimiter.ResourceManagers;
+using Unlimiter.Terrain;
 using Unlimiter.Zones;
 
 namespace Unlimiter
@@ -52,6 +53,8 @@ namespace Unlimiter
             FakeWaterManager.Init();
             FakeDistrictManager.Init();
             FakeDistrictTool.Init();
+            FakeImmaterialResourceManager.Init();
+            FakeTerrainManager.Init();
 
             var toReplace = new Type[]
                 {
@@ -68,7 +71,7 @@ namespace Unlimiter
                     typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
                     ////typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
                     ////typeof(GameAreaTool), typeof(FakeGameAreaTool),
-                    //typeof(TerrainManager), typeof(FakeTerrainManager)
+                    typeof(TerrainManager), typeof(FakeTerrainManager),
 
                     typeof(ElectricityManager), typeof(FakeElectricityManager),
                     typeof(WaterManager), typeof(FakeWaterManager),
@@ -132,6 +135,8 @@ namespace Unlimiter
             }
             FakeImmaterialResourceManager.OnDestroy();
             FakeDistrictManager.OnDestroy();
+            FakeWaterManager.OnDestroy();
+            FakeElectricityManager.OnDestroy();
         }
     }
 }
