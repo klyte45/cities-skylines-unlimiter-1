@@ -170,12 +170,12 @@ namespace Unlimiter.ResourceManagers
                 {
                     for (int j = num6; j <= num8; j++)
                     {
-                        num10 += this.TryDumpElectricity(j, i, rate, max);
+                        num10 += TryDumpElectricity(j, i, rate, max);
                     }
                 }
                 return num10;
             }
-            return this.TryDumpElectricity(num, num2, rate, max);
+            return TryDumpElectricity(num, num2, rate, max);
         }
 
         private int TryDumpElectricity(int x, int z, int rate, int max)
@@ -349,10 +349,10 @@ namespace Unlimiter.ResourceManagers
                 }
                 else
                 {
-                    ushort rootGroup = this.GetRootGroup(cell.m_pulseGroup);
+                    ushort rootGroup = GetRootGroup(cell.m_pulseGroup);
                     if (rootGroup != group)
                     {
-                        this.MergeGroups(group, rootGroup);
+                        MergeGroups(group, rootGroup);
                         cell.m_pulseGroup = group;
                         m_canContinue = true;
                     }
@@ -395,7 +395,7 @@ namespace Unlimiter.ResourceManagers
                     }
                     else
                     {
-                        ushort rootGroup = this.GetRootGroup(m_nodeGroups[(int)nodeIndex]);
+                        ushort rootGroup = GetRootGroup(m_nodeGroups[(int)nodeIndex]);
                         if (rootGroup != group)
                         {
                             MergeGroups(group, rootGroup);
@@ -426,7 +426,7 @@ namespace Unlimiter.ResourceManagers
                     int num10 = 0;
                     while (num9 != 0)
                     {
-                        this.ConductToNode(num9, ref instance.m_nodes.m_buffer[(int)num9], group, num, num2, num3, num4);
+                        ConductToNode(num9, ref instance.m_nodes.m_buffer[(int)num9], group, num, num2, num3, num4);
                         num9 = instance.m_nodes.m_buffer[(int)num9].m_nextGridNode;
                         if (++num10 >= 32768)
                         {
@@ -637,7 +637,7 @@ namespace Unlimiter.ResourceManagers
                                 NetNode netNode = Singleton<NetManager>.instance.m_nodes.m_buffer[(int)pulseUnit2.m_node];
                                 if (netNode.m_flags != NetNode.Flags.None && netNode.m_buildIndex < (currentFrameIndex & 4294967168u))
                                 {
-                                    this.ConductToCells(pulseUnit2.m_group, netNode.m_position.x, netNode.m_position.z);
+                                    ConductToCells(pulseUnit2.m_group, netNode.m_position.x, netNode.m_position.z);
                                     for (int l = 0; l < 8; l++)
                                     {
                                         ushort segment = netNode.GetSegment(l);
@@ -646,7 +646,7 @@ namespace Unlimiter.ResourceManagers
                                             ushort startNode = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_startNode;
                                             ushort endNode = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_endNode;
                                             ushort num11 = (startNode != pulseUnit2.m_node) ? startNode : endNode;
-                                            this.ConductToNode(num11, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)num11], pulseUnit2.m_group, -100000f, -100000f, 100000f, 100000f);
+                                            ConductToNode(num11, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)num11], pulseUnit2.m_group, -100000f, -100000f, 100000f, 100000f);
                                         }
                                     }
                                 }
@@ -806,7 +806,7 @@ namespace Unlimiter.ResourceManagers
                     num26++;
                 }
             }
-            this.AreaModified(num, num2, num3, num4);
+            AreaModified(num, num2, num3, num4);
         }
 
         

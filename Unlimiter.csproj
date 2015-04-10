@@ -61,6 +61,7 @@
     <Compile Include="Attributes\FixmeAttribute.cs" />
     <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
     <Compile Include="DataExtension.cs" />
+    <Compile Include="ResourceManagers\FakeDistrictTool.cs" />
     <Compile Include="ResourceManagers\FakeElectricityManager.cs" />
     <Compile Include="ResourceManagers\FakeDistrictManager.cs" />
     <Compile Include="ResourceManagers\FakeImmaterialResourceManager.cs" />

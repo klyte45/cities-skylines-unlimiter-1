@@ -51,6 +51,7 @@ namespace Unlimiter
             FakeElectricityManager.Init();
             FakeWaterManager.Init();
             FakeDistrictManager.Init();
+            FakeDistrictTool.Init();
 
             var toReplace = new Type[]
                 {
@@ -73,6 +74,7 @@ namespace Unlimiter
                     typeof(WaterManager), typeof(FakeWaterManager),
                     typeof(ImmaterialResourceManager), typeof(FakeImmaterialResourceManager),
                     typeof(DistrictManager), typeof(FakeDistrictManager),
+                    typeof(DistrictTool), typeof(FakeDistrictTool),
                 };
 
             redirects = new Dictionary<MethodInfo, RedirectCallsState>();

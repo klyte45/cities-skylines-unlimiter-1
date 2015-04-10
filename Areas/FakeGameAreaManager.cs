@@ -64,7 +64,7 @@ namespace Unlimiter.Areas
             {
                 for (int j = 0; j < GRID; j++)
                 {
-                    if (this.IsUnlocked(j, i))
+                    if (IsUnlocked(j, i))
                     {
                         zero.x = Mathf.Min(zero.x, ((float)(j - 1) - 4.5f) * 1920f);
                         zero2.x = Mathf.Max(zero2.x, ((float)(j + 2) - 4.5f) * 1920f);
@@ -126,7 +126,7 @@ namespace Unlimiter.Areas
         {
                 int x = Mathf.FloorToInt(p.x / 1920f + 4.5f);
                 int z = Mathf.FloorToInt(p.z / 1920f + 4.5f);
-                int area = this.GetArea(x, z);
+                int area = GetArea(x, z);
                 if (area == -2)
                 {
                     return true;
@@ -424,7 +424,7 @@ namespace Unlimiter.Areas
         {            
                 int num7 = Mathf.FloorToInt(position.x / 1920f + 4.5f);
                 int num8 = Mathf.FloorToInt(position.z / 1920f + 4.5f);
-                if (this.GetArea(num7, num8) > 0)
+                if (GetArea(num7, num8) > 0)
                 {
                     return true;
                 }
@@ -438,7 +438,7 @@ namespace Unlimiter.Areas
                 {
                     for (int j = -1; j <= 1; j++)
                     {
-                        if (this.GetArea(num7 + j, num8 + i) > 0)
+                        if (GetArea(num7 + j, num8 + i) > 0)
                         {
                             Rect rect2 = default(Rect);
                             rect2.xMin = ((float)(num7 + j) - 4.5f) * 1920f;
@@ -487,7 +487,7 @@ namespace Unlimiter.Areas
                 {
                     for (int j = num6; j <= num8; j++)
                     {
-                        int area = this.GetArea(j, i);
+                        int area = GetArea(j, i);
                         if ((area == -2 ) && quad.Intersect(new Quad2
                         {
                             a = new Vector2(((float)j - 4.5f) * 1920f - 8f, ((float)i - 4.5f) * 1920f - 8f),
