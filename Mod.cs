@@ -19,7 +19,7 @@ namespace Unlimiter
         {
             get
             {
-                return "Allows you to place way more trees!";
+                return "Unlocks 81 tiles";
             }
         }
 
@@ -27,7 +27,7 @@ namespace Unlimiter
         {
             get
             {
-                return "Tree Unlimiter";
+                return "81 Tile Unlock";
             }
         }
     }
@@ -55,6 +55,9 @@ namespace Unlimiter
             FakeDistrictTool.Init();
             FakeImmaterialResourceManager.Init();
             FakeTerrainManager.Init();
+            FakeZoneManager.Init();
+            FakeNetManager.Init();
+            FakeZoneTool.Init();
 
             var toReplace = new Type[]
                 {
@@ -105,8 +108,6 @@ namespace Unlimiter
             {
                 Debug.Log("Cannot find " + method.Name);
             }
-
-            Debug.LogFormat("{0} ~> {1}", originalMethod.Name, method.Name);
             redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, method));
         }
 

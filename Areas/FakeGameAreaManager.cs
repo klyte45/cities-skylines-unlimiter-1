@@ -9,13 +9,14 @@ namespace Unlimiter.Areas
     internal class FakeGameAreaManager
     {
         public const int GRID = 9;
-        public static int[] areaGrid = new int[GRID * GRID];
+        public static int[] areaGrid;
 
         public static void Init()
         {
-            GameAreaManager.instance.m_maxAreaCount = 82;
-            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 3800f);
-            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 3800f);
+            areaGrid = new int[GRID * GRID];
+            GameAreaManager.instance.m_maxAreaCount = 81;
+            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 2400f);
+            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 2400f);
         }
         public static void UnlockAll()
         {
@@ -117,7 +118,6 @@ namespace Unlimiter.Areas
         [ReplaceMethod]
         static int GetTileIndex(GameAreaManager g,int x, int z)
         {
-            Debug.Log(x.ToString() + " " + z.ToString());
             return z * GRID + x;
         }
 
@@ -140,7 +140,6 @@ namespace Unlimiter.Areas
             var g = GameAreaManager.instance;
             g.GetType().GetField("m_unlocking", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, true);
 
-            Debug.Log(index.ToString());
             try
             {
                 int x = index % GRID;
@@ -156,7 +155,6 @@ namespace Unlimiter.Areas
                     float maxX = (float)(((double)(x + 1) - 4.5f) * 1920.0);
                     float minZ = (float)(((double)z - 4.5f) * 1920.0);
                     float maxZ = (float)(((double)(z + 1) - 4.5f) * 1920.0);
-                    Debug.Log("aaa");
                     Singleton<ZoneManager>.instance.UpdateBlocks(minX, minZ, maxX, maxZ);
                     
                     if (Singleton<TerrainManager>.instance.SetDetailedPatch(x, z))
@@ -373,6 +371,7 @@ namespace Unlimiter.Areas
             ++Singleton<GameAreaManager>.instance.m_drawCallData.m_overlayCalls;
             Singleton<RenderManager>.instance.OverlayEffect.DrawEffect(cameraInfo, m_areaMaterial, 0, freeBounds);
         }
+
         [ReplaceMethod]
         private void UpdateAreaTexture()
         {

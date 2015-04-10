@@ -59,17 +59,17 @@ namespace Unlimiter.ResourceManagers
         private static int m_processedCells;
         private static int m_conductiveCells;
         private static bool m_canContinue;
-        private static int m_modifiedX1 = 0;
-        private static int m_modifiedZ1 = 0;
-        private static int m_modifiedX2 = GRID - 1;
-        private static int m_modifiedZ2 = GRID - 1;
+        private static int m_modifiedX1;
+        private static int m_modifiedZ1;
+        private static int m_modifiedX2;
+        private static int m_modifiedZ2;
 
-        public static Node[] m_nodeData = new Node[32768];
-        private static Cell[] m_waterGrid = new Cell[GRID * GRID];
-        private static PulseGroup[] m_waterPulseGroups = new PulseGroup[1024];
-        private static PulseGroup[] m_sewagePulseGroups = new PulseGroup[1024];
-        private static PulseUnit[] m_waterPulseUnits = new PulseUnit[32768];
-        private static PulseUnit[] m_sewagePulseUnits = new PulseUnit[32768];
+        public static Node[] m_nodeData;
+        private static Cell[] m_waterGrid;
+        private static PulseGroup[] m_waterPulseGroups;
+        private static PulseGroup[] m_sewagePulseGroups;
+        private static PulseUnit[] m_waterPulseUnits;
+        private static PulseUnit[] m_sewagePulseUnits;
         private static Texture2D m_waterTexture;
         private static int m_waterPulseGroupCount;
         private static int m_waterPulseUnitStart;
@@ -77,23 +77,44 @@ namespace Unlimiter.ResourceManagers
         private static int m_sewagePulseGroupCount;
         private static int m_sewagePulseUnitStart;
         private static int m_sewagePulseUnitEnd;
-        
+
 
         static FieldInfo m_refreshGrid;
         static FieldInfo undergroundCamera;
 
         public static void Init()
         {
+            m_processedCells = 0;
+            m_conductiveCells = 0;
+            m_canContinue = false;
+            m_modifiedX1 = 0;
+            m_modifiedZ1 = 0;
+            m_modifiedX2 = GRID - 1;
+            m_modifiedZ2 = GRID - 1;
+            m_nodeData = new Node[32768];
+            m_waterGrid = new Cell[GRID * GRID];
+            m_waterPulseGroups = new PulseGroup[1024];
+            m_sewagePulseGroups = new PulseGroup[1024];
+            m_waterPulseUnits = new PulseUnit[32768];
+            m_sewagePulseUnits = new PulseUnit[32768];
+            m_waterPulseGroupCount =0;
+            m_waterPulseUnitStart = 0;
+            m_waterPulseUnitEnd = 0;
+            m_sewagePulseGroupCount = 0;
+            m_sewagePulseUnitStart = 0;
+            m_sewagePulseUnitEnd = 0;
+
             m_refreshGrid = typeof(WaterManager).GetField("m_refreshGrid", BindingFlags.NonPublic | BindingFlags.Instance);
             undergroundCamera = typeof(WaterManager).GetField("m_undergroundCamera", BindingFlags.NonPublic | BindingFlags.Instance);
 
             m_waterTexture = new Texture2D(GRID, GRID, TextureFormat.RGBA32, false, true);
             m_waterTexture.filterMode = FilterMode.Point;
             m_waterTexture.wrapMode = TextureWrapMode.Clamp;
-            Shader.SetGlobalTexture("_ElectricityTexture", m_waterTexture);
+
+            Shader.SetGlobalTexture("_WaterTexture", m_waterTexture);
             UpdateWaterMapping(WaterManager.instance);
         }
-        
+
         internal static void OnDestroy()
         {
             if (m_waterTexture != null)
@@ -165,14 +186,39 @@ namespace Unlimiter.ResourceManagers
                         ushort endNode = instance.m_segments.m_buffer[(int)cell.m_closestPipeSegment].m_endNode;
                         Vector3 position = instance.m_nodes.m_buffer[(int)startNode].m_position;
                         Vector3 position2 = instance.m_nodes.m_buffer[(int)endNode].m_position;
-                        int num = Mathf.RoundToInt(position.x * 0.418300658f) + 2048;
-                        int num2 = Mathf.RoundToInt(position.z * 0.418300658f) + 2048;
-                        int num3 = Mathf.RoundToInt(position2.x * 0.418300658f) + 2048;
-                        int num4 = Mathf.RoundToInt(position2.z * 0.418300658f) + 2048;
-                        color.r = (float)(j * 16 + 8 - num + 128) * 0.003921569f;
-                        color.g = (float)(i * 16 + 8 - num2 + 128) * 0.003921569f;
-                        color.b = (float)(j * 16 + 8 - num3 + 128) * 0.003921569f;
-                        color.a = (float)(i * 16 + 8 - num4 + 128) * 0.003921569f;
+                        float offset = 16;
+                        float halfOffset = 8;
+                        float mult = offset / 38.25f;
+                        var makePositive = GRID * offset / 2;
+
+                        var num = position.x * mult + makePositive;
+                        var num2 = position.z * mult + makePositive;
+                        var num3 = position2.x * mult + makePositive;
+                        var num4 = position2.z * mult + makePositive;
+
+                        float shrink = 9f / 5f;
+                        var min = 0f;
+                        var max = 1.0f;
+                        color.r = (float)Mathf.Clamp((shrink * (j * offset + halfOffset - num) + 128) / 255, 0,1);
+                        if (color.r > max || color.r < min)
+                        {
+                            color.r = 0;
+                        }
+                        color.g = (float)Mathf.Clamp((shrink * (i * offset + halfOffset - num2) + 128) / 255, 0, 1);
+                        if (color.g > max || color.g < min)
+                        {
+                            color.g = 0;
+                        }
+                        color.b = (float)Mathf.Clamp((shrink * (j * offset + halfOffset - num3) + 128) / 255, 0, 1);
+                        if (color.b > max || color.b < min)
+                        {
+                            color.b = 0;
+                        }
+                        color.a = (float)Mathf.Clamp((shrink * (i * offset + halfOffset - num4) + 128) / 255, 0, 1);
+                        if (color.a > max || color.a < min)
+                        {
+                            color.a = 0;
+                        }
                     }
                     else
                     {
@@ -242,7 +288,7 @@ namespace Unlimiter.ResourceManagers
             {
                 return 0;
             }
-            int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID ), 0, GRID - 1);
+            int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(pos.z / 38.25f + HALFGRID), 0, GRID - 1);
             int result = 0;
             if (TryDumpSewageImpl(pos, num, num2, rate, max, ref result))

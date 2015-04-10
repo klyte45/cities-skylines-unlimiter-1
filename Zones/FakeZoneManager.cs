@@ -8,20 +8,20 @@ using Unlimiter.Attributes;
 namespace Unlimiter.Zones
 {
     internal class FakeZoneManager
-    {
-
-        public static ushort[] zoneGrid = new ushort[GRIDSIZE * GRIDSIZE];
-        public static void Init()
-        {
-        }
-
+    {        
         public const int GRIDSIZE = 270;
         public const int HALFGRID = 135;
+
+        public static ushort[] zoneGrid;
+
+        public static void Init()
+        {
+            zoneGrid = new ushort[GRIDSIZE * GRIDSIZE];
+        }
 
         [ReplaceMethod]
         private void InitializeBlock(ushort block, ref ZoneBlock data)
         {
-            Debug.Log("init");
             int num = Mathf.Clamp((int)(data.m_position.x / 64f + HALFGRID), 0, GRIDSIZE - 1);
             int num2 = Mathf.Clamp((int)(data.m_position.z / 64f + HALFGRID), 0, GRIDSIZE - 1);
             int num3 = num2 * GRIDSIZE + num;
@@ -95,7 +95,6 @@ namespace Unlimiter.Zones
         [ReplaceMethod]
         public void UpdateBlocks(float minX, float minZ, float maxX, float maxZ)
         {
-            Debug.Log("updatingBlocks");
             var zm = ZoneManager.instance;
             int num = Mathf.Max((int)((minX - 46f) / 64f + HALFGRID), 0);
             int num2 = Mathf.Max((int)((minZ - 46f) / 64f + HALFGRID), 0);

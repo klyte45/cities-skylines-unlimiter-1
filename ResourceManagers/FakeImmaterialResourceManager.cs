@@ -11,22 +11,34 @@ namespace Unlimiter.ResourceManagers
 {
     class FakeImmaterialResourceManager
     {
-        private static int GRID = 450;
-        private static int HALFGRID = 225;
-        private static ushort[] m_localFinalResources = new ushort[GRID * GRID * 20];
-        private static ushort[] m_localTempResources = new ushort[GRID * GRID * 20];
+        private const int GRID = 450;
+        private const int HALFGRID = 225;
+
+        private static ushort[] m_localFinalResources;
+        private static ushort[] m_localTempResources;
         private static Texture2D m_resourceTexture;
-        private static int[] m_globalFinalResources = new int[20];
-        private static int[] m_globalTempResources = new int[20];
-        private static int[] m_totalFinalResources = new int[20];
-        private static int[] m_totalTempResources = new int[20];
-        private static int[] m_totalTempResourcesMul = new int[20];
-        private static int[] m_modifiedX1 = new int[GRID];
-        private static int[] m_modifiedX2 = new int[GRID];
-        private static bool m_modified = true;
+        private static int[] m_globalFinalResources;
+        private static int[] m_globalTempResources;
+        private static int[] m_totalFinalResources;
+        private static int[] m_totalTempResources;
+        private static int[] m_totalTempResourcesMul;
+        private static int[] m_modifiedX1;
+        private static int[] m_modifiedX2;
+        private static bool m_modified;
 
         public static void Init()
         {
+            
+            m_localFinalResources = new ushort[GRID * GRID * 20];
+            m_localTempResources = new ushort[GRID * GRID * 20];
+            m_globalFinalResources = new int[20];
+            m_globalTempResources = new int[20];
+            m_totalFinalResources = new int[20];
+            m_totalTempResources = new int[20];
+            m_totalTempResourcesMul = new int[20];
+            m_modifiedX1 = new int[GRID];
+            m_modifiedX2 = new int[GRID];
+            m_modified = true;
             m_resourceTexture = new Texture2D(GRID, GRID, TextureFormat.Alpha8, false, true);
             m_resourceTexture.wrapMode = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_ImmaterialResources", m_resourceTexture);            

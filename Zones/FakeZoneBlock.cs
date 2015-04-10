@@ -8,7 +8,6 @@ namespace Unlimiter.Zones
     /// <summary>
     /// None of these methods are exported, as ZoneBlock is a struct.
     /// </summary>
-    [Fixme]
     internal class FakeZoneBlock
     {
         public static void CalculateBlock2(ref ZoneBlock z, ushort blockID)

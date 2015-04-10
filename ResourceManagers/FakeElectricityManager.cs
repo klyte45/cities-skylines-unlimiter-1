@@ -41,25 +41,40 @@ namespace Unlimiter.ResourceManagers
         public const int GRID = 462;
         public const int HALFGRID = 231;
 
-        private static Cell[] electricityGrid = new Cell[GRID * GRID];
-        private static PulseGroup[] m_pulseGroups = new PulseGroup[1024];
-        private static PulseUnit[] m_pulseUnits = new PulseUnit[32768];
-        private static ushort[] m_nodeGroups = new ushort[32768];
+        private static Cell[] electricityGrid;
+        private static PulseGroup[] m_pulseGroups;
+        private static PulseUnit[] m_pulseUnits;
+        private static ushort[] m_nodeGroups;
         private static int m_pulseGroupCount;
         private static int m_pulseUnitStart;
         private static int m_pulseUnitEnd;
         private static int m_processedCells;
         private static int m_conductiveCells;
         private static bool m_canContinue;
-        private static int m_modifiedX1 = 0;
-        private static int m_modifiedZ1 = 0;
-        private static int m_modifiedX2 = GRID - 1;
-        private static int m_modifiedZ2 = GRID - 1;
+        private static int m_modifiedX1;
+        private static int m_modifiedZ1;
+        private static int m_modifiedX2;
+        private static int m_modifiedZ2;
 
         private static Texture2D m_electricityTexture;
         static FieldInfo m_refreshGrid;
         public static void Init()
         {
+
+            electricityGrid = new Cell[GRID * GRID];
+            m_pulseGroups = new PulseGroup[1024];
+            m_pulseUnits = new PulseUnit[32768];
+            m_nodeGroups = new ushort[32768];
+            m_pulseGroupCount = 0;
+            m_pulseUnitStart = 0;
+            m_pulseUnitEnd = 0;
+            m_processedCells = 0;
+            m_conductiveCells = 0;
+            m_canContinue = false;
+            m_modifiedX1 = 0;
+            m_modifiedZ1 = 0;
+            m_modifiedX2 = GRID - 1;
+            m_modifiedZ2 = GRID - 1;
             m_refreshGrid = typeof(ElectricityManager).GetField("m_refreshGrid", BindingFlags.NonPublic | BindingFlags.Instance);
             m_electricityTexture = new Texture2D(GRID, GRID, TextureFormat.RGBA32, false, true);
             m_electricityTexture.filterMode = FilterMode.Point;
@@ -204,7 +219,7 @@ namespace Unlimiter.ResourceManagers
             electricityGrid[num] = cell;
             return rate;
         }
-        
+
         [ReplaceMethod]
         public int TryFetchElectricity(Vector3 pos, int rate, int max)
         {
@@ -243,7 +258,7 @@ namespace Unlimiter.ResourceManagers
         {
             int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(pos.z / 38.25f + HALFGRID), 0, GRID - 1);
-            int num3 = num2 * GRID  + num;
+            int num3 = num2 * GRID + num;
             int conductivity = (int)electricityGrid[num3].m_conductivity;
             if (conductivity >= 1)
             {
@@ -671,7 +686,7 @@ namespace Unlimiter.ResourceManagers
                             }
                         }
                     }
-                    if (num == GRID-1)
+                    if (num == GRID - 1)
                     {
                         for (int m = 0; m < m_pulseGroupCount; m++)
                         {
@@ -819,7 +834,7 @@ namespace Unlimiter.ResourceManagers
             AreaModified(num, num2, num3, num4);
         }
 
-        
+
 
         [ReplaceMethod]
         public void UpdateData(SimulationManager.UpdateMode mode)

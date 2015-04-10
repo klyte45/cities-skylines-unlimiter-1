@@ -9,7 +9,12 @@ namespace Unlimiter.Zones
     internal class FakeZoneTool
     {
 
-        
+        private static FastList<FillPos> m_fillPositions;
+        public static void Init()
+        {
+            m_fillPositions = new FastList<FillPos>();
+        }
+
         [ReplaceMethod]
         private static void ApplyBrush(ZoneTool z)
         {
@@ -122,6 +127,7 @@ namespace Unlimiter.Zones
                 }
             }
         }
+
         [ReplaceMethod]
         private static void ApplyFill(ZoneTool z)
         {
@@ -176,7 +182,7 @@ namespace Unlimiter.Zones
             Singleton<EffectManager>.instance.DispatchEffect(effect, instance2, spawnArea, Vector3.zero, 0.0f, 1f, Singleton<AudioManager>.instance.DefaultGroup);
         }
 
-
+        [ReplaceMethod]
         private static void ApplyZoning(ZoneTool z)
         {
             Vector3 m_startPosition = (Vector3)z.GetType().GetField("m_startPosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
@@ -259,8 +265,6 @@ namespace Unlimiter.Zones
             return b;
         }
 
-        private static FastList<FillPos> m_fillPositions = new FastList<FillPos>();
-
         private static void CalculateFillBuffer(ZoneTool zt, Vector3 position, Vector3 direction, float angle, ushort blockIndex, ref ZoneBlock block, ItemClass.Zone requiredZone, bool occupied1, bool occupied2)
         {
             var m_fillBuffer1 = (ulong[])typeof(ZoneTool).GetField("m_fillBuffer1", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(zt);
@@ -304,6 +308,7 @@ namespace Unlimiter.Zones
             }
         }
 
+        [ReplaceMethod]
         private static bool CalculateFillBuffer(ZoneTool z, Vector3 position, Vector3 direction, ItemClass.Zone requiredZone, bool occupied1, bool occupied2)
         {
             var m_fillBuffer1 = (ulong[])typeof(ZoneTool).GetField("m_fillBuffer1", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(z);

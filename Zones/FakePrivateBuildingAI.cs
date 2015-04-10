@@ -9,7 +9,6 @@ namespace Unlimiter.Zones
     internal class FakePrivateBuildingAI
     {
         [ReplaceMethod]
-        [Fixme("This uses the building grid, which is ENTIRELY different? That -may- be left to fix after zones technically work")]
         public static void CheckNearbyBuildingZones(Vector3 position)
         {
             int num1 = Mathf.Max((int)(((double)position.x - 35.0) / 64.0 + 135.0), 0);

@@ -6,7 +6,12 @@ namespace Unlimiter.Areas
 {
     internal class FakeNetManager
     {
-        private static int[] m_tileNodesCount = new int[17 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
+        private static int[] m_tileNodesCount;
+
+        public static void Init()
+        {
+            m_tileNodesCount = new int[17 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
+        }
 
         [ReplaceMethod]
         public static void AddTileNode(NetManager nm, Vector3 position, ItemClass.Service service, ItemClass.SubService subService)
