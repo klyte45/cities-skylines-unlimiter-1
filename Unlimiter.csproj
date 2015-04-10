@@ -62,6 +62,7 @@
     <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
     <Compile Include="DataExtension.cs" />
     <Compile Include="ResourceManagers\FakeElectricityManager.cs" />
+    <Compile Include="ResourceManagers\FakeDistrictManager.cs" />
     <Compile Include="ResourceManagers\FakeImmaterialResourceManager.cs" />
     <Compile Include="ResourceManagers\FakeWaterManager.cs" />
     <Compile Include="Terrain\FakeTerrainManager.cs" />

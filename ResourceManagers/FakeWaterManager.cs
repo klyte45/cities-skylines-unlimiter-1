@@ -620,8 +620,8 @@ namespace Unlimiter.ResourceManagers
                 PulseUnit pulseUnit;
                 pulseUnit.m_group = group;
                 pulseUnit.m_node = 0;
-                pulseUnit.m_x = (byte)x;
-                pulseUnit.m_z = (byte)z;
+                pulseUnit.m_x = (ushort)x;
+                pulseUnit.m_z = (ushort)z;
                 m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit;
                 if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
                 {
@@ -639,8 +639,8 @@ namespace Unlimiter.ResourceManagers
                 PulseUnit pulseUnit;
                 pulseUnit.m_group = group;
                 pulseUnit.m_node = 0;
-                pulseUnit.m_x = (byte)x;
-                pulseUnit.m_z = (byte)z;
+                pulseUnit.m_x = (ushort)x;
+                pulseUnit.m_z = (ushort)z;
                 m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit;
                 if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
                 {
@@ -823,7 +823,7 @@ namespace Unlimiter.ResourceManagers
             {
                 uint currentFrameIndex = Singleton<SimulationManager>.instance.m_currentFrameIndex;
                 int num = (int)(currentFrameIndex & 511u);
-                if (num < 128)
+                if (num < HALFGRID)
                 {
                     if (num < 128)
                     {
@@ -956,153 +956,153 @@ namespace Unlimiter.ResourceManagers
                     {
                         num7 = 1000000000;
                     }
-                    //while (m_canContinue && m_processedCells < num7)
-                    //{
-                    //    m_canContinue = false;
-                    //    int waterPulseUnitEnd = m_waterPulseUnitEnd;
-                    //    int sewagePulseUnitEnd = m_sewagePulseUnitEnd;
-                    //    while (m_waterPulseUnitStart != waterPulseUnitEnd)
-                    //    {
-                    //        PulseUnit pulseUnit3 = m_waterPulseUnits[m_waterPulseUnitStart];
-                    //        if (++m_waterPulseUnitStart == m_waterPulseUnits.Length)
-                    //        {
-                    //            m_waterPulseUnitStart = 0;
-                    //        }
-                    //        pulseUnit3.m_group = GetRootWaterGroup(pulseUnit3.m_group);
-                    //        uint num8 = m_waterPulseGroups[(int)pulseUnit3.m_group].m_curPressure;
-                    //        if (pulseUnit3.m_node == 0)
-                    //        {
-                    //            int num9 = (int)pulseUnit3.m_z * GRID + (int)pulseUnit3.m_x;
-                    //            Cell cell2 = m_waterGrid[num9];
-                    //            if (cell2.m_conductivity != 0 && !cell2.m_tmpHasWater && num8 != 0u)
-                    //            {
-                    //                int num10 = Mathf.Clamp((int)(-(int)cell2.m_currentWaterPressure), 0, (int)num8);
-                    //                num8 -= (uint)num10;
-                    //                cell2.m_currentWaterPressure += (short)num10;
-                    //                if (cell2.m_currentWaterPressure >= 0)
-                    //                {
-                    //                    cell2.m_tmpHasWater = true;
-                    //                    cell2.m_pollution = m_nodeData[(int)m_waterPulseGroups[(int)pulseUnit3.m_group].m_node].m_pollution;
-                    //                }
-                    //                m_waterGrid[num9] = cell2;
-                    //                m_waterPulseGroups[(int)pulseUnit3.m_group].m_curPressure = num8;
-                    //            }
-                    //            if (num8 != 0u)
-                    //            {
-                    //                m_processedCells++;
-                    //            }
-                    //            else
-                    //            {
-                    //                m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit3;
-                    //                if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
-                    //                {
-                    //                    m_waterPulseUnitEnd = 0;
-                    //                }
-                    //            }
-                    //        }
-                    //        else if (num8 != 0u)
-                    //        {
-                    //            m_processedCells++;
-                    //            NetNode netNode = Singleton<NetManager>.instance.m_nodes.m_buffer[(int)pulseUnit3.m_node];
-                    //            if (netNode.m_flags != NetNode.Flags.None && netNode.m_buildIndex < (currentFrameIndex & 4294967168u))
-                    //            {
-                    //                byte pollution = m_nodeData[(int)m_waterPulseGroups[(int)pulseUnit3.m_group].m_node].m_pollution;
-                    //                m_nodeData[(int)pulseUnit3.m_node].m_pollution = pollution;
-                    //                if (netNode.m_building != 0)
-                    //                {
-                    //                    Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)netNode.m_building].m_waterPollution = pollution;
-                    //                }
-                    //                ConductWaterToCells(pulseUnit3.m_group, netNode.m_position.x, netNode.m_position.z, 100f);
-                    //                for (int l = 0; l < 8; l++)
-                    //                {
-                    //                    ushort segment = netNode.GetSegment(l);
-                    //                    if (segment != 0)
-                    //                    {
-                    //                        ushort startNode = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_startNode;
-                    //                        ushort endNode = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_endNode;
-                    //                        ushort num11 = (startNode != pulseUnit3.m_node) ? startNode : endNode;
-                    //                        ConductWaterToNode(num11, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)num11], pulseUnit3.m_group);
-                    //                    }
-                    //                }
-                    //            }
-                    //        }
-                    //        else
-                    //        {
-                    //            m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit3;
-                    //            if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
-                    //            {
-                    //                m_waterPulseUnitEnd = 0;
-                    //            }
-                    //        }
-                    //    }
-                    //    while (m_sewagePulseUnitStart != sewagePulseUnitEnd)
-                    //    {
-                    //        PulseUnit pulseUnit4 = m_sewagePulseUnits[m_sewagePulseUnitStart];
-                    //        if (++m_sewagePulseUnitStart == m_sewagePulseUnits.Length)
-                    //        {
-                    //            m_sewagePulseUnitStart = 0;
-                    //        }
-                    //        pulseUnit4.m_group = GetRootSewageGroup(pulseUnit4.m_group);
-                    //        uint num12 = m_sewagePulseGroups[(int)pulseUnit4.m_group].m_curPressure;
-                    //        if (pulseUnit4.m_node == 0)
-                    //        {
-                    //            int num13 = (int)pulseUnit4.m_z * GRID + (int)pulseUnit4.m_x;
-                    //            Cell cell3 = m_waterGrid[num13];
-                    //            if (cell3.m_conductivity != 0 && !cell3.m_tmpHasSewage && num12 != 0u)
-                    //            {
-                    //                int num14 = Mathf.Clamp((int)(-(int)cell3.m_currentSewagePressure), 0, (int)num12);
-                    //                num12 -= (uint)num14;
-                    //                cell3.m_currentSewagePressure += (short)num14;
-                    //                if (cell3.m_currentSewagePressure >= 0)
-                    //                {
-                    //                    cell3.m_tmpHasSewage = true;
-                    //                }
-                    //                m_waterGrid[num13] = cell3;
-                    //                m_sewagePulseGroups[(int)pulseUnit4.m_group].m_curPressure = num12;
-                    //            }
-                    //            if (num12 != 0u)
-                    //            {
-                    //                m_processedCells++;
-                    //            }
-                    //            else
-                    //            {
-                    //                m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit4;
-                    //                if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
-                    //                {
-                    //                    m_sewagePulseUnitEnd = 0;
-                    //                }
-                    //            }
-                    //        }
-                    //        else if (num12 != 0u)
-                    //        {
-                    //            m_processedCells++;
-                    //            NetNode netNode2 = Singleton<NetManager>.instance.m_nodes.m_buffer[(int)pulseUnit4.m_node];
-                    //            if (netNode2.m_flags != NetNode.Flags.None && netNode2.m_buildIndex < (currentFrameIndex & 4294967168u))
-                    //            {
-                    //                ConductSewageToCells(pulseUnit4.m_group, netNode2.m_position.x, netNode2.m_position.z, 100f);
-                    //                for (int m = 0; m < 8; m++)
-                    //                {
-                    //                    ushort segment2 = netNode2.GetSegment(m);
-                    //                    if (segment2 != 0)
-                    //                    {
-                    //                        ushort startNode2 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment2].m_startNode;
-                    //                        ushort endNode2 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment2].m_endNode;
-                    //                        ushort num15 = (startNode2 != pulseUnit4.m_node) ? startNode2 : endNode2;
-                    //                        ConductSewageToNode(num15, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)num15], pulseUnit4.m_group);
-                    //                    }
-                    //                }
-                    //            }
-                    //        }
-                    //        else
-                    //        {
-                    //            m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit4;
-                    //            if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
-                    //            {
-                    //                m_sewagePulseUnitEnd = 0;
-                    //            }
-                    //        }
-                    //    }
-                    //}
+                    while (m_canContinue && m_processedCells < num7)
+                    {
+                        m_canContinue = false;
+                        int waterPulseUnitEnd = m_waterPulseUnitEnd;
+                        int sewagePulseUnitEnd = m_sewagePulseUnitEnd;
+                        while (m_waterPulseUnitStart != waterPulseUnitEnd)
+                        {
+                            PulseUnit pulseUnit3 = m_waterPulseUnits[m_waterPulseUnitStart];
+                            if (++m_waterPulseUnitStart == m_waterPulseUnits.Length)
+                            {
+                                m_waterPulseUnitStart = 0;
+                            }
+                            pulseUnit3.m_group = GetRootWaterGroup(pulseUnit3.m_group);
+                            uint num8 = m_waterPulseGroups[(int)pulseUnit3.m_group].m_curPressure;
+                            if (pulseUnit3.m_node == 0)
+                            {
+                                int num9 = (int)pulseUnit3.m_z * GRID + (int)pulseUnit3.m_x;
+                                Cell cell2 = m_waterGrid[num9];
+                                if (cell2.m_conductivity != 0 && !cell2.m_tmpHasWater && num8 != 0u)
+                                {
+                                    int num10 = Mathf.Clamp((int)(-(int)cell2.m_currentWaterPressure), 0, (int)num8);
+                                    num8 -= (uint)num10;
+                                    cell2.m_currentWaterPressure += (short)num10;
+                                    if (cell2.m_currentWaterPressure >= 0)
+                                    {
+                                        cell2.m_tmpHasWater = true;
+                                        cell2.m_pollution = m_nodeData[(int)m_waterPulseGroups[(int)pulseUnit3.m_group].m_node].m_pollution;
+                                    }
+                                    m_waterGrid[num9] = cell2;
+                                    m_waterPulseGroups[(int)pulseUnit3.m_group].m_curPressure = num8;
+                                }
+                                if (num8 != 0u)
+                                {
+                                    m_processedCells++;
+                                }
+                                else
+                                {
+                                    m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit3;
+                                    if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
+                                    {
+                                        m_waterPulseUnitEnd = 0;
+                                    }
+                                }
+                            }
+                            else if (num8 != 0u)
+                            {
+                                m_processedCells++;
+                                NetNode netNode = Singleton<NetManager>.instance.m_nodes.m_buffer[(int)pulseUnit3.m_node];
+                                if (netNode.m_flags != NetNode.Flags.None && netNode.m_buildIndex < (currentFrameIndex & 4294967168u))
+                                {
+                                    byte pollution = m_nodeData[(int)m_waterPulseGroups[(int)pulseUnit3.m_group].m_node].m_pollution;
+                                    m_nodeData[(int)pulseUnit3.m_node].m_pollution = pollution;
+                                    if (netNode.m_building != 0)
+                                    {
+                                        Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)netNode.m_building].m_waterPollution = pollution;
+                                    }
+                                    ConductWaterToCells(pulseUnit3.m_group, netNode.m_position.x, netNode.m_position.z, 100f);
+                                    for (int l = 0; l < 8; l++)
+                                    {
+                                        ushort segment = netNode.GetSegment(l);
+                                        if (segment != 0)
+                                        {
+                                            ushort startNode = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_startNode;
+                                            ushort endNode = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_endNode;
+                                            ushort num11 = (startNode != pulseUnit3.m_node) ? startNode : endNode;
+                                            ConductWaterToNode(num11, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)num11], pulseUnit3.m_group);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit3;
+                                if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
+                                {
+                                    m_waterPulseUnitEnd = 0;
+                                }
+                            }
+                        }
+                        while (m_sewagePulseUnitStart != sewagePulseUnitEnd)
+                        {
+                            PulseUnit pulseUnit4 = m_sewagePulseUnits[m_sewagePulseUnitStart];
+                            if (++m_sewagePulseUnitStart == m_sewagePulseUnits.Length)
+                            {
+                                m_sewagePulseUnitStart = 0;
+                            }
+                            pulseUnit4.m_group = GetRootSewageGroup(pulseUnit4.m_group);
+                            uint num12 = m_sewagePulseGroups[(int)pulseUnit4.m_group].m_curPressure;
+                            if (pulseUnit4.m_node == 0)
+                            {
+                                int num13 = (int)pulseUnit4.m_z * GRID + (int)pulseUnit4.m_x;
+                                Cell cell3 = m_waterGrid[num13];
+                                if (cell3.m_conductivity != 0 && !cell3.m_tmpHasSewage && num12 != 0u)
+                                {
+                                    int num14 = Mathf.Clamp((int)(-(int)cell3.m_currentSewagePressure), 0, (int)num12);
+                                    num12 -= (uint)num14;
+                                    cell3.m_currentSewagePressure += (short)num14;
+                                    if (cell3.m_currentSewagePressure >= 0)
+                                    {
+                                        cell3.m_tmpHasSewage = true;
+                                    }
+                                    m_waterGrid[num13] = cell3;
+                                    m_sewagePulseGroups[(int)pulseUnit4.m_group].m_curPressure = num12;
+                                }
+                                if (num12 != 0u)
+                                {
+                                    m_processedCells++;
+                                }
+                                else
+                                {
+                                    m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit4;
+                                    if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
+                                    {
+                                        m_sewagePulseUnitEnd = 0;
+                                    }
+                                }
+                            }
+                            else if (num12 != 0u)
+                            {
+                                m_processedCells++;
+                                NetNode netNode2 = Singleton<NetManager>.instance.m_nodes.m_buffer[(int)pulseUnit4.m_node];
+                                if (netNode2.m_flags != NetNode.Flags.None && netNode2.m_buildIndex < (currentFrameIndex & 4294967168u))
+                                {
+                                    ConductSewageToCells(pulseUnit4.m_group, netNode2.m_position.x, netNode2.m_position.z, 100f);
+                                    for (int m = 0; m < 8; m++)
+                                    {
+                                        ushort segment2 = netNode2.GetSegment(m);
+                                        if (segment2 != 0)
+                                        {
+                                            ushort startNode2 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment2].m_startNode;
+                                            ushort endNode2 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment2].m_endNode;
+                                            ushort num15 = (startNode2 != pulseUnit4.m_node) ? startNode2 : endNode2;
+                                            ConductSewageToNode(num15, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)num15], pulseUnit4.m_group);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit4;
+                                if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
+                                {
+                                    m_sewagePulseUnitEnd = 0;
+                                }
+                            }
+                        }
+                    }
                     if (num == GRID - 1)
                     {
                         for (int n = 0; n < m_waterPulseGroupCount; n++)

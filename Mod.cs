@@ -8,7 +8,6 @@ using UnityEngine;
 using Unlimiter.Areas;
 using Unlimiter.Attributes;
 using Unlimiter.ResourceManagers;
-using Unlimiter.Trees;
 using Unlimiter.Zones;
 
 namespace Unlimiter
@@ -51,6 +50,8 @@ namespace Unlimiter
             FakeGameAreaManager.Init();
             FakeElectricityManager.Init();
             FakeWaterManager.Init();
+            FakeDistrictManager.Init();
+
             var toReplace = new Type[]
                 {
                     //typeof(BuildingDecoration), typeof(LimitBuildingDecoration),
@@ -71,6 +72,7 @@ namespace Unlimiter
                     typeof(ElectricityManager), typeof(FakeElectricityManager),
                     typeof(WaterManager), typeof(FakeWaterManager),
                     typeof(ImmaterialResourceManager), typeof(FakeImmaterialResourceManager),
+                    typeof(DistrictManager), typeof(FakeDistrictManager),
                 };
 
             redirects = new Dictionary<MethodInfo, RedirectCallsState>();
@@ -126,6 +128,8 @@ namespace Unlimiter
             {
                 RedirectionHelper.RevertRedirect(kvp.Key, kvp.Value);
             }
+            FakeImmaterialResourceManager.OnDestroy();
+            FakeDistrictManager.OnDestroy();
         }
     }
 }
