@@ -1,6 +1,9 @@
 ﻿using ColossalFramework;
+using ColossalFramework.IO;
+using ICities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -10,8 +13,255 @@ using Unlimiter.Attributes;
 
 namespace Unlimiter.ResourceManagers
 {
-    class FakeElectricityManager
+    public class FakeElectricityManager : SerializableDataExtensionBase
     {
+        public class Data : IDataContainer
+        {
+            public void Serialize(DataSerializer s)
+            {
+                Cell[] electricityGrid = FakeElectricityManager.electricityGrid;
+                int num = electricityGrid.Length;
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
+                for (int i = 0; i < num; i++)
+                {
+                    @byte.Write(electricityGrid[i].m_conductivity);
+                }
+                @byte.EndWrite();
+                EncodedArray.Short @short = EncodedArray.Short.BeginWrite(s);
+                for (int j = 0; j < num; j++)
+                {
+                    if (electricityGrid[j].m_conductivity != 0)
+                    {
+                        @short.Write(electricityGrid[j].m_currentCharge);
+                    }
+                }
+                @short.EndWrite();
+                EncodedArray.UShort uShort = EncodedArray.UShort.BeginWrite(s);
+                for (int k = 0; k < num; k++)
+                {
+                    if (electricityGrid[k].m_conductivity != 0)
+                    {
+                        uShort.Write(electricityGrid[k].m_extraCharge);
+                    }
+                }
+                uShort.EndWrite();
+                EncodedArray.UShort uShort2 = EncodedArray.UShort.BeginWrite(s);
+                for (int l = 0; l < num; l++)
+                {
+                    if (electricityGrid[l].m_conductivity != 0)
+                    {
+                        uShort2.Write(electricityGrid[l].m_pulseGroup);
+                    }
+                }
+                uShort2.EndWrite();
+                EncodedArray.Bool @bool = EncodedArray.Bool.BeginWrite(s);
+                for (int m = 0; m < num; m++)
+                {
+                    if (electricityGrid[m].m_conductivity != 0)
+                    {
+                        @bool.Write(electricityGrid[m].m_electrified);
+                    }
+                }
+                @bool.EndWrite();
+                EncodedArray.Bool bool2 = EncodedArray.Bool.BeginWrite(s);
+                for (int n = 0; n < num; n++)
+                {
+                    if (electricityGrid[n].m_conductivity != 0)
+                    {
+                        bool2.Write(electricityGrid[n].m_tmpElectrified);
+                    }
+                }
+                bool2.EndWrite();
+
+                s.WriteUInt16((uint)FakeElectricityManager.m_pulseGroupCount);
+                for (int num2 = 0; num2 < FakeElectricityManager.m_pulseGroupCount; num2++)
+                {
+                    s.WriteUInt32(FakeElectricityManager.m_pulseGroups[num2].m_origCharge);
+                    s.WriteUInt32(FakeElectricityManager.m_pulseGroups[num2].m_curCharge);
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseGroups[num2].m_mergeIndex);
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseGroups[num2].m_mergeCount);
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseGroups[num2].m_x);
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseGroups[num2].m_z);
+                }
+                int num3 = FakeElectricityManager.m_pulseUnitEnd - FakeElectricityManager.m_pulseUnitStart;
+                if (num3 < 0)
+                {
+                    num3 += FakeElectricityManager.m_pulseUnits.Length;
+                }
+                s.WriteUInt16((uint)num3);
+                int num4 = FakeElectricityManager.m_pulseUnitStart;
+                while (num4 != FakeElectricityManager.m_pulseUnitEnd)
+                {
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseUnits[num4].m_group);
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseUnits[num4].m_node);
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseUnits[num4].m_x);
+                    s.WriteUInt16((uint)FakeElectricityManager.m_pulseUnits[num4].m_z);
+                    if (++num4 >= FakeElectricityManager.m_pulseUnits.Length)
+                    {
+                        num4 = 0;
+                    }
+                }
+                EncodedArray.UShort uShort3 = EncodedArray.UShort.BeginWrite(s);
+                for (int num5 = 0; num5 < 32768; num5++)
+                {
+                    uShort3.Write(FakeElectricityManager.m_nodeGroups[num5]);
+                }
+                uShort3.EndWrite();
+
+                s.WriteInt32(FakeElectricityManager.m_processedCells);
+                s.WriteInt32(FakeElectricityManager.m_conductiveCells);
+                s.WriteBool(FakeElectricityManager.m_canContinue);
+            }
+
+            public void Deserialize(DataSerializer s)
+            {
+                Cell[] electricityGrid = new Cell[GRID * GRID];
+                int num = electricityGrid.Length;
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
+                for (int i = 0; i < num; i++)
+                {
+                    electricityGrid[i].m_conductivity = @byte.Read();
+                }
+                @byte.EndRead();
+
+                EncodedArray.Short @short = EncodedArray.Short.BeginRead(s);
+                for (int l = 0; l < num; l++)
+                {
+                    if (electricityGrid[l].m_conductivity != 0)
+                    {
+                        electricityGrid[l].m_currentCharge = @short.Read();
+                    }
+                    else
+                    {
+                        electricityGrid[l].m_currentCharge = 0;
+                    }
+                }
+                @short.EndRead();
+                EncodedArray.UShort uShort = EncodedArray.UShort.BeginRead(s);
+                for (int m = 0; m < num; m++)
+                {
+                    if (electricityGrid[m].m_conductivity != 0)
+                    {
+                        electricityGrid[m].m_extraCharge = uShort.Read();
+                    }
+                    else
+                    {
+                        electricityGrid[m].m_extraCharge = 0;
+                    }
+                }
+                uShort.EndRead();
+                EncodedArray.UShort uShort2 = EncodedArray.UShort.BeginRead(s);
+                for (int n = 0; n < num; n++)
+                {
+                    if (electricityGrid[n].m_conductivity != 0)
+                    {
+                        electricityGrid[n].m_pulseGroup = uShort2.Read();
+                    }
+                    else
+                    {
+                        electricityGrid[n].m_pulseGroup = 65535;
+                    }
+                }
+                uShort2.EndRead();
+
+                EncodedArray.Bool @bool = EncodedArray.Bool.BeginRead(s);
+                for (int num3 = 0; num3 < num; num3++)
+                {
+                    if (electricityGrid[num3].m_conductivity != 0 )
+                    {
+                        electricityGrid[num3].m_electrified = @bool.Read();
+                    }
+                    else
+                    {
+                        electricityGrid[num3].m_electrified = false;
+                    }
+                }
+                @bool.EndRead();
+                EncodedArray.Bool bool2 = EncodedArray.Bool.BeginRead(s);
+                for (int num4 = 0; num4 < num; num4++)
+                {
+                    if (electricityGrid[num4].m_conductivity != 0 )
+                    {
+                        electricityGrid[num4].m_tmpElectrified = bool2.Read();
+                    }
+                    else
+                    {
+                        electricityGrid[num4].m_tmpElectrified = false;
+                    }
+                }
+                bool2.EndRead();
+                FakeElectricityManager.electricityGrid = electricityGrid;
+
+                FakeElectricityManager.m_pulseGroups = new PulseGroup[1024];
+                FakeElectricityManager.m_pulseGroupCount = (int)s.ReadUInt16();
+                for (int num5 = 0; num5 < FakeElectricityManager.m_pulseGroupCount; num5++)
+                {
+                    FakeElectricityManager.m_pulseGroups[num5].m_origCharge = s.ReadUInt32();
+                    FakeElectricityManager.m_pulseGroups[num5].m_curCharge = s.ReadUInt32();
+                    FakeElectricityManager.m_pulseGroups[num5].m_mergeIndex = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseGroups[num5].m_mergeCount = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseGroups[num5].m_x = (byte)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseGroups[num5].m_z = (byte)s.ReadUInt16();
+                }
+
+                FakeElectricityManager.m_pulseUnits = new PulseUnit[32768];
+                int num6 = (int)s.ReadUInt16();
+                FakeElectricityManager.m_pulseUnitStart = 0;
+                FakeElectricityManager.m_pulseUnitEnd = num6 % FakeElectricityManager.m_pulseUnits.Length;
+                for (int num7 = 0; num7 < num6; num7++)
+                {
+                    FakeElectricityManager.m_pulseUnits[num7].m_group = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseUnits[num7].m_node = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseUnits[num7].m_x = (byte)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseUnits[num7].m_z = (byte)s.ReadUInt16();
+                }
+
+
+                FakeElectricityManager.m_nodeGroups = new ushort[32768];
+                EncodedArray.UShort uShort4 = EncodedArray.UShort.BeginRead(s);
+                for (int num8 = 0; num8 < 32768; num8++)
+                {
+                    FakeElectricityManager.m_nodeGroups[num8] = uShort4.Read();
+                }
+                uShort4.EndRead();
+                
+                FakeElectricityManager.m_processedCells = s.ReadInt32();
+                FakeElectricityManager.m_conductiveCells = s.ReadInt32();
+                FakeElectricityManager.m_canContinue = s.ReadBool();
+            }
+
+            public void AfterDeserialize(DataSerializer s)
+            {                
+                Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();                
+                ElectricityManager.instance.AreaModified(0, 0, GRID, GRID);                
+            }
+        }
+
+        private const string id = "fakeEM";
+
+        public override void OnSaveData()
+        {
+            using (var ms = new MemoryStream())
+            {
+                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
+                var data = ms.ToArray();
+                serializableDataManager.SaveData(id, data);
+            }
+        }
+
+        public override void OnLoadData()
+        {
+            if (!serializableDataManager.EnumerateData().Contains(id))
+            {
+                return;
+            }
+            var data = serializableDataManager.LoadData(id);
+            using (var ms = new MemoryStream(data))
+            {
+                var s = DataSerializer.Deserialize<Data>(ms, DataSerializer.Mode.Memory);
+            }
+        }
+
         public struct Cell
         {
             public short m_currentCharge;
@@ -21,7 +271,7 @@ namespace Unlimiter.ResourceManagers
             public bool m_tmpElectrified;
             public bool m_electrified;
         }
-        private struct PulseGroup
+        public struct PulseGroup
         {
             public uint m_origCharge;
             public uint m_curCharge;
@@ -30,7 +280,7 @@ namespace Unlimiter.ResourceManagers
             public ushort m_x;
             public ushort m_z;
         }
-        private struct PulseUnit
+        public struct PulseUnit
         {
             public ushort m_group;
             public ushort m_node;
@@ -41,16 +291,17 @@ namespace Unlimiter.ResourceManagers
         public const int GRID = 462;
         public const int HALFGRID = 231;
 
-        private static Cell[] electricityGrid;
-        private static PulseGroup[] m_pulseGroups;
-        private static PulseUnit[] m_pulseUnits;
-        private static ushort[] m_nodeGroups;
-        private static int m_pulseGroupCount;
-        private static int m_pulseUnitStart;
-        private static int m_pulseUnitEnd;
-        private static int m_processedCells;
-        private static int m_conductiveCells;
-        private static bool m_canContinue;
+        public static Cell[] electricityGrid;
+        public static PulseGroup[] m_pulseGroups;
+        public static PulseUnit[] m_pulseUnits;
+        public static int m_pulseGroupCount;
+        public static int m_pulseUnitStart;
+        public static int m_pulseUnitEnd;
+        public static int m_processedCells;
+        public static int m_conductiveCells;
+        public static bool m_canContinue;
+        public static ushort[] m_nodeGroups;
+
         private static int m_modifiedX1;
         private static int m_modifiedZ1;
         private static int m_modifiedX2;
@@ -58,19 +309,23 @@ namespace Unlimiter.ResourceManagers
 
         private static Texture2D m_electricityTexture;
         static FieldInfo m_refreshGrid;
+
+
         public static void Init()
         {
-
-            electricityGrid = new Cell[GRID * GRID];
-            m_pulseGroups = new PulseGroup[1024];
-            m_pulseUnits = new PulseUnit[32768];
-            m_nodeGroups = new ushort[32768];
-            m_pulseGroupCount = 0;
-            m_pulseUnitStart = 0;
-            m_pulseUnitEnd = 0;
-            m_processedCells = 0;
-            m_conductiveCells = 0;
-            m_canContinue = false;
+            if (electricityGrid == null)
+            {
+                electricityGrid = new Cell[GRID * GRID];
+                m_pulseGroups = new PulseGroup[1024];
+                m_pulseUnits = new PulseUnit[32768];
+                m_nodeGroups = new ushort[32768];
+                m_pulseGroupCount = 0;
+                m_pulseUnitStart = 0;
+                m_pulseUnitEnd = 0;
+                m_processedCells = 0;
+                m_conductiveCells = 0;
+                m_canContinue = false;
+            }
             m_modifiedX1 = 0;
             m_modifiedZ1 = 0;
             m_modifiedX2 = GRID - 1;
@@ -81,6 +336,8 @@ namespace Unlimiter.ResourceManagers
             m_electricityTexture.wrapMode = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_ElectricityTexture", m_electricityTexture);
             UpdateElectricityMapping(ElectricityManager.instance);
+
+            ElectricityManager.instance.AreaModified(0, 0, GRID - 1, GRID - 1);
         }
 
         internal static void OnDestroy()
@@ -90,6 +347,7 @@ namespace Unlimiter.ResourceManagers
                 UnityEngine.Object.Destroy(m_electricityTexture);
                 m_electricityTexture = null;
             }
+            electricityGrid = null;
         }
 
         [ReplaceMethod]

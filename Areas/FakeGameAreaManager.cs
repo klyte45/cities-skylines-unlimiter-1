@@ -147,7 +147,6 @@ namespace Unlimiter.Areas
                 if (g.CanUnlock(x, z))
                 {
                     g.m_areaNotUnlocked.Deactivate();
-                    CODebugBase<LogChannel>.Log(LogChannel.Core, "Unlocking new area");
                     areaGrid[index] = ++g.m_areaCount;
                     g.GetType().GetField("m_areasUpdated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, true);
 
@@ -169,10 +168,6 @@ namespace Unlimiter.Areas
                     areaGrid[index] = 0;
 
                     g.GetType().GetField("m_areasUpdated", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(g, true);
-                }
-                else
-                {
-                    DebugOutputPanel.AddMessage(ColossalFramework.Plugins.PluginManager.MessageType.Warning, "Can not unlock.");
                 }
                 return false;
             }

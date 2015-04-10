@@ -17,10 +17,19 @@ namespace Unlimiter.Zones
         public static void Init()
         {
             zoneGrid = new ushort[GRIDSIZE * GRIDSIZE];
+
+            var zm = ZoneManager.instance;
+            for(var i  = 0;  i < zm.m_blocks.m_buffer.Length; i +=1)
+            {
+                if (zm.m_blocks.m_buffer[i].m_flags != 0)
+                {
+                    InitializeBlock(zm, (ushort)i, ref zm.m_blocks.m_buffer[i]);
+                }
+            }
         }
 
         [ReplaceMethod]
-        private void InitializeBlock(ushort block, ref ZoneBlock data)
+        private static void InitializeBlock(ZoneManager zm, ushort block, ref ZoneBlock data)
         {
             int num = Mathf.Clamp((int)(data.m_position.x / 64f + HALFGRID), 0, GRIDSIZE - 1);
             int num2 = Mathf.Clamp((int)(data.m_position.z / 64f + HALFGRID), 0, GRIDSIZE - 1);

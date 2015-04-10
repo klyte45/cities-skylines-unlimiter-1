@@ -1,7 +1,10 @@
 ﻿using ColossalFramework;
+using ColossalFramework.IO;
 using ColossalFramework.Math;
+using ICities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,8 +14,484 @@ using Unlimiter.Attributes;
 
 namespace Unlimiter.ResourceManagers
 {
-    class FakeWaterManager
+    public class FakeWaterManager : SerializableDataExtensionBase
     {
+        public class Data : IDataContainer
+        {
+            public void Serialize(DataSerializer s)
+            {
+                Cell[] waterGrid = FakeWaterManager.m_waterGrid;
+                int num = waterGrid.Length;
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
+                for (int i = 0; i < num; i++)
+                {
+                    @byte.Write(waterGrid[i].m_conductivity);
+                }
+                @byte.EndWrite();
+                EncodedArray.Short @short = EncodedArray.Short.BeginWrite(s);
+                for (int j = 0; j < num; j++)
+                {
+                    if (waterGrid[j].m_conductivity != 0)
+                    {
+                        @short.Write(waterGrid[j].m_currentWaterPressure);
+                    }
+                }
+                @short.EndWrite();
+                EncodedArray.Short short2 = EncodedArray.Short.BeginWrite(s);
+                for (int k = 0; k < num; k++)
+                {
+                    if (waterGrid[k].m_conductivity != 0)
+                    {
+                        short2.Write(waterGrid[k].m_currentSewagePressure);
+                    }
+                }
+                short2.EndWrite();
+                EncodedArray.UShort uShort = EncodedArray.UShort.BeginWrite(s);
+                for (int l = 0; l < num; l++)
+                {
+                    if (waterGrid[l].m_conductivity != 0)
+                    {
+                        uShort.Write(waterGrid[l].m_waterPulseGroup);
+                    }
+                }
+                uShort.EndWrite();
+                EncodedArray.UShort uShort2 = EncodedArray.UShort.BeginWrite(s);
+                for (int m = 0; m < num; m++)
+                {
+                    if (waterGrid[m].m_conductivity != 0)
+                    {
+                        uShort2.Write(waterGrid[m].m_sewagePulseGroup);
+                    }
+                }
+                uShort2.EndWrite();
+                EncodedArray.UShort uShort3 = EncodedArray.UShort.BeginWrite(s);
+                for (int n = 0; n < num; n++)
+                {
+                    if (waterGrid[n].m_conductivity != 0)
+                    {
+                        uShort3.Write(waterGrid[n].m_closestPipeSegment);
+                    }
+                }
+                uShort3.EndWrite();
+                EncodedArray.Bool @bool = EncodedArray.Bool.BeginWrite(s);
+                for (int num2 = 0; num2 < num; num2++)
+                {
+                    if (waterGrid[num2].m_conductivity != 0)
+                    {
+                        @bool.Write(waterGrid[num2].m_hasWater);
+                    }
+                }
+                @bool.EndWrite();
+                EncodedArray.Bool bool2 = EncodedArray.Bool.BeginWrite(s);
+                for (int num3 = 0; num3 < num; num3++)
+                {
+                    if (waterGrid[num3].m_conductivity != 0)
+                    {
+                        bool2.Write(waterGrid[num3].m_hasSewage);
+                    }
+                }
+                bool2.EndWrite();
+                EncodedArray.Bool bool3 = EncodedArray.Bool.BeginWrite(s);
+                for (int num4 = 0; num4 < num; num4++)
+                {
+                    if (waterGrid[num4].m_conductivity != 0)
+                    {
+                        bool3.Write(waterGrid[num4].m_tmpHasWater);
+                    }
+                }
+                bool3.EndWrite();
+                EncodedArray.Bool bool4 = EncodedArray.Bool.BeginWrite(s);
+                for (int num5 = 0; num5 < num; num5++)
+                {
+                    if (waterGrid[num5].m_conductivity != 0)
+                    {
+                        bool4.Write(waterGrid[num5].m_tmpHasSewage);
+                    }
+                }
+                bool4.EndWrite();
+                EncodedArray.Byte byte2 = EncodedArray.Byte.BeginWrite(s);
+                for (int num6 = 0; num6 < num; num6++)
+                {
+                    if (waterGrid[num6].m_conductivity != 0)
+                    {
+                        byte2.Write(waterGrid[num6].m_pollution);
+                    }
+                }
+                byte2.EndWrite();
+
+                s.WriteUInt16((uint)FakeWaterManager.m_waterPulseGroupCount);
+                for (int num7 = 0; num7 < FakeWaterManager.m_waterPulseGroupCount; num7++)
+                {
+                    s.WriteUInt32(FakeWaterManager.m_waterPulseGroups[num7].m_origPressure);
+                    s.WriteUInt32(FakeWaterManager.m_waterPulseGroups[num7].m_curPressure);
+                    s.WriteUInt16((uint)FakeWaterManager.m_waterPulseGroups[num7].m_mergeIndex);
+                    s.WriteUInt16((uint)FakeWaterManager.m_waterPulseGroups[num7].m_mergeCount);
+                    s.WriteUInt16((uint)FakeWaterManager.m_waterPulseGroups[num7].m_node);
+                }
+                s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseGroupCount);
+                for (int num8 = 0; num8 < FakeWaterManager.m_sewagePulseGroupCount; num8++)
+                {
+                    s.WriteUInt32(FakeWaterManager.m_sewagePulseGroups[num8].m_origPressure);
+                    s.WriteUInt32(FakeWaterManager.m_sewagePulseGroups[num8].m_curPressure);
+                    s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseGroups[num8].m_mergeIndex);
+                    s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseGroups[num8].m_mergeCount);
+                    s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseGroups[num8].m_node);
+                }
+                int num9 = FakeWaterManager.m_waterPulseUnitEnd - FakeWaterManager.m_waterPulseUnitStart;
+                if (num9 < 0)
+                {
+                    num9 += FakeWaterManager.m_waterPulseUnits.Length;
+                }
+                s.WriteUInt16((uint)num9);
+                int num10 = FakeWaterManager.m_waterPulseUnitStart;
+                while (num10 != FakeWaterManager.m_waterPulseUnitEnd)
+                {
+                    s.WriteUInt16((uint)FakeWaterManager.m_waterPulseUnits[num10].m_group);
+                    s.WriteUInt16((uint)FakeWaterManager.m_waterPulseUnits[num10].m_node);
+                    s.WriteUInt16((uint)FakeWaterManager.m_waterPulseUnits[num10].m_x);
+                    s.WriteUInt16((uint)FakeWaterManager.m_waterPulseUnits[num10].m_z);
+                    if (++num10 >= FakeWaterManager.m_waterPulseUnits.Length)
+                    {
+                        num10 = 0;
+                    }
+                }
+                int num11 = FakeWaterManager.m_sewagePulseUnitEnd - FakeWaterManager.m_sewagePulseUnitStart;
+                if (num11 < 0)
+                {
+                    num11 += FakeWaterManager.m_sewagePulseUnits.Length;
+                }
+                s.WriteUInt16((uint)num11);
+                int num12 = FakeWaterManager.m_sewagePulseUnitStart;
+                while (num12 != FakeWaterManager.m_sewagePulseUnitEnd)
+                {
+                    s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseUnits[num12].m_group);
+                    s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseUnits[num12].m_node);
+                    s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseUnits[num12].m_x);
+                    s.WriteUInt16((uint)FakeWaterManager.m_sewagePulseUnits[num12].m_z);
+                    if (++num12 >= FakeWaterManager.m_sewagePulseUnits.Length)
+                    {
+                        num12 = 0;
+                    }
+                }
+                EncodedArray.UShort uShort4 = EncodedArray.UShort.BeginWrite(s);
+                for (int num13 = 0; num13 < 32768; num13++)
+                {
+                    uShort4.Write(FakeWaterManager.m_nodeData[num13].m_waterPulseGroup);
+                }
+                uShort4.EndWrite();
+                EncodedArray.UShort uShort5 = EncodedArray.UShort.BeginWrite(s);
+                for (int num14 = 0; num14 < 32768; num14++)
+                {
+                    uShort5.Write(FakeWaterManager.m_nodeData[num14].m_curWaterPressure);
+                }
+                uShort5.EndWrite();
+                EncodedArray.UShort uShort6 = EncodedArray.UShort.BeginWrite(s);
+                for (int num15 = 0; num15 < 32768; num15++)
+                {
+                    uShort6.Write(FakeWaterManager.m_nodeData[num15].m_extraWaterPressure);
+                }
+                uShort6.EndWrite();
+                EncodedArray.UShort uShort7 = EncodedArray.UShort.BeginWrite(s);
+                for (int num16 = 0; num16 < 32768; num16++)
+                {
+                    uShort7.Write(FakeWaterManager.m_nodeData[num16].m_sewagePulseGroup);
+                }
+                uShort7.EndWrite();
+                EncodedArray.UShort uShort8 = EncodedArray.UShort.BeginWrite(s);
+                for (int num17 = 0; num17 < 32768; num17++)
+                {
+                    uShort8.Write(FakeWaterManager.m_nodeData[num17].m_curSewagePressure);
+                }
+                uShort8.EndWrite();
+                EncodedArray.UShort uShort9 = EncodedArray.UShort.BeginWrite(s);
+                for (int num18 = 0; num18 < 32768; num18++)
+                {
+                    uShort9.Write(FakeWaterManager.m_nodeData[num18].m_extraSewagePressure);
+                }
+                uShort9.EndWrite();
+                EncodedArray.Byte byte3 = EncodedArray.Byte.BeginWrite(s);
+                for (int num19 = 0; num19 < 32768; num19++)
+                {
+                    byte3.Write(FakeWaterManager.m_nodeData[num19].m_pollution);
+                }
+                byte3.EndWrite();
+                s.WriteInt32(FakeWaterManager.m_processedCells);
+                s.WriteInt32(FakeWaterManager.m_conductiveCells);
+                s.WriteBool(FakeWaterManager.m_canContinue);
+            }
+
+            public void Deserialize(DataSerializer s)
+            {
+                Cell[] waterGrid = new Cell[GRID * GRID];
+                int num = waterGrid.Length;
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
+                for (int i = 0; i < num; i++)
+                {
+                    waterGrid[i].m_conductivity = @byte.Read();
+                }
+                @byte.EndRead();
+                EncodedArray.Short @short = EncodedArray.Short.BeginRead(s);
+                for (int j = 0; j < num; j++)
+                {
+                    if (waterGrid[j].m_conductivity != 0)
+                    {
+                        waterGrid[j].m_currentWaterPressure = @short.Read();
+                    }
+                    else
+                    {
+                        waterGrid[j].m_currentWaterPressure = 0;
+                    }
+                }
+                @short.EndRead();
+                EncodedArray.Short short2 = EncodedArray.Short.BeginRead(s);
+                for (int k = 0; k < num; k++)
+                {
+                    if (waterGrid[k].m_conductivity != 0)
+                    {
+                        waterGrid[k].m_currentSewagePressure = short2.Read();
+                    }
+                    else
+                    {
+                        waterGrid[k].m_currentSewagePressure = 0;
+                    }
+                }
+                short2.EndRead();
+                EncodedArray.UShort uShort = EncodedArray.UShort.BeginRead(s);
+                for (int l = 0; l < num; l++)
+                {
+                    if (waterGrid[l].m_conductivity != 0)
+                    {
+                        waterGrid[l].m_waterPulseGroup = uShort.Read();
+                    }
+                    else
+                    {
+                        waterGrid[l].m_waterPulseGroup = 65535;
+                    }
+                }
+                uShort.EndRead();
+                EncodedArray.UShort uShort2 = EncodedArray.UShort.BeginRead(s);
+                for (int m = 0; m < num; m++)
+                {
+                    if (waterGrid[m].m_conductivity != 0)
+                    {
+                        waterGrid[m].m_sewagePulseGroup = uShort2.Read();
+                    }
+                    else
+                    {
+                        waterGrid[m].m_sewagePulseGroup = 65535;
+                    }
+                }
+                uShort2.EndRead();
+                    EncodedArray.UShort uShort3 = EncodedArray.UShort.BeginRead(s);
+                    for (int n = 0; n < num; n++)
+                    {
+                        if (waterGrid[n].m_conductivity != 0)
+                        {
+                            waterGrid[n].m_closestPipeSegment = uShort3.Read();
+                        }
+                        else
+                        {
+                            waterGrid[n].m_closestPipeSegment = 0;
+                        }
+                    }
+                    uShort3.EndRead();
+
+                EncodedArray.Bool @bool = EncodedArray.Bool.BeginRead(s);
+                for (int num2 = 0; num2 < num; num2++)
+                {
+                    if (waterGrid[num2].m_conductivity != 0)
+                    {
+                        waterGrid[num2].m_hasWater = @bool.Read();
+                    }
+                    else
+                    {
+                        waterGrid[num2].m_hasWater = false;
+                    }
+                }
+                @bool.EndRead();
+
+                EncodedArray.Bool bool2 = EncodedArray.Bool.BeginRead(s);
+                for (int num3 = 0; num3 < num; num3++)
+                {
+                    if (waterGrid[num3].m_conductivity != 0)
+                    {
+                        waterGrid[num3].m_hasSewage = bool2.Read();
+                    }
+                    else
+                    {
+                        waterGrid[num3].m_hasSewage = false;
+                    }
+                }
+                bool2.EndRead();
+
+                EncodedArray.Bool bool3 = EncodedArray.Bool.BeginRead(s);
+                for (int num4 = 0; num4 < num; num4++)
+                {
+                    if (waterGrid[num4].m_conductivity != 0)
+                    {
+                        waterGrid[num4].m_tmpHasWater = bool3.Read();
+                    }
+                    else
+                    {
+                        waterGrid[num4].m_tmpHasWater = false;
+                    }
+                }
+                bool3.EndRead();
+
+                EncodedArray.Bool bool4 = EncodedArray.Bool.BeginRead(s);
+                for (int num5 = 0; num5 < num; num5++)
+                {
+                    if (waterGrid[num5].m_conductivity != 0)
+                    {
+                        waterGrid[num5].m_tmpHasSewage = bool4.Read();
+                    }
+                    else
+                    {
+                        waterGrid[num5].m_tmpHasSewage = false;
+                    }
+                }
+                bool4.EndRead();
+
+                    EncodedArray.Byte byte2 = EncodedArray.Byte.BeginRead(s);
+                    for (int num6 = 0; num6 < num; num6++)
+                    {
+                        if (waterGrid[num6].m_conductivity != 0)
+                        {
+                            waterGrid[num6].m_pollution = byte2.Read();
+                        }
+                        else
+                        {
+                            waterGrid[num6].m_pollution = 0;
+                        }
+                    }
+                    byte2.EndRead();
+                    FakeWaterManager.m_waterGrid = waterGrid;
+                    FakeWaterManager.m_nodeData = new Node[32768];
+                    FakeWaterManager.m_waterPulseGroups = new PulseGroup[1024];
+                    FakeWaterManager.m_sewagePulseGroups = new PulseGroup[1024];
+                    FakeWaterManager.m_waterPulseUnits = new PulseUnit[32768];
+                    FakeWaterManager.m_sewagePulseUnits = new PulseUnit[32768];
+
+                    FakeWaterManager.m_waterPulseGroupCount = (int)s.ReadUInt16();
+                    for (int num7 = 0; num7 < FakeWaterManager.m_waterPulseGroupCount; num7++)
+                {
+                    FakeWaterManager.m_waterPulseGroups[num7].m_origPressure = s.ReadUInt32();
+                    FakeWaterManager.m_waterPulseGroups[num7].m_curPressure = s.ReadUInt32();
+                    FakeWaterManager.m_waterPulseGroups[num7].m_mergeIndex = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_waterPulseGroups[num7].m_mergeCount = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_waterPulseGroups[num7].m_node = (ushort)s.ReadUInt16();
+                }
+                    FakeWaterManager.m_sewagePulseGroupCount = (int)s.ReadUInt16();
+                    for (int num8 = 0; num8 < FakeWaterManager.m_sewagePulseGroupCount; num8++)
+                {
+                    FakeWaterManager.m_sewagePulseGroups[num8].m_origPressure = s.ReadUInt32();
+                    FakeWaterManager.m_sewagePulseGroups[num8].m_curPressure = s.ReadUInt32();
+                    FakeWaterManager.m_sewagePulseGroups[num8].m_mergeIndex = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_sewagePulseGroups[num8].m_mergeCount = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_sewagePulseGroups[num8].m_node = (ushort)s.ReadUInt16();
+                }
+                int num9 = (int)s.ReadUInt16();
+                FakeWaterManager.m_waterPulseUnitStart = 0;
+                FakeWaterManager.m_waterPulseUnitEnd = num9 % FakeWaterManager.m_waterPulseUnits.Length;
+                for (int num10 = 0; num10 < num9; num10++)
+                {
+                    FakeWaterManager.m_waterPulseUnits[num10].m_group = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_waterPulseUnits[num10].m_node = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_waterPulseUnits[num10].m_x = (byte)s.ReadUInt16();
+                    FakeWaterManager.m_waterPulseUnits[num10].m_z = (byte)s.ReadUInt16();
+                }
+                int num11 = (int)s.ReadUInt16();
+                FakeWaterManager.m_sewagePulseUnitStart = 0;
+                FakeWaterManager.m_sewagePulseUnitEnd = num11 % FakeWaterManager.m_sewagePulseUnits.Length;
+                for (int num12 = 0; num12 < num11; num12++)
+                {
+                    FakeWaterManager.m_sewagePulseUnits[num12].m_group = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_sewagePulseUnits[num12].m_node = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_sewagePulseUnits[num12].m_x = (byte)s.ReadUInt16();
+                    FakeWaterManager.m_sewagePulseUnits[num12].m_z = (byte)s.ReadUInt16();
+                }
+                int num13 = 32768;
+                EncodedArray.UShort uShort4 = EncodedArray.UShort.BeginRead(s);
+                for (int num15 = 0; num15 < num13; num15++)
+                {
+                    FakeWaterManager.m_nodeData[num15].m_waterPulseGroup = uShort4.Read();
+                }
+                uShort4.EndRead();
+                EncodedArray.UShort uShort5 = EncodedArray.UShort.BeginRead(s);
+                for (int num16 = 0; num16 < num13; num16++)
+                {
+                    FakeWaterManager.m_nodeData[num16].m_curWaterPressure = uShort5.Read();
+                }
+                uShort5.EndRead();
+                EncodedArray.UShort uShort6 = EncodedArray.UShort.BeginRead(s);
+                for (int num17 = 0; num17 < num13; num17++)
+                {
+                    FakeWaterManager.m_nodeData[num17].m_extraWaterPressure = uShort6.Read();
+                }
+                uShort6.EndRead();
+                EncodedArray.UShort uShort7 = EncodedArray.UShort.BeginRead(s);
+                for (int num18 = 0; num18 < num13; num18++)
+                {
+                    FakeWaterManager.m_nodeData[num18].m_sewagePulseGroup = uShort7.Read();
+                }
+                uShort7.EndRead();
+                EncodedArray.UShort uShort8 = EncodedArray.UShort.BeginRead(s);
+                for (int num19 = 0; num19 < num13; num19++)
+                {
+                    FakeWaterManager.m_nodeData[num19].m_curSewagePressure = uShort8.Read();
+                }
+                uShort8.EndRead();
+                EncodedArray.UShort uShort9 = EncodedArray.UShort.BeginRead(s);
+                for (int num20 = 0; num20 < num13; num20++)
+                {
+                    FakeWaterManager.m_nodeData[num20].m_extraSewagePressure = uShort9.Read();
+                }
+                uShort9.EndRead();
+
+                EncodedArray.Byte byte3 = EncodedArray.Byte.BeginRead(s);
+                for (int num21 = 0; num21 < num13; num21++)
+                {
+                    FakeWaterManager.m_nodeData[num21].m_pollution = byte3.Read();
+                }
+                byte3.EndRead();
+
+                FakeWaterManager.m_processedCells = s.ReadInt32();
+                FakeWaterManager.m_conductiveCells = s.ReadInt32();
+                FakeWaterManager.m_canContinue = s.ReadBool();
+            }
+
+            public void AfterDeserialize(DataSerializer s)
+            {
+                Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();                
+                WaterManager.instance.AreaModified(0, 0, GRID - 1, GRID - 1);
+            }
+        }
+
+        private const string id = "fakeWM";
+
+        public override void OnSaveData()
+        {
+            using (var ms = new MemoryStream())
+            {
+                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
+                var data = ms.ToArray();
+                serializableDataManager.SaveData(id, data);
+            }
+        }
+
+        public override void OnLoadData()
+        {
+            if (!serializableDataManager.EnumerateData().Contains(id))
+            {
+                return;
+            }
+            var data = serializableDataManager.LoadData(id);
+            using (var ms = new MemoryStream(data))
+            {
+                var s = DataSerializer.Deserialize<Data>(ms, DataSerializer.Mode.Memory);
+            }
+        }
+
         public struct Cell
         {
             public short m_currentWaterPressure;
@@ -78,31 +557,34 @@ namespace Unlimiter.ResourceManagers
         private static int m_sewagePulseUnitStart;
         private static int m_sewagePulseUnitEnd;
 
-
         static FieldInfo m_refreshGrid;
         static FieldInfo undergroundCamera;
 
         public static void Init()
         {
-            m_processedCells = 0;
-            m_conductiveCells = 0;
-            m_canContinue = false;
+            if (m_waterGrid == null)
+            {                
+                m_processedCells = 0;
+                m_conductiveCells = 0;
+                m_canContinue = false;
+                m_nodeData = new Node[32768];
+                m_waterGrid = new Cell[GRID * GRID];
+                m_waterPulseGroups = new PulseGroup[1024];
+                m_sewagePulseGroups = new PulseGroup[1024];
+                m_waterPulseUnits = new PulseUnit[32768];
+                m_sewagePulseUnits = new PulseUnit[32768];
+                m_waterPulseGroupCount = 0;
+                m_waterPulseUnitStart = 0;
+                m_waterPulseUnitEnd = 0;
+                m_sewagePulseGroupCount = 0;
+                m_sewagePulseUnitStart = 0;
+                m_sewagePulseUnitEnd = 0;
+
+            }
             m_modifiedX1 = 0;
             m_modifiedZ1 = 0;
             m_modifiedX2 = GRID - 1;
             m_modifiedZ2 = GRID - 1;
-            m_nodeData = new Node[32768];
-            m_waterGrid = new Cell[GRID * GRID];
-            m_waterPulseGroups = new PulseGroup[1024];
-            m_sewagePulseGroups = new PulseGroup[1024];
-            m_waterPulseUnits = new PulseUnit[32768];
-            m_sewagePulseUnits = new PulseUnit[32768];
-            m_waterPulseGroupCount =0;
-            m_waterPulseUnitStart = 0;
-            m_waterPulseUnitEnd = 0;
-            m_sewagePulseGroupCount = 0;
-            m_sewagePulseUnitStart = 0;
-            m_sewagePulseUnitEnd = 0;
 
             m_refreshGrid = typeof(WaterManager).GetField("m_refreshGrid", BindingFlags.NonPublic | BindingFlags.Instance);
             undergroundCamera = typeof(WaterManager).GetField("m_undergroundCamera", BindingFlags.NonPublic | BindingFlags.Instance);

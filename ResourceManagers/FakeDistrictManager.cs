@@ -1,6 +1,9 @@
 ﻿using ColossalFramework;
+using ColossalFramework.IO;
+using ICities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -10,8 +13,146 @@ using Unlimiter.Attributes;
 
 namespace Unlimiter.ResourceManagers
 {
-    class FakeDistrictManager
+    public class FakeDistrictManager : SerializableDataExtensionBase
     {
+        public class Data : IDataContainer
+        {
+
+            public void AfterDeserialize(DataSerializer s)
+            {
+                Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();
+                DistrictManager instance = Singleton<DistrictManager>.instance;
+                District[] buffer = instance.m_districts.m_buffer;
+                DistrictManager.Cell[] districtGrid = FakeDistrictManager.m_districtGrid;
+                int num = districtGrid.Length;
+                for (int i = 0; i < num; i++)
+                {
+                    DistrictManager.Cell cell = districtGrid[i];
+                    District[] expr_60_cp_0 = buffer;
+                    byte expr_60_cp_1 = cell.m_district1;
+                    expr_60_cp_0[(int)expr_60_cp_1].m_totalAlpha = expr_60_cp_0[(int)expr_60_cp_1].m_totalAlpha + (uint)cell.m_alpha1;
+                    District[] expr_80_cp_0 = buffer;
+                    byte expr_80_cp_1 = cell.m_district2;
+                    expr_80_cp_0[(int)expr_80_cp_1].m_totalAlpha = expr_80_cp_0[(int)expr_80_cp_1].m_totalAlpha + (uint)cell.m_alpha2;
+                    District[] expr_A0_cp_0 = buffer;
+                    byte expr_A0_cp_1 = cell.m_district3;
+                    expr_A0_cp_0[(int)expr_A0_cp_1].m_totalAlpha = expr_A0_cp_0[(int)expr_A0_cp_1].m_totalAlpha + (uint)cell.m_alpha3;
+                    District[] expr_C0_cp_0 = buffer;
+                    byte expr_C0_cp_1 = cell.m_district4;
+                    expr_C0_cp_0[(int)expr_C0_cp_1].m_totalAlpha = expr_C0_cp_0[(int)expr_C0_cp_1].m_totalAlpha + (uint)cell.m_alpha4;
+                }
+                instance.m_districtCount = (int)(instance.m_districts.ItemCount() - 1u);
+                instance.AreaModified(0, 0, 511, 511, true);
+                instance.NamesModified();
+            }
+
+            public void Deserialize(DataSerializer s)
+            {
+                var districtGrid = new DistrictManager.Cell[GRID * GRID];
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
+                int num2 = districtGrid.Length;
+                for (int num21 = 0; num21 < num2; num21++)
+                {
+                    districtGrid[num21].m_district1 = @byte.Read();
+                }
+                for (int num22 = 0; num22 < num2; num22++)
+                {
+                    districtGrid[num22].m_district2 = @byte.Read();
+                }
+                for (int num23 = 0; num23 < num2; num23++)
+                {
+                    districtGrid[num23].m_district3 = @byte.Read();
+                }
+                for (int num24 = 0; num24 < num2; num24++)
+                {
+                    districtGrid[num24].m_district4 = @byte.Read();
+                }
+                for (int num25 = 0; num25 < num2; num25++)
+                {
+                    districtGrid[num25].m_alpha1 = @byte.Read();
+                }
+                for (int num26 = 0; num26 < num2; num26++)
+                {
+                    districtGrid[num26].m_alpha2 = @byte.Read();
+                }
+                for (int num27 = 0; num27 < num2; num27++)
+                {
+                    districtGrid[num27].m_alpha3 = @byte.Read();
+                }
+                for (int num28 = 0; num28 < num2; num28++)
+                {
+                    districtGrid[num28].m_alpha4 = @byte.Read();
+                }
+                @byte.EndRead();
+
+                FakeDistrictManager.m_districtGrid = districtGrid;
+                Debug.Log("data load: " + districtGrid.Length);
+            }
+
+            public void Serialize(DataSerializer s)
+            {
+                var districtGrid = FakeDistrictManager.m_districtGrid;
+                int num2 = districtGrid.Length;
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
+                for (int num19 = 0; num19 < num2; num19++)
+                {
+                    @byte.Write(districtGrid[num19].m_district1);
+                }
+                for (int num20 = 0; num20 < num2; num20++)
+                {
+                    @byte.Write(districtGrid[num20].m_district2);
+                }
+                for (int num21 = 0; num21 < num2; num21++)
+                {
+                    @byte.Write(districtGrid[num21].m_district3);
+                }
+                for (int num22 = 0; num22 < num2; num22++)
+                {
+                    @byte.Write(districtGrid[num22].m_district4);
+                }
+                for (int num23 = 0; num23 < num2; num23++)
+                {
+                    @byte.Write(districtGrid[num23].m_alpha1);
+                }
+                for (int num24 = 0; num24 < num2; num24++)
+                {
+                    @byte.Write(districtGrid[num24].m_alpha2);
+                }
+                for (int num25 = 0; num25 < num2; num25++)
+                {
+                    @byte.Write(districtGrid[num25].m_alpha3);
+                }
+                for (int num26 = 0; num26 < num2; num26++)
+                {
+                    @byte.Write(districtGrid[num26].m_alpha4);
+                }
+                @byte.EndWrite();                
+            }
+        }
+
+        private const string id = "fakeDM";
+
+        public override void OnSaveData()
+        {
+            using (var ms = new MemoryStream())
+            {
+                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory,1u,new Data());
+                var data = ms.ToArray();
+                serializableDataManager.SaveData(id, data);   
+            }
+        }
+
+        public override void OnLoadData()
+        {
+            if (!serializableDataManager.EnumerateData().Contains(id)){
+                return;
+            }
+            var data = serializableDataManager.LoadData(id);
+            using (var ms = new MemoryStream(data)){
+                var s = DataSerializer.Deserialize<Data>(ms,DataSerializer.Mode.Memory);
+           }
+        }
+
         public static int GRID = 900;
         public static int HALFGRID = 450;
         public static DistrictManager.Cell[] m_districtGrid;
@@ -60,27 +201,31 @@ namespace Unlimiter.ResourceManagers
                 UnityEngine.Object.Destroy(m_districtTexture2);
                 m_districtTexture2 = null;
             }
+            m_districtGrid = null;
         }
 
         public static void Init()
         {
-            m_districtGrid = new DistrictManager.Cell[GRID * GRID];
+            if (m_districtGrid == null)
+            {
+                m_districtGrid = new DistrictManager.Cell[GRID * GRID];
+                for (int i = 0; i < m_districtGrid.Length; i++)
+                {
+                    m_districtGrid[i].m_district1 = 0;
+                    m_districtGrid[i].m_district2 = 1;
+                    m_districtGrid[i].m_district3 = 2;
+                    m_districtGrid[i].m_district4 = 3;
+                    m_districtGrid[i].m_alpha1 = 255;
+                    m_districtGrid[i].m_alpha2 = 0;
+                    m_districtGrid[i].m_alpha3 = 0;
+                    m_districtGrid[i].m_alpha4 = 0;
+                }
+            }
             m_colorBuffer = new Color32[GRID * GRID];
             m_distanceBuffer = new int[HALFGRID * HALFGRID];
             m_indexBuffer = new int[HALFGRID * HALFGRID];
             m_tempData = new TempDistrictData[128];
 
-            for (int i = 0; i < m_districtGrid.Length; i++)
-            {
-                m_districtGrid[i].m_district1 = 0;
-                m_districtGrid[i].m_district2 = 1;
-                m_districtGrid[i].m_district3 = 2;
-                m_districtGrid[i].m_district4 = 3;
-                m_districtGrid[i].m_alpha1 = 255;
-                m_districtGrid[i].m_alpha2 = 0;
-                m_districtGrid[i].m_alpha3 = 0;
-                m_districtGrid[i].m_alpha4 = 0;
-            }
             var dm = typeof(DistrictManager);
             m_modifiedX1 = dm.GetField("m_modifiedX1",BindingFlags.Instance| BindingFlags.NonPublic);
             m_modifiedZ1 = dm.GetField("m_modifiedZ1", BindingFlags.Instance | BindingFlags.NonPublic);
