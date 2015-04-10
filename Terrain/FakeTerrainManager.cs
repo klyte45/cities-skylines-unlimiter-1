@@ -14,35 +14,5 @@ namespace Unlimiter.Terrain
             tm.m_detailSurface = new TerrainManager.SurfaceCell[230400 * 81];
             tm.m_detailZones = new TerrainManager.ZoneCell[230400 * 81];
         }
-
-        //[ReplaceMethod]
-        //public TerrainManager.SurfaceCell GetSurfaceCell(int x, int z)
-        //{
-        //    var tm = TerrainManager.instance;
-        //    int num = Mathf.Clamp(x / 480,2,6);
-        //    int num2 = Mathf.Clamp(z / 480,2, 6);
-        //    int num3 = num2 * 9 + num;
-        //    int simDetailIndex = tm.m_patches[num3].m_simDetailIndex;
-        //    if (simDetailIndex == 0)
-        //    {
-        //        return tm.SampleRawSurface((float)x * 0.25f, (float)z * 0.25f);
-        //    }
-        //    int num4 = (simDetailIndex - 1) * 480 * 480;
-        //    int num5 = x - num * 480;
-        //    int num6 = z - num2 * 480;
-        //    if ((num5 == 0 && num != 0 && tm.m_patches[num3 - 1].m_simDetailIndex == 0) || (num6 == 0 && num2 != 0 && tm.m_patches[num3 - 9].m_simDetailIndex == 0))
-        //    {
-        //        TerrainManager.SurfaceCell result = tm.SampleRawSurface((float)x * 0.25f, (float)z * 0.25f);
-        //        result.m_clipped = tm.m_detailSurface[num4 + num6 * 480 + num5].m_clipped;
-        //        return result;
-        //    }
-        //    if ((num5 == 479 && num != 8 && tm.m_patches[num3 + 1].m_simDetailIndex == 0) || (num6 == 479 && num2 != 8 && tm.m_patches[num3 + 9].m_simDetailIndex == 0))
-        //    {
-        //        TerrainManager.SurfaceCell result2 = tm.SampleRawSurface((float)x * 0.25f, (float)z * 0.25f);
-        //        result2.m_clipped = tm.m_detailSurface[num4 + num6 * 480 + num5].m_clipped;
-        //        return result2;
-        //    }
-        //    return tm.m_detailSurface[num4 + num6 * 480 + num5];
-        //}
     }
 }
