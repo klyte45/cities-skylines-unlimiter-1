@@ -19,7 +19,7 @@ namespace Unlimiter
         {
             get
             {
-                return "Allows you to place way more trees!";
+                return "More Tiles!";
             }
         }
 
@@ -27,7 +27,7 @@ namespace Unlimiter
         {
             get
             {
-                return "Tree Unlimiter";
+                return "81 Tiles";
             }
         }
     }
@@ -36,6 +36,7 @@ namespace Unlimiter
     {
         public static bool IsEnabled;
         private static Dictionary<MethodInfo, RedirectCallsState> redirects;
+
         public override void OnLevelLoaded(LoadMode mode)
         {
             EnableHooks();
