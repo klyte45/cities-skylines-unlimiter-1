@@ -86,7 +86,6 @@ namespace EightyOne.ResourceManagers
                 @byte.EndRead();
 
                 FakeDistrictManager.m_districtGrid = districtGrid;
-                Debug.Log("data load: " + districtGrid.Length);
             }
 
             public void Serialize(DataSerializer s)

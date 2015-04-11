@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Attributes;
+using System.Collections;
 
 namespace EightyOne.ResourceManagers
 {
@@ -563,23 +564,47 @@ namespace EightyOne.ResourceManagers
         public static void Init()
         {
             if (m_waterGrid == null)
-            {                
-                m_processedCells = 0;
-                m_conductiveCells = 0;
-                m_canContinue = false;
-                m_nodeData = new Node[32768];
+            {                                
+                var wm = WaterManager.instance;
                 m_waterGrid = new Cell[GRID * GRID];
-                m_waterPulseGroups = new PulseGroup[1024];
-                m_sewagePulseGroups = new PulseGroup[1024];
-                m_waterPulseUnits = new PulseUnit[32768];
-                m_sewagePulseUnits = new PulseUnit[32768];
-                m_waterPulseGroupCount = 0;
-                m_waterPulseUnitStart = 0;
-                m_waterPulseUnitEnd = 0;
-                m_sewagePulseGroupCount = 0;
-                m_sewagePulseUnitStart = 0;
-                m_sewagePulseUnitEnd = 0;
+                var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
+                int oldGridSize = 256;
+                int diff = (GRID - oldGridSize) / 2;
+                var fields = Unlimiter.GetFieldsFromStruct(m_waterGrid[0], oldGrid[0]);
+                for (var i = 0; i < oldGridSize; i += 1)
+                {
+                    for (var j = 0; j < oldGridSize; j += 1)
+                    {
+                        m_waterGrid[(j + diff) * GRID + (i + diff)] = (Cell)Unlimiter.CopyStruct(new Cell(), oldGrid[j * oldGridSize + i], fields);
+                    }
+                }
 
+                m_nodeData = new Node[32768];
+                Unlimiter.CopyStructArray(m_nodeData, wm, "m_nodeData");
+
+                m_waterPulseGroups = new PulseGroup[1024];
+                Unlimiter.CopyStructArray(m_waterPulseGroups, wm, "m_waterPulseGroups");
+                m_sewagePulseGroups = new PulseGroup[1024];
+                Unlimiter.CopyStructArray(m_sewagePulseGroups, wm, "m_sewagePulseGroups");
+
+                m_waterPulseUnits = new PulseUnit[32768];
+                Unlimiter.CopyStructArray(m_waterPulseUnits, wm, "m_waterPulseUnits");
+                m_sewagePulseUnits = new PulseUnit[32768];
+                Unlimiter.CopyStructArray(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
+
+
+                m_waterPulseGroupCount = (int)Unlimiter.GetPropertyValue(wm, "m_waterPulseGroupCount");
+                m_sewagePulseGroupCount = (int)Unlimiter.GetPropertyValue(wm, "m_sewagePulseGroupCount");
+
+                m_waterPulseUnitStart = 0;
+                m_sewagePulseUnitStart = 0;
+
+                m_waterPulseUnitEnd = (int)Unlimiter.GetPropertyValue(wm, "m_waterPulseUnitEnd") % m_waterPulseUnits.Length;
+                m_sewagePulseUnitEnd = (int)Unlimiter.GetPropertyValue(wm, "m_sewagePulseUnitEnd") % m_sewagePulseUnits.Length;
+
+                m_processedCells = (int)Unlimiter.GetPropertyValue(wm, "m_processedCells");
+                m_conductiveCells = (int)Unlimiter.GetPropertyValue(wm, "m_conductiveCells");
+                m_canContinue = (bool)Unlimiter.GetPropertyValue(wm, "m_canContinue");            
             }
             m_modifiedX1 = 0;
             m_modifiedZ1 = 0;

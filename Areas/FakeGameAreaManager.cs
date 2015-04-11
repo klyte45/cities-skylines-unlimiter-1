@@ -40,8 +40,7 @@ namespace EightyOne.Areas
 
             public void AfterDeserialize(DataSerializer s)
             {                
-                typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(GameAreaManager.instance,true);
-                Debug.Log("Deserialize");
+                typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(GameAreaManager.instance,true);                
             }
         }
 
@@ -332,8 +331,7 @@ namespace EightyOne.Areas
         public static void GetTileXZ(GameAreaManager gm,  int tile, out int x, out int z)
         {
             x = tile % GRID;
-            z = tile / GRID;
-            Debug.Log("x");
+            z = tile / GRID;            
         }
 
         [ReplaceMethod]
@@ -383,7 +381,7 @@ namespace EightyOne.Areas
                         return true;
 
                     }
-                    Debug.Log("out " + x.ToString() + " " + z.ToString());
+                    Debug.Log("Failde to unlock: " + x.ToString() + " " + z.ToString());
                     --g.m_areaCount;
                     areaGrid[index] = 0;
 

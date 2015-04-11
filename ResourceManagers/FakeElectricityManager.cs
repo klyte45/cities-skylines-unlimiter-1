@@ -332,40 +332,32 @@ namespace EightyOne.ResourceManagers
             {
                 electricityGrid = new Cell[GRID * GRID];
 
-                //var oldGrid = (IList)typeof(ElectricityManager).GetField("m_electricityGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(em);
-                //int oldGridSize = 256;
-                //int diff = (GRID - oldGridSize) / 2;
-                //var fields = Unlimiter.GetFieldsFromStruct(electricityGrid[0], oldGrid[0]);
-                //for (var i = 0; i < oldGridSize; i += 1)
-                //{
-                //    for (var j = 0; j < oldGridSize; j += 1)
-                //    {
-                //        electricityGrid[(j + diff) * GRID + (i + diff)] = (Cell)Unlimiter.CopyStruct(typeof(Cell), oldGrid[j * oldGridSize + i], fields);
-                //        Debug.Log(electricityGrid[(j + diff) * GRID + (i + diff)].ToString());
-                //    }
-                //}
+                var oldGrid = (IList)typeof(ElectricityManager).GetField("m_electricityGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(em);
+                int oldGridSize = 256;
+                int diff = (GRID - oldGridSize) / 2;
+                var fields = Unlimiter.GetFieldsFromStruct(electricityGrid[0], oldGrid[0]);
+                for (var i = 0; i < oldGridSize; i += 1)
+                {
+                    for (var j = 0; j < oldGridSize; j += 1)
+                    {
+                        electricityGrid[(j + diff) * GRID + (i + diff)] = (Cell)Unlimiter.CopyStruct(new Cell(), oldGrid[j * oldGridSize + i], fields);                        
+                    }
+                }
                 m_pulseGroups = new PulseGroup[1024];
-                //Unlimiter.CopyStructArray(m_pulseGroups, em, "m_pulseGroups");
+                Unlimiter.CopyStructArray(m_pulseGroups, em, "m_pulseGroups");
 
                 m_pulseUnits = new PulseUnit[32768];
-                //Unlimiter.CopyStructArray(m_pulseUnits, em, "m_pulseUnits");
+                Unlimiter.CopyStructArray(m_pulseUnits, em, "m_pulseUnits");
 
                 m_nodeGroups = new ushort[32768];
-                //Unlimiter.CopyArray(m_nodeGroups, em, "m_nodeGroups");
+                Unlimiter.CopyArray(m_nodeGroups, em, "m_nodeGroups");
 
-                //m_pulseGroupCount = (int)Unlimiter.GetPropertyValue( em, "m_pulseGroupCount");
-                //m_pulseUnitStart = 0;
-                //m_pulseUnitEnd = (int)Unlimiter.GetPropertyValue(em, "m_pulseUnitEnd") % m_pulseUnits.Length; ;
-                //m_processedCells = (int)Unlimiter.GetPropertyValue( em, "m_processedCells");
-                //m_conductiveCells = (int)Unlimiter.GetPropertyValue( em, "m_conductiveCells");
-
-                m_pulseGroupCount = 0;
+                m_pulseGroupCount = (int)Unlimiter.GetPropertyValue(em, "m_pulseGroupCount");
                 m_pulseUnitStart = 0;
-                m_pulseUnitEnd = 0;
-                m_processedCells = 0;
-                m_conductiveCells = 0;
-                m_canContinue = true;
-                //m_canContinue = (bool)Unlimiter.GetPropertyValue( em, "m_canContinue");
+                m_pulseUnitEnd = (int)Unlimiter.GetPropertyValue(em, "m_pulseUnitEnd") % m_pulseUnits.Length; ;
+                m_processedCells = (int)Unlimiter.GetPropertyValue(em, "m_processedCells");
+                m_conductiveCells = (int)Unlimiter.GetPropertyValue(em, "m_conductiveCells");
+                m_canContinue = (bool)Unlimiter.GetPropertyValue(em, "m_canContinue");
             }
 
             m_modifiedX1 = 0;

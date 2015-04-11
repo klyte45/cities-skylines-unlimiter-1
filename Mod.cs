@@ -176,7 +176,7 @@ namespace EightyOne
             var fields = GetFieldsFromStruct(newArray[0], oldArray[0]);
             for (var i = 0; i < newArray.Count; i += 1)
             {
-                newArray[i] = CopyStruct(newArray[0].GetType(), oldArray[i], fields);     
+                newArray[i] = CopyStruct((object)newArray[0], oldArray[i], fields);     
             }
         }
 
@@ -195,9 +195,8 @@ namespace EightyOne
             return obj.GetType().GetField(propName, allFlags).GetValue(obj);
         }
 
-        public static object CopyStruct(Type tt, object original, Dictionary<FieldInfo, FieldInfo> fields)
+        public static object CopyStruct(object newObj, object original, Dictionary<FieldInfo, FieldInfo> fields)
         {
-            var newObj = Activator.CreateInstance(tt);
             foreach (var field in fields)
             {
                 field.Key.SetValue(newObj, field.Value.GetValue(original));                
