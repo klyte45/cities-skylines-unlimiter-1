@@ -385,7 +385,7 @@ namespace Unlimiter.Zones
                         var p = new object[] { instance2.m_districts.m_buffer[0] };
                         int target1 = (int)typeof(ZoneManager).GetMethod("CalculateResidentialDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
                         int target2 = (int)typeof(ZoneManager).GetMethod("CalculateCommercialDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
-                        int target3 = (int)typeof(ZoneManager).GetMethod("CalculateWorkplaceDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);
+                        int target3 = (int)typeof(ZoneManager).GetMethod("CalculateWorkplaceDemand", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, p);                        
                         UpdateDemand(z, ref z.m_actualResidentialDemand, target1);
                         UpdateDemand(z, ref z.m_actualCommercialDemand, target2);
                         UpdateDemand(z, ref z.m_actualWorkplaceDemand, target3);

@@ -34,21 +34,36 @@ namespace Unlimiter
 
     public class ModLoad : LoadingExtensionBase
     {
-        public static bool IsEnabled;
-        private static Dictionary<MethodInfo, RedirectCallsState> redirects;
+        public static Unlimiter unlimiter;
+        public static GameObject gm;
+
         public override void OnLevelLoaded(LoadMode mode)
         {
-            EnableHooks();
+            gm = new GameObject("unlimiter");
+            unlimiter = gm.AddComponent<Unlimiter>();
+            unlimiter.EnableHooks();
         }
 
-        private void EnableHooks()
+        public override void OnLevelUnloading()
+        {
+            unlimiter.DisableHooks();
+            GameObject.Destroy(gm);
+        }
+
+    }
+
+    public class Unlimiter : MonoBehaviour
+    {
+        private static Dictionary<MethodInfo, RedirectCallsState> redirects;
+        public static bool IsEnabled;
+
+        public void EnableHooks()
         {
             if (IsEnabled)
             {
                 return;
             }
             IsEnabled = true;
-            FakeGameAreaManager.Init();
             FakeElectricityManager.Init();
             FakeWaterManager.Init();
             FakeDistrictManager.Init();
@@ -62,9 +77,14 @@ namespace Unlimiter
             var toReplace = new Type[]
                 {
                     typeof(GameAreaManager), typeof(FakeGameAreaManager),
+                    typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
+                    typeof(GameAreaTool), typeof(FakeGameAreaTool),
+
                     typeof(NetManager), typeof(FakeNetManager),
                     typeof(ZoneManager), typeof(FakeZoneManager),
                     typeof(BuildingTool ), typeof(FakeBuildingTool),
+                    typeof(Building ), typeof(FakeBuilding),
+
                     typeof(ZoneTool), typeof(FakeZoneTool),
                     //typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
                     typeof(TerrainManager), typeof(FakeTerrainManager),
@@ -74,6 +94,7 @@ namespace Unlimiter
                     typeof(ImmaterialResourceManager), typeof(FakeImmaterialResourceManager),
                     typeof(DistrictManager), typeof(FakeDistrictManager),
                     typeof(DistrictTool), typeof(FakeDistrictTool),
+                   typeof(NaturalResourceManager), typeof(FakeNatualResourceManager),
                 };
 
             redirects = new Dictionary<MethodInfo, RedirectCallsState>();
@@ -90,7 +111,7 @@ namespace Unlimiter
                     }
                 }
             }
-            FakeGameAreaManager.UnlockAll();
+            FakeGameAreaManager.Init();
         }
 
         private void AddRedirect(Type type1, MethodInfo method)
@@ -111,12 +132,7 @@ namespace Unlimiter
             redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, method));
         }
 
-        public override void OnLevelUnloading()
-        {
-            DisableHooks();
-        }
-
-        private void DisableHooks()
+        public void DisableHooks()
         {
             if (!IsEnabled)
             {
@@ -131,6 +147,15 @@ namespace Unlimiter
             FakeDistrictManager.OnDestroy();
             FakeWaterManager.OnDestroy();
             FakeElectricityManager.OnDestroy();
+            FakeGameAreaManager.OnDestroy();
+        }
+
+        public void Update()
+        {
+            if ((Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) && Input.GetKeyDown(KeyCode.U))
+            {
+                FakeGameAreaManager.UnlockAll();
+            }
         }
     }
 }

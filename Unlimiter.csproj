@@ -54,7 +54,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Areas\FakeGameAreaInfoPanel.cs" />
+    <Compile Include="Areas\FakeGameAreaTool.cs" />
     <Compile Include="Areas\FakeGameAreaManager.cs" />
+    <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="Attributes\FixmeAttribute.cs" />
     <Compile Include="Attributes\ReplaceMethodAttribute.cs" />

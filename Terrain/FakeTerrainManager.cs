@@ -16,6 +16,13 @@ namespace Unlimiter.Terrain
         }
 
         [ReplaceMethod]
+        public float GetTileFlatness(int x, int z)
+        {
+            TerrainPatch terrainPatch = TerrainManager.instance.m_patches[z * 9 + x];
+            return terrainPatch.m_flatness;
+        }
+
+        [ReplaceMethod]
         public TerrainManager.SurfaceCell GetSurfaceCell(int x, int z)
         {
             var tm = TerrainManager.instance;

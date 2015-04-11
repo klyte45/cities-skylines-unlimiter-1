@@ -14,7 +14,7 @@ namespace Unlimiter.Zones
 
         [ReplaceMethod]
         public static bool CheckZoning(Building b, ItemClass.Zone zone)
-        {
+        {            
             int width = b.Width;
             int length = b.Length;
             Vector3 vector3_1 = new Vector3(Mathf.Cos(b.m_angle), 0.0f, Mathf.Sin(b.m_angle));

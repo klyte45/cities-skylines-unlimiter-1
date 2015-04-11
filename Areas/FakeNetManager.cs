@@ -11,28 +11,60 @@ namespace Unlimiter.Areas
         public static void Init()
         {
             m_tileNodesCount = new int[17 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
+            var nodes = NetManager.instance.m_nodes.m_buffer;
+            for (int n = 1; n < nodes.Length; n++)
+            {
+                if (nodes[n].m_flags != NetNode.Flags.None)
+                {
+                    NetInfo info = nodes[n].Info;
+                    if (info != null)
+                    {
+                        info.m_netAI.NodeLoaded((ushort)n, ref nodes[n]);
+                    }
+                }
+            }
         }
 
         [ReplaceMethod]
-        public static void AddTileNode(NetManager nm, Vector3 position, ItemClass.Service service, ItemClass.SubService subService)
+        public void AddTileNode(Vector3 position, ItemClass.Service service, ItemClass.SubService subService)
         {
-            if (service <= ItemClass.Service.Office)
-                return;
-            int areaIndex = Singleton<GameAreaManager>.instance.GetAreaIndex(position);
-            if (areaIndex == -1)
-                return;
-            int num = areaIndex * 17;
-            ++m_tileNodesCount[subService == ItemClass.SubService.None ? (int)(num + (service - 8 - 1)) : (int)(num + (subService - 9 - 1 + 12))];
+            if (service > ItemClass.Service.Office)
+            {
+                int num = Singleton<GameAreaManager>.instance.GetAreaIndex(position);
+                if (num != -1)
+                {
+                    num *= 17;
+                    if (subService != ItemClass.SubService.None)
+                    {
+                        num += subService - ItemClass.SubService.IndustrialOre - 1 + 12;
+                    }
+                    else
+                    {
+                        num += service - ItemClass.Service.Office - 1;
+                    }
+                    m_tileNodesCount[num] += 1 ;
+                }
+            }
         }
 
         [ReplaceMethod]
-        public int GetTileNodeCount(NetManager nm, int x, int z, ItemClass.Service service, ItemClass.SubService subService)
+        public int GetTileNodeCount(int x, int z, ItemClass.Service service, ItemClass.SubService subService)
         {
-            int tileIndex = Singleton<GameAreaManager>.instance.GetTileIndex(x, z);
-            if (tileIndex == -1)
-                return 0;
-            int num = tileIndex * 17;
-            return m_tileNodesCount[subService == ItemClass.SubService.None ? (int)(num + (service - 8 - 1)) : (int)(num + (subService - 9 - 1 + 12))];
+            int num = Singleton<GameAreaManager>.instance.GetTileIndex(x, z);
+            if (num != -1)
+            {
+                num *= 17;
+                if (subService != ItemClass.SubService.None)
+                {
+                    num += subService - ItemClass.SubService.IndustrialOre - 1 + 12;
+                }
+                else
+                {
+                    num += service - ItemClass.Service.Office - 1;
+                }
+                return m_tileNodesCount[num];
+            }
+            return 0;
         }
     }
 }
