@@ -283,19 +283,19 @@ namespace EightyOne.ResourceManagers
                     }
                 }
                 uShort2.EndRead();
-                    EncodedArray.UShort uShort3 = EncodedArray.UShort.BeginRead(s);
-                    for (int n = 0; n < num; n++)
+                EncodedArray.UShort uShort3 = EncodedArray.UShort.BeginRead(s);
+                for (int n = 0; n < num; n++)
+                {
+                    if (waterGrid[n].m_conductivity != 0)
                     {
-                        if (waterGrid[n].m_conductivity != 0)
-                        {
-                            waterGrid[n].m_closestPipeSegment = uShort3.Read();
-                        }
-                        else
-                        {
-                            waterGrid[n].m_closestPipeSegment = 0;
-                        }
+                        waterGrid[n].m_closestPipeSegment = uShort3.Read();
                     }
-                    uShort3.EndRead();
+                    else
+                    {
+                        waterGrid[n].m_closestPipeSegment = 0;
+                    }
+                }
+                uShort3.EndRead();
 
                 EncodedArray.Bool @bool = EncodedArray.Bool.BeginRead(s);
                 for (int num2 = 0; num2 < num; num2++)
@@ -353,28 +353,28 @@ namespace EightyOne.ResourceManagers
                 }
                 bool4.EndRead();
 
-                    EncodedArray.Byte byte2 = EncodedArray.Byte.BeginRead(s);
-                    for (int num6 = 0; num6 < num; num6++)
+                EncodedArray.Byte byte2 = EncodedArray.Byte.BeginRead(s);
+                for (int num6 = 0; num6 < num; num6++)
+                {
+                    if (waterGrid[num6].m_conductivity != 0)
                     {
-                        if (waterGrid[num6].m_conductivity != 0)
-                        {
-                            waterGrid[num6].m_pollution = byte2.Read();
-                        }
-                        else
-                        {
-                            waterGrid[num6].m_pollution = 0;
-                        }
+                        waterGrid[num6].m_pollution = byte2.Read();
                     }
-                    byte2.EndRead();
-                    FakeWaterManager.m_waterGrid = waterGrid;
-                    FakeWaterManager.m_nodeData = new Node[32768];
-                    FakeWaterManager.m_waterPulseGroups = new PulseGroup[1024];
-                    FakeWaterManager.m_sewagePulseGroups = new PulseGroup[1024];
-                    FakeWaterManager.m_waterPulseUnits = new PulseUnit[32768];
-                    FakeWaterManager.m_sewagePulseUnits = new PulseUnit[32768];
+                    else
+                    {
+                        waterGrid[num6].m_pollution = 0;
+                    }
+                }
+                byte2.EndRead();
+                FakeWaterManager.m_waterGrid = waterGrid;
+                FakeWaterManager.m_nodeData = new Node[32768];
+                FakeWaterManager.m_waterPulseGroups = new PulseGroup[1024];
+                FakeWaterManager.m_sewagePulseGroups = new PulseGroup[1024];
+                FakeWaterManager.m_waterPulseUnits = new PulseUnit[32768];
+                FakeWaterManager.m_sewagePulseUnits = new PulseUnit[32768];
 
-                    FakeWaterManager.m_waterPulseGroupCount = (int)s.ReadUInt16();
-                    for (int num7 = 0; num7 < FakeWaterManager.m_waterPulseGroupCount; num7++)
+                FakeWaterManager.m_waterPulseGroupCount = (int)s.ReadUInt16();
+                for (int num7 = 0; num7 < FakeWaterManager.m_waterPulseGroupCount; num7++)
                 {
                     FakeWaterManager.m_waterPulseGroups[num7].m_origPressure = s.ReadUInt32();
                     FakeWaterManager.m_waterPulseGroups[num7].m_curPressure = s.ReadUInt32();
@@ -382,8 +382,8 @@ namespace EightyOne.ResourceManagers
                     FakeWaterManager.m_waterPulseGroups[num7].m_mergeCount = (ushort)s.ReadUInt16();
                     FakeWaterManager.m_waterPulseGroups[num7].m_node = (ushort)s.ReadUInt16();
                 }
-                    FakeWaterManager.m_sewagePulseGroupCount = (int)s.ReadUInt16();
-                    for (int num8 = 0; num8 < FakeWaterManager.m_sewagePulseGroupCount; num8++)
+                FakeWaterManager.m_sewagePulseGroupCount = (int)s.ReadUInt16();
+                for (int num8 = 0; num8 < FakeWaterManager.m_sewagePulseGroupCount; num8++)
                 {
                     FakeWaterManager.m_sewagePulseGroups[num8].m_origPressure = s.ReadUInt32();
                     FakeWaterManager.m_sewagePulseGroups[num8].m_curPressure = s.ReadUInt32();
@@ -463,7 +463,7 @@ namespace EightyOne.ResourceManagers
 
             public void AfterDeserialize(DataSerializer s)
             {
-                Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();                
+                Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();
                 WaterManager.instance.AreaModified(0, 0, GRID - 1, GRID - 1);
             }
         }
@@ -472,6 +472,34 @@ namespace EightyOne.ResourceManagers
 
         public override void OnSaveData()
         {
+            var wm = WaterManager.instance;
+            var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
+            int oldGridSize = 256;
+            int diff = (GRID - oldGridSize) / 2;
+            var fields = Unlimiter.GetFieldsFromStruct(oldGrid[0], m_waterGrid[0]);
+            for (var i = 0; i < oldGridSize; i += 1)
+            {
+                for (var j = 0; j < oldGridSize; j += 1)
+                {
+                    var oldCellIndex = j * oldGridSize + i;
+                    oldGrid[oldCellIndex] = Unlimiter.CopyStruct((object)oldGrid[oldCellIndex], m_waterGrid[(j + diff) * GRID + (i + diff)], fields);                    
+                }
+            }
+
+            Unlimiter.CopyStructArrayBack(m_nodeData, wm, "m_nodeData");            
+            Unlimiter.CopyStructArrayBack(m_waterPulseGroups, wm, "m_waterPulseGroups");            
+            Unlimiter.CopyStructArrayBack(m_sewagePulseGroups, wm, "m_sewagePulseGroups");            
+            Unlimiter.CopyStructArrayBack(m_waterPulseUnits, wm, "m_waterPulseUnits");            
+            Unlimiter.CopyStructArrayBack(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
+
+            Unlimiter.SetPropertyValueBack(m_waterPulseGroupCount, wm, "m_waterPulseGroupCount");
+            Unlimiter.SetPropertyValueBack(m_sewagePulseGroupCount, wm, "m_sewagePulseGroupCount");
+            Unlimiter.SetPropertyValueBack(m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
+            Unlimiter.SetPropertyValueBack(m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
+            Unlimiter.SetPropertyValueBack(m_processedCells, wm, "m_processedCells");
+            Unlimiter.SetPropertyValueBack(m_conductiveCells, wm, "m_conductiveCells");
+            Unlimiter.SetPropertyValueBack(m_canContinue, wm, "m_canContinue");
+
             using (var ms = new MemoryStream())
             {
                 DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
@@ -564,7 +592,7 @@ namespace EightyOne.ResourceManagers
         public static void Init()
         {
             if (m_waterGrid == null)
-            {                                
+            {
                 var wm = WaterManager.instance;
                 m_waterGrid = new Cell[GRID * GRID];
                 var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
@@ -593,18 +621,18 @@ namespace EightyOne.ResourceManagers
                 Unlimiter.CopyStructArray(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
 
 
-                m_waterPulseGroupCount = (int)Unlimiter.GetPropertyValue(wm, "m_waterPulseGroupCount");
-                m_sewagePulseGroupCount = (int)Unlimiter.GetPropertyValue(wm, "m_sewagePulseGroupCount");
+                Unlimiter.SetPropertyValue(ref m_waterPulseGroupCount,wm, "m_waterPulseGroupCount");
+                Unlimiter.SetPropertyValue(ref m_sewagePulseGroupCount,wm, "m_sewagePulseGroupCount");
 
                 m_waterPulseUnitStart = 0;
                 m_sewagePulseUnitStart = 0;
 
-                m_waterPulseUnitEnd = (int)Unlimiter.GetPropertyValue(wm, "m_waterPulseUnitEnd") % m_waterPulseUnits.Length;
-                m_sewagePulseUnitEnd = (int)Unlimiter.GetPropertyValue(wm, "m_sewagePulseUnitEnd") % m_sewagePulseUnits.Length;
+                Unlimiter.SetPropertyValue(ref m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
+                Unlimiter.SetPropertyValue(ref m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
 
-                m_processedCells = (int)Unlimiter.GetPropertyValue(wm, "m_processedCells");
-                m_conductiveCells = (int)Unlimiter.GetPropertyValue(wm, "m_conductiveCells");
-                m_canContinue = (bool)Unlimiter.GetPropertyValue(wm, "m_canContinue");            
+                Unlimiter.SetPropertyValue(ref m_processedCells, wm, "m_processedCells");
+                Unlimiter.SetPropertyValue(ref m_conductiveCells, wm, "m_conductiveCells");
+                Unlimiter.SetPropertyValue(ref m_canContinue, wm, "m_canContinue");
             }
             m_modifiedX1 = 0;
             m_modifiedZ1 = 0;
@@ -706,7 +734,7 @@ namespace EightyOne.ResourceManagers
                         float shrink = 9f / 5f;
                         var min = 0f;
                         var max = 1.0f;
-                        color.r = (float)Mathf.Clamp((shrink * (j * offset + halfOffset - num) + 128) / 255, 0,1);
+                        color.r = (float)Mathf.Clamp((shrink * (j * offset + halfOffset - num) + 128) / 255, 0, 1);
                         if (color.r > max || color.r < min)
                         {
                             color.r = 0;
@@ -1385,90 +1413,80 @@ namespace EightyOne.ResourceManagers
             if (subStep != 0 && subStep != 1000)
             {
                 uint currentFrameIndex = Singleton<SimulationManager>.instance.m_currentFrameIndex;
-                int num = (int)(currentFrameIndex & 511u);
-                if (num < HALFGRID)
+                int num = (int)(currentFrameIndex % 256);
+                if (num < 128)
                 {
-                    if (num < 128)
+                    if (num == 0)
                     {
-                        if (num == 0)
+                        m_waterPulseGroupCount = 0;
+                        m_waterPulseUnitStart = 0;
+                        m_waterPulseUnitEnd = 0;
+                        m_sewagePulseGroupCount = 0;
+                        m_sewagePulseUnitStart = 0;
+                        m_sewagePulseUnitEnd = 0;
+                        m_processedCells = 0;
+                        m_conductiveCells = 0;
+                        m_canContinue = true;
+                    }
+                    NetManager instance = Singleton<NetManager>.instance;
+                    int num2 = num * 32768 >> 7;
+                    int num3 = ((num + 1) * 32768 >> 7) - 1;
+                    for (int i = num2; i <= num3; i++)
+                    {
+                        Node node = m_nodeData[i];
+                        NetNode.Flags flags = instance.m_nodes.m_buffer[i].m_flags;
+                        if (flags != NetNode.Flags.None)
                         {
-                            m_waterPulseGroupCount = 0;
-                            m_waterPulseUnitStart = 0;
-                            m_waterPulseUnitEnd = 0;
-                            m_sewagePulseGroupCount = 0;
-                            m_sewagePulseUnitStart = 0;
-                            m_sewagePulseUnitEnd = 0;
-                            m_processedCells = 0;
-                            m_conductiveCells = 0;
-                            m_canContinue = true;
-                        }
-                        NetManager instance = Singleton<NetManager>.instance;
-                        int num2 = num * 32768 >> 7;
-                        int num3 = ((num + 1) * 32768 >> 7) - 1;
-                        for (int i = num2; i <= num3; i++)
-                        {
-                            Node node = m_nodeData[i];
-                            NetNode.Flags flags = instance.m_nodes.m_buffer[i].m_flags;
-                            if (flags != NetNode.Flags.None)
+                            NetInfo info = instance.m_nodes.m_buffer[i].Info;
+                            if (info.m_class.m_service == ItemClass.Service.Water)
                             {
-                                NetInfo info = instance.m_nodes.m_buffer[i].Info;
-                                if (info.m_class.m_service == ItemClass.Service.Water)
+                                int water = (node.m_waterPulseGroup == 65535) ? 0 : 1;
+                                int sewage = (node.m_sewagePulseGroup == 65535) ? 0 : 1;
+                                UpdateNodeWater(i, water, sewage);
+                                m_conductiveCells += 2;
+                                node.m_waterPulseGroup = 65535;
+                                node.m_sewagePulseGroup = 65535;
+                                if (node.m_curWaterPressure != 0 && m_waterPulseGroupCount < 1024)
                                 {
-                                    int water = (node.m_waterPulseGroup == 65535) ? 0 : 1;
-                                    int sewage = (node.m_sewagePulseGroup == 65535) ? 0 : 1;
-                                    UpdateNodeWater(i, water, sewage);
-                                    m_conductiveCells += 2;
-                                    node.m_waterPulseGroup = 65535;
-                                    node.m_sewagePulseGroup = 65535;
-                                    if (node.m_curWaterPressure != 0 && m_waterPulseGroupCount < 1024)
+                                    PulseGroup pulseGroup;
+                                    pulseGroup.m_origPressure = (uint)node.m_curWaterPressure;
+                                    pulseGroup.m_curPressure = (uint)node.m_curWaterPressure;
+                                    pulseGroup.m_mergeCount = 0;
+                                    pulseGroup.m_mergeIndex = 65535;
+                                    pulseGroup.m_node = (ushort)i;
+                                    PulseUnit pulseUnit;
+                                    pulseUnit.m_group = (ushort)m_waterPulseGroupCount;
+                                    pulseUnit.m_node = (ushort)i;
+                                    pulseUnit.m_x = 0;
+                                    pulseUnit.m_z = 0;
+                                    node.m_waterPulseGroup = (ushort)m_waterPulseGroupCount;
+                                    m_waterPulseGroups[m_waterPulseGroupCount++] = pulseGroup;
+                                    m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit;
+                                    if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
                                     {
-                                        PulseGroup pulseGroup;
-                                        pulseGroup.m_origPressure = (uint)node.m_curWaterPressure;
-                                        pulseGroup.m_curPressure = (uint)node.m_curWaterPressure;
-                                        pulseGroup.m_mergeCount = 0;
-                                        pulseGroup.m_mergeIndex = 65535;
-                                        pulseGroup.m_node = (ushort)i;
-                                        PulseUnit pulseUnit;
-                                        pulseUnit.m_group = (ushort)m_waterPulseGroupCount;
-                                        pulseUnit.m_node = (ushort)i;
-                                        pulseUnit.m_x = 0;
-                                        pulseUnit.m_z = 0;
-                                        node.m_waterPulseGroup = (ushort)m_waterPulseGroupCount;
-                                        m_waterPulseGroups[m_waterPulseGroupCount++] = pulseGroup;
-                                        m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit;
-                                        if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
-                                        {
-                                            m_waterPulseUnitEnd = 0;
-                                        }
-                                    }
-                                    if (node.m_curSewagePressure != 0 && m_sewagePulseGroupCount < 1024)
-                                    {
-                                        PulseGroup pulseGroup2;
-                                        pulseGroup2.m_origPressure = (uint)node.m_curSewagePressure;
-                                        pulseGroup2.m_curPressure = (uint)node.m_curSewagePressure;
-                                        pulseGroup2.m_mergeCount = 0;
-                                        pulseGroup2.m_mergeIndex = 65535;
-                                        pulseGroup2.m_node = (ushort)i;
-                                        PulseUnit pulseUnit2;
-                                        pulseUnit2.m_group = (ushort)m_sewagePulseGroupCount;
-                                        pulseUnit2.m_node = (ushort)i;
-                                        pulseUnit2.m_x = 0;
-                                        pulseUnit2.m_z = 0;
-                                        node.m_sewagePulseGroup = (ushort)m_sewagePulseGroupCount;
-                                        m_sewagePulseGroups[m_sewagePulseGroupCount++] = pulseGroup2;
-                                        m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit2;
-                                        if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
-                                        {
-                                            m_sewagePulseUnitEnd = 0;
-                                        }
+                                        m_waterPulseUnitEnd = 0;
                                     }
                                 }
-                                else
+                                if (node.m_curSewagePressure != 0 && m_sewagePulseGroupCount < 1024)
                                 {
-                                    node.m_waterPulseGroup = 65535;
-                                    node.m_sewagePulseGroup = 65535;
-                                    node.m_extraWaterPressure = 0;
-                                    node.m_extraSewagePressure = 0;
+                                    PulseGroup pulseGroup2;
+                                    pulseGroup2.m_origPressure = (uint)node.m_curSewagePressure;
+                                    pulseGroup2.m_curPressure = (uint)node.m_curSewagePressure;
+                                    pulseGroup2.m_mergeCount = 0;
+                                    pulseGroup2.m_mergeIndex = 65535;
+                                    pulseGroup2.m_node = (ushort)i;
+                                    PulseUnit pulseUnit2;
+                                    pulseUnit2.m_group = (ushort)m_sewagePulseGroupCount;
+                                    pulseUnit2.m_node = (ushort)i;
+                                    pulseUnit2.m_x = 0;
+                                    pulseUnit2.m_z = 0;
+                                    node.m_sewagePulseGroup = (ushort)m_sewagePulseGroupCount;
+                                    m_sewagePulseGroups[m_sewagePulseGroupCount++] = pulseGroup2;
+                                    m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit2;
+                                    if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
+                                    {
+                                        m_sewagePulseUnitEnd = 0;
+                                    }
                                 }
                             }
                             else
@@ -1478,44 +1496,56 @@ namespace EightyOne.ResourceManagers
                                 node.m_extraWaterPressure = 0;
                                 node.m_extraSewagePressure = 0;
                             }
-                            node.m_curWaterPressure = 0;
-                            node.m_curSewagePressure = 0;
-                            m_nodeData[i] = node;
                         }
+                        else
+                        {
+                            node.m_waterPulseGroup = 65535;
+                            node.m_sewagePulseGroup = 65535;
+                            node.m_extraWaterPressure = 0;
+                            node.m_extraSewagePressure = 0;
+                        }
+                        node.m_curWaterPressure = 0;
+                        node.m_curSewagePressure = 0;
+                        m_nodeData[i] = node;
                     }
 
-                    int num4 = num * 2;
-                    for (int j = num4; j < num4 + 2; j++)
+
+                    int num4 = num * 4;
+                    if (num4 < GRID)
                     {
-                        int num6 = j * GRID;
-                        for (int k = 0; k < GRID; k++)
+                        int num5 = Math.Min(GRID, num4 + 4);
+                        for (int j = num4; j < num5; j++)
                         {
-                            Cell cell = m_waterGrid[num6];
-                            cell.m_waterPulseGroup = 65535;
-                            cell.m_sewagePulseGroup = 65535;
-                            if (cell.m_conductivity >= 96)
+                            int num6 = j * GRID;
+                            for (int k = 0; k < GRID; k++)
                             {
-                                m_conductiveCells += 2;
+                                Cell cell = m_waterGrid[num6];
+                                cell.m_waterPulseGroup = 65535;
+                                cell.m_sewagePulseGroup = 65535;
+                                if (cell.m_conductivity >= 96)
+                                {
+                                    m_conductiveCells += 2;
+                                }
+                                if (cell.m_tmpHasWater != cell.m_hasWater)
+                                {
+                                    cell.m_hasWater = cell.m_tmpHasWater;
+                                }
+                                if (cell.m_tmpHasSewage != cell.m_hasSewage)
+                                {
+                                    cell.m_hasSewage = cell.m_tmpHasSewage;
+                                }
+                                cell.m_tmpHasWater = false;
+                                cell.m_tmpHasSewage = false;
+                                m_waterGrid[num6] = cell;
+                                num6++;
                             }
-                            if (cell.m_tmpHasWater != cell.m_hasWater)
-                            {
-                                cell.m_hasWater = cell.m_tmpHasWater;
-                            }
-                            if (cell.m_tmpHasSewage != cell.m_hasSewage)
-                            {
-                                cell.m_hasSewage = cell.m_tmpHasSewage;
-                            }
-                            cell.m_tmpHasWater = false;
-                            cell.m_tmpHasSewage = false;
-                            m_waterGrid[num6] = cell;
-                            num6++;
                         }
                     }
                 }
                 else
                 {
-                    int num7 = (num - HALFGRID - 1) * m_conductiveCells >> 7;
-                    if (num == GRID - 1)
+                    int num7 = (num - 127) * m_conductiveCells >> 7;
+                    if (num == 255)
                     {
                         num7 = 1000000000;
                     }
@@ -1666,7 +1696,7 @@ namespace EightyOne.ResourceManagers
                             }
                         }
                     }
-                    if (num == GRID - 1)
+                    if (num == 255)
                     {
                         for (int n = 0; n < m_waterPulseGroupCount; n++)
                         {

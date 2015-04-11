@@ -133,6 +133,17 @@ namespace EightyOne.ResourceManagers
 
         public override void OnSaveData()
         {
+            var oldGrid = DistrictManager.instance.m_districtGrid;
+            int oldGridSize = 512;
+            int diff = (GRID - oldGridSize) / 2;
+            for (var i = 0; i < oldGridSize; i += 1)
+            {
+                for (var j = 0; j < oldGridSize; j += 1)
+                {
+                    oldGrid[j * oldGridSize + i] = m_districtGrid[(j + diff) * GRID + (i + diff)];
+                }
+            }
+
             using (var ms = new MemoryStream())
             {
                 DataSerializer.Serialize(ms, DataSerializer.Mode.Memory,1u,new Data());
@@ -219,6 +230,17 @@ namespace EightyOne.ResourceManagers
                     m_districtGrid[i].m_alpha3 = 0;
                     m_districtGrid[i].m_alpha4 = 0;
                 }
+
+                var oldGrid = DistrictManager.instance.m_districtGrid;
+                int oldGridSize = 512;
+                int diff = (GRID - oldGridSize) / 2;
+                for (var i = 0; i < oldGridSize; i += 1)
+                {
+                    for (var j = 0; j < oldGridSize; j += 1)
+                    {
+                        m_districtGrid[(j + diff) * GRID + (i + diff)] = oldGrid[j * oldGridSize + i];
+                    }
+                }                
             }
             m_colorBuffer = new Color32[GRID * GRID];
             m_distanceBuffer = new int[HALFGRID * HALFGRID];

@@ -242,6 +242,30 @@ namespace EightyOne.ResourceManagers
 
         public override void OnSaveData()
         {
+            var em = ElectricityManager.instance;
+            var oldGrid = (IList)typeof(ElectricityManager).GetField("m_electricityGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(em);
+            int oldGridSize = 256;
+            int diff = (GRID - oldGridSize) / 2;
+            var fields = Unlimiter.GetFieldsFromStruct(oldGrid[0],electricityGrid[0]);
+            for (var i = 0; i < oldGridSize; i += 1)
+            {
+                for (var j = 0; j < oldGridSize; j += 1)
+                {
+                    var oldCellIndex = j * oldGridSize + i;
+                    oldGrid[oldCellIndex] = Unlimiter.CopyStruct((object)oldGrid[oldCellIndex], electricityGrid[(j + diff) * GRID + (i + diff)], fields);
+                }
+            }
+
+            Unlimiter.CopyStructArrayBack(m_pulseGroups, em, "m_pulseGroups");
+            Unlimiter.CopyStructArrayBack(m_pulseUnits, em, "m_pulseUnits");
+            Unlimiter.CopyArrayBack(m_nodeGroups, em, "m_nodeGroups");
+
+            Unlimiter.SetPropertyValueBack(m_pulseGroupCount,em, "m_pulseGroupCount");
+            Unlimiter.SetPropertyValueBack(m_pulseUnitEnd % m_pulseUnits.Length, em, "m_pulseUnitEnd");
+            Unlimiter.SetPropertyValueBack(m_processedCells,em, "m_processedCells");
+            Unlimiter.SetPropertyValueBack(m_conductiveCells,em, "m_conductiveCells");
+            Unlimiter.SetPropertyValueBack(m_canContinue,em, "m_canContinue");
+
             using (var ms = new MemoryStream())
             {
                 DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
@@ -352,12 +376,12 @@ namespace EightyOne.ResourceManagers
                 m_nodeGroups = new ushort[32768];
                 Unlimiter.CopyArray(m_nodeGroups, em, "m_nodeGroups");
 
-                m_pulseGroupCount = (int)Unlimiter.GetPropertyValue(em, "m_pulseGroupCount");
+                Unlimiter.SetPropertyValue(ref m_pulseGroupCount, em, "m_pulseGroupCount");
                 m_pulseUnitStart = 0;
-                m_pulseUnitEnd = (int)Unlimiter.GetPropertyValue(em, "m_pulseUnitEnd") % m_pulseUnits.Length; ;
-                m_processedCells = (int)Unlimiter.GetPropertyValue(em, "m_processedCells");
-                m_conductiveCells = (int)Unlimiter.GetPropertyValue(em, "m_conductiveCells");
-                m_canContinue = (bool)Unlimiter.GetPropertyValue(em, "m_canContinue");
+                Unlimiter.SetPropertyValue(ref m_pulseUnitEnd, em, "m_pulseUnitEnd");
+                Unlimiter.SetPropertyValue(ref m_processedCells, em, "m_processedCells");
+                Unlimiter.SetPropertyValue(ref m_conductiveCells, em, "m_conductiveCells");
+                Unlimiter.SetPropertyValue(ref m_canContinue, em, "m_canContinue");
             }
 
             m_modifiedX1 = 0;
@@ -792,97 +816,100 @@ namespace EightyOne.ResourceManagers
             if (subStep != 0 && subStep != 1000)
             {
                 uint currentFrameIndex = Singleton<SimulationManager>.instance.m_currentFrameIndex;
-                int num = (int)(currentFrameIndex & 511u);
-                if (num < HALFGRID)
+                int num = (int)(currentFrameIndex & 255);
+                if (num < 128)
                 {
-                    if (num < 128)
+                    if (num == 0)
                     {
-                        if (num == 0)
-                        {
-                            m_pulseGroupCount = 0;
-                            m_pulseUnitStart = 0;
-                            m_pulseUnitEnd = 0;
-                            m_processedCells = 0;
-                            m_conductiveCells = 0;
-                            m_canContinue = true;
-                        }
-                        NetManager instance = Singleton<NetManager>.instance;
-                        int num2 = num * 32768 >> 7;
-                        int num3 = ((num + 1) * 32768 >> 7) - 1;
-                        for (int i = num2; i <= num3; i++)
-                        {
-                            if (instance.m_nodes.m_buffer[i].m_flags != NetNode.Flags.None)
-                            {
-                                NetInfo info = instance.m_nodes.m_buffer[i].Info;
-                                if (info.m_class.m_service == ItemClass.Service.Electricity)
-                                {
-                                    UpdateNodeElectricity(i, (m_nodeGroups[i] == 65535) ? 0 : 1);
-                                    m_conductiveCells++;
-                                }
-                            }
-                            m_nodeGroups[i] = 65535;
-                        }
+                        m_pulseGroupCount = 0;
+                        m_pulseUnitStart = 0;
+                        m_pulseUnitEnd = 0;
+                        m_processedCells = 0;
+                        m_conductiveCells = 0;
+                        m_canContinue = true;
                     }
-                    int num4 = num * 2;
-                    for (int j = num4; j < num4 + 2; j++)
+                    NetManager instance = Singleton<NetManager>.instance;
+                    int num2 = num * 32768 >> 7;
+                    int num3 = ((num + 1) * 32768 >> 7) - 1;
+                    for (int i = num2; i <= num3; i++)
                     {
-                        int num6 = j * GRID;
-                        for (int k = 0; k < GRID; k++)
+                        if (instance.m_nodes.m_buffer[i].m_flags != NetNode.Flags.None)
                         {
-                            Cell cell = electricityGrid[num6];
-                            if (cell.m_currentCharge > 0)
+                            NetInfo info = instance.m_nodes.m_buffer[i].Info;
+                            if (info.m_class.m_service == ItemClass.Service.Electricity)
                             {
-                                if (m_pulseGroupCount < 1024)
+                                UpdateNodeElectricity(i, (m_nodeGroups[i] == 65535) ? 0 : 1);
+                                m_conductiveCells++;
+                            }
+                        }
+                        m_nodeGroups[i] = 65535;
+                    }
+
+                   
+                    int num4 = num * 4;
+                    if (num4 < GRID)
+                    {
+                        int num5 = Math.Min(GRID, num4 + 4);
+                        for (int j = num4; j < num5; j++)
+                        {
+                            int num6 = j * GRID;
+                            for (int k = 0; k < GRID; k++)
+                            {
+                                Cell cell = electricityGrid[num6];
+                                if (cell.m_currentCharge > 0)
                                 {
-                                    PulseGroup pulseGroup;
-                                    pulseGroup.m_origCharge = (uint)cell.m_currentCharge;
-                                    pulseGroup.m_curCharge = (uint)cell.m_currentCharge;
-                                    pulseGroup.m_mergeCount = 0;
-                                    pulseGroup.m_mergeIndex = 65535;
-                                    pulseGroup.m_x = (ushort)k;
-                                    pulseGroup.m_z = (ushort)j;
-                                    PulseUnit pulseUnit;
-                                    pulseUnit.m_group = (ushort)m_pulseGroupCount;
-                                    pulseUnit.m_node = 0;
-                                    pulseUnit.m_x = (ushort)k;
-                                    pulseUnit.m_z = (ushort)j;
-                                    cell.m_pulseGroup = (ushort)m_pulseGroupCount;
-                                    m_pulseGroups[m_pulseGroupCount++] = pulseGroup;
-                                    m_pulseUnits[m_pulseUnitEnd] = pulseUnit;
-                                    if (++m_pulseUnitEnd == m_pulseUnits.Length)
+                                    if (m_pulseGroupCount < 1024)
                                     {
-                                        m_pulseUnitEnd = 0;
+                                        PulseGroup pulseGroup;
+                                        pulseGroup.m_origCharge = (uint)cell.m_currentCharge;
+                                        pulseGroup.m_curCharge = (uint)cell.m_currentCharge;
+                                        pulseGroup.m_mergeCount = 0;
+                                        pulseGroup.m_mergeIndex = 65535;
+                                        pulseGroup.m_x = (ushort)k;
+                                        pulseGroup.m_z = (ushort)j;
+                                        PulseUnit pulseUnit;
+                                        pulseUnit.m_group = (ushort)m_pulseGroupCount;
+                                        pulseUnit.m_node = 0;
+                                        pulseUnit.m_x = (ushort)k;
+                                        pulseUnit.m_z = (ushort)j;
+                                        cell.m_pulseGroup = (ushort)m_pulseGroupCount;
+                                        m_pulseGroups[m_pulseGroupCount++] = pulseGroup;
+                                        m_pulseUnits[m_pulseUnitEnd] = pulseUnit;
+                                        if (++m_pulseUnitEnd == m_pulseUnits.Length)
+                                        {
+                                            m_pulseUnitEnd = 0;
+                                        }
                                     }
+                                    else
+                                    {
+                                        cell.m_pulseGroup = 65535;
+                                    }
+                                    cell.m_currentCharge = 0;
+                                    m_conductiveCells++;
                                 }
                                 else
                                 {
                                     cell.m_pulseGroup = 65535;
+                                    if (cell.m_conductivity >= 64)
+                                    {
+                                        m_conductiveCells++;
+                                    }
                                 }
-                                cell.m_currentCharge = 0;
-                                m_conductiveCells++;
-                            }
-                            else
-                            {
-                                cell.m_pulseGroup = 65535;
-                                if (cell.m_conductivity >= 64)
+                                if (cell.m_tmpElectrified != cell.m_electrified)
                                 {
-                                    m_conductiveCells++;
+                                    cell.m_electrified = cell.m_tmpElectrified;
                                 }
+                                cell.m_tmpElectrified = (cell.m_pulseGroup != 65535);
+                                electricityGrid[num6] = cell;
+                                num6++;
                             }
-                            if (cell.m_tmpElectrified != cell.m_electrified)
-                            {
-                                cell.m_electrified = cell.m_tmpElectrified;
-                            }
-                            cell.m_tmpElectrified = (cell.m_pulseGroup != 65535);
-                            electricityGrid[num6] = cell;
-                            num6++;
                         }
                     }
                 }
                 else
                 {
-                    int num7 = (num - HALFGRID - 1) * m_conductiveCells >> 7;
-                    if (num == GRID - 1)
+                    int num7 = (num - 127) * m_conductiveCells >> 7;
+                    if (num == 255)
                     {
                         num7 = 1000000000;
                     }
@@ -976,7 +1003,7 @@ namespace EightyOne.ResourceManagers
                             }
                         }
                     }
-                    if (num == GRID - 1)
+                    if (num == 255)
                     {
                         for (int m = 0; m < m_pulseGroupCount; m++)
                         {

@@ -11,6 +11,7 @@ using EightyOne.Attributes;
 using EightyOne.ResourceManagers;
 using EightyOne.Terrain;
 using EightyOne.Zones;
+using System.ComponentModel;
 
 namespace EightyOne
 {
@@ -58,6 +59,7 @@ namespace EightyOne
         private static Dictionary<MethodInfo, RedirectCallsState> redirects;
         public static bool IsEnabled;
         private static BindingFlags allFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+        
 
         public void EnableHooks()
         {
@@ -115,7 +117,7 @@ namespace EightyOne
             }
             FakeGameAreaManager.Init();
         }
-
+        
         private void AddRedirect(Type type1, MethodInfo method)
         {
             var parameters = method.GetParameters();
@@ -169,6 +171,14 @@ namespace EightyOne
             }
         }
 
+        public static void CopyArrayBack(IList newArray, object em, string propertyName)
+        {
+            var oldArray = (IList)em.GetType().GetField(propertyName, allFlags).GetValue(em);
+            for (var i = 0; i < newArray.Count; i += 1)
+            {
+                 oldArray[i] = newArray[i];
+            }
+        }
 
         public static void CopyStructArray(IList newArray, object em, string propertyName)
         {
@@ -179,6 +189,17 @@ namespace EightyOne
                 newArray[i] = CopyStruct((object)newArray[0], oldArray[i], fields);     
             }
         }
+        
+        public static void CopyStructArrayBack(IList newArray, object em, string propertyName)
+        {
+            var oldArray = (IList)em.GetType().GetField(propertyName, allFlags).GetValue(em);
+            var fields = GetFieldsFromStruct( oldArray[0],newArray[0]);
+            for (var i = 0; i < newArray.Count; i += 1)
+            {
+                oldArray[i] = CopyStruct((object)oldArray[i], newArray[i], fields);
+            }
+        }
+
 
         public static Dictionary<FieldInfo, FieldInfo> GetFieldsFromStruct(object newArray, object oldArray)
         {
@@ -190,15 +211,28 @@ namespace EightyOne
             return fields;
         }
 
-        public static object GetPropertyValue(object obj, string propName)
+        public static void SetPropertyValue<T>(ref T result, object obj, string propName)
         {
-            return obj.GetType().GetField(propName, allFlags).GetValue(obj);
+            result = (T)obj.GetType().GetField(propName, allFlags).GetValue(obj);
+        }
+
+        public static void SetPropertyValueBack(object result, object obj, string propName)
+        {
+            obj.GetType().GetField(propName, allFlags).SetValue(obj,result);
         }
 
         public static object CopyStruct(object newObj, object original, Dictionary<FieldInfo, FieldInfo> fields)
         {
             foreach (var field in fields)
             {
+                if (field.Key.FieldType != field.Value.FieldType){
+                    if (field.Key.FieldType == typeof(byte))
+                    {
+                        var oo = Mathf.Clamp((ushort)field.Value.GetValue(original),0,255);
+                        field.Key.SetValue(newObj,(byte)oo);
+                        continue;
+                    }
+                }
                 field.Key.SetValue(newObj, field.Value.GetValue(original));                
             }
             return newObj;

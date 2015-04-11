@@ -48,6 +48,23 @@ namespace EightyOne.Areas
 
         public override void OnSaveData()
         {
+            var currentCount = 0;
+            for (var i = 0; i < 5; i += 1)
+            {
+                for (var j = 0; j < 5; j += 1)
+                {
+                    var grid = areaGrid[(j + 2) * GRID + (i + 2)];
+                    GameAreaManager.instance.m_areaGrid[j * 5 + i] = grid;
+                    if (grid != 0)
+                    {
+                        currentCount += 1;
+                    }
+                }
+            }
+            GameAreaManager.instance.m_areaCount = currentCount;            
+            typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(GameAreaManager.instance, true);
+            GameAreaManager.instance.m_maxAreaCount = 25;
+
             using (var ms = new MemoryStream())
             {
                 DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
