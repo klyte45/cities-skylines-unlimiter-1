@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Areas
+namespace EightyOne.Areas
 {
     class FakeNatualResourceManager
     {

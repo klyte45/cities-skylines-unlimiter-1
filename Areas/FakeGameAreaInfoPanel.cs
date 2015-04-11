@@ -4,9 +4,9 @@ using ColossalFramework.UI;
 using System;
 using System.Reflection;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Areas
+namespace EightyOne.Areas
 {
     internal class FakeGameAreaInfoPanel
     {

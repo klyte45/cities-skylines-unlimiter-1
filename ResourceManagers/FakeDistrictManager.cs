@@ -9,9 +9,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.ResourceManagers
+namespace EightyOne.ResourceManagers
 {
     public class FakeDistrictManager : SerializableDataExtensionBase
     {

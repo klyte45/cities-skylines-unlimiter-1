@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.ResourceManagers
+namespace EightyOne.ResourceManagers
 {
     class FakeImmaterialResourceManager
     {

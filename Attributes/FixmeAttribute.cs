@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Unlimiter.Attributes
+namespace EightyOne.Attributes
 {
     internal class FixmeAttribute : Attribute
     {

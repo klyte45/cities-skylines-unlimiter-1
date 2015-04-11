@@ -2,9 +2,9 @@
 using ColossalFramework.Math;
 using System;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Zones
+namespace EightyOne.Zones
 {
     internal class FakeZoneTool
     {

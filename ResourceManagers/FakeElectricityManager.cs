@@ -2,6 +2,7 @@
 using ColossalFramework.IO;
 using ICities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,9 +10,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.ResourceManagers
+namespace EightyOne.ResourceManagers
 {
     public class FakeElectricityManager : SerializableDataExtensionBase
     {
@@ -270,6 +271,11 @@ namespace Unlimiter.ResourceManagers
             public byte m_conductivity;
             public bool m_tmpElectrified;
             public bool m_electrified;
+
+            public override string ToString()
+            {
+                return string.Format("{0} {1} {2} {3} {4} {5}", m_currentCharge.ToString(), m_extraCharge.ToString(), m_pulseGroup.ToString(), m_conductivity.ToString(), m_tmpElectrified.ToString(), m_electrified.ToString());
+            }
         }
         public struct PulseGroup
         {
@@ -279,6 +285,10 @@ namespace Unlimiter.ResourceManagers
             public ushort m_mergeCount;
             public ushort m_x;
             public ushort m_z;
+            public override string ToString()
+            {
+                return string.Format("{0} {1} {2} {3} {4} {5}", m_origCharge.ToString(), m_curCharge.ToString(), m_mergeIndex.ToString(), m_mergeCount.ToString(), m_x.ToString(), m_z.ToString());
+            }
         }
         public struct PulseUnit
         {
@@ -286,6 +296,10 @@ namespace Unlimiter.ResourceManagers
             public ushort m_node;
             public ushort m_x;
             public ushort m_z;
+            public override string ToString()
+            {
+                return string.Format("{0} {1} {2} {3}", m_group.ToString(), m_node.ToString(), m_x.ToString(), m_z.ToString());
+            }
         }
 
         public const int GRID = 462;
@@ -313,19 +327,47 @@ namespace Unlimiter.ResourceManagers
 
         public static void Init()
         {
+            var em = ElectricityManager.instance;
             if (electricityGrid == null)
             {
                 electricityGrid = new Cell[GRID * GRID];
+
+                //var oldGrid = (IList)typeof(ElectricityManager).GetField("m_electricityGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(em);
+                //int oldGridSize = 256;
+                //int diff = (GRID - oldGridSize) / 2;
+                //var fields = Unlimiter.GetFieldsFromStruct(electricityGrid[0], oldGrid[0]);
+                //for (var i = 0; i < oldGridSize; i += 1)
+                //{
+                //    for (var j = 0; j < oldGridSize; j += 1)
+                //    {
+                //        electricityGrid[(j + diff) * GRID + (i + diff)] = (Cell)Unlimiter.CopyStruct(typeof(Cell), oldGrid[j * oldGridSize + i], fields);
+                //        Debug.Log(electricityGrid[(j + diff) * GRID + (i + diff)].ToString());
+                //    }
+                //}
                 m_pulseGroups = new PulseGroup[1024];
+                //Unlimiter.CopyStructArray(m_pulseGroups, em, "m_pulseGroups");
+
                 m_pulseUnits = new PulseUnit[32768];
+                //Unlimiter.CopyStructArray(m_pulseUnits, em, "m_pulseUnits");
+
                 m_nodeGroups = new ushort[32768];
+                //Unlimiter.CopyArray(m_nodeGroups, em, "m_nodeGroups");
+
+                //m_pulseGroupCount = (int)Unlimiter.GetPropertyValue( em, "m_pulseGroupCount");
+                //m_pulseUnitStart = 0;
+                //m_pulseUnitEnd = (int)Unlimiter.GetPropertyValue(em, "m_pulseUnitEnd") % m_pulseUnits.Length; ;
+                //m_processedCells = (int)Unlimiter.GetPropertyValue( em, "m_processedCells");
+                //m_conductiveCells = (int)Unlimiter.GetPropertyValue( em, "m_conductiveCells");
+
                 m_pulseGroupCount = 0;
                 m_pulseUnitStart = 0;
                 m_pulseUnitEnd = 0;
                 m_processedCells = 0;
                 m_conductiveCells = 0;
-                m_canContinue = false;
+                m_canContinue = true;
+                //m_canContinue = (bool)Unlimiter.GetPropertyValue( em, "m_canContinue");
             }
+
             m_modifiedX1 = 0;
             m_modifiedZ1 = 0;
             m_modifiedX2 = GRID - 1;
@@ -335,10 +377,8 @@ namespace Unlimiter.ResourceManagers
             m_electricityTexture.filterMode = FilterMode.Point;
             m_electricityTexture.wrapMode = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_ElectricityTexture", m_electricityTexture);
-            UpdateElectricityMapping(ElectricityManager.instance);
-
-            ElectricityManager.instance.AreaModified(0, 0, GRID - 1, GRID - 1);
         }
+
 
         internal static void OnDestroy()
         {

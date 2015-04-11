@@ -22,7 +22,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Unlimiter
+namespace EightyOne
 {
 
     public struct RedirectCallsState

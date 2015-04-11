@@ -5,10 +5,10 @@ using ICities;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 using System.Linq;
 
-namespace Unlimiter.Areas
+namespace EightyOne.Areas
 {
     public class FakeGameAreaManager : SerializableDataExtensionBase
     {

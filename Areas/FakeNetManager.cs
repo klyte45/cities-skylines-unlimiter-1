@@ -1,8 +1,8 @@
 ﻿using ColossalFramework;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Areas
+namespace EightyOne.Areas
 {
     internal class FakeNetManager
     {

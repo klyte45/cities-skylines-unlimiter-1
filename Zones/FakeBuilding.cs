@@ -2,9 +2,9 @@
 using ColossalFramework.Math;
 using System;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Zones
+namespace EightyOne.Zones
 {
     /// <summary>
     /// Building is a struct. Calls to this may not work with Replacing the method handle.

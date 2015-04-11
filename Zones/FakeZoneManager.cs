@@ -3,9 +3,9 @@ using ColossalFramework.IO;
 using System;
 using System.Threading;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Zones
+namespace EightyOne.Zones
 {
     internal class FakeZoneManager
     {        

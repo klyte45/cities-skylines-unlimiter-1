@@ -1,9 +1,9 @@
 ﻿using ColossalFramework.Math;
 using System;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Terrain
+namespace EightyOne.Terrain
 {
     public class FakeTerrainManager
     {

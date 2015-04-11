@@ -1,9 +1,9 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using UnityEngine;
-using Unlimiter.Attributes;
+using EightyOne.Attributes;
 
-namespace Unlimiter.Zones
+namespace EightyOne.Zones
 {
     /// <summary>
     /// None of these methods are exported, as ZoneBlock is a struct.

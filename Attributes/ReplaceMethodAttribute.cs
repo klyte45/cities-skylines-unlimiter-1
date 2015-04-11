@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Unlimiter.Attributes
+namespace EightyOne.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     internal class ReplaceMethodAttribute : Attribute
