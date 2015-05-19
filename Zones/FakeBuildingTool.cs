@@ -20,6 +20,8 @@ namespace EightyOne.Zones
         static FieldInfo productionRate;
         static FieldInfo constructionCost;
         static FieldInfo placementErrors;
+        static FieldInfo cachedAngle;
+        static FieldInfo elevation;
 
 
         private static void Init(BuildingTool b)
@@ -36,250 +38,310 @@ namespace EightyOne.Zones
             productionRate = b.GetType().GetField("m_productionRate", BindingFlags.NonPublic | BindingFlags.Instance);
             constructionCost = b.GetType().GetField("m_constructionCost", BindingFlags.NonPublic | BindingFlags.Instance);
             placementErrors = b.GetType().GetField("m_placementErrors", BindingFlags.NonPublic | BindingFlags.Instance);
+            cachedAngle = b.GetType().GetField("m_cachedAngle", BindingFlags.NonPublic | BindingFlags.Instance);
+            elevation = b.GetType().GetField("m_elevation", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         [ReplaceMethod]
-        private static void SimulationStep(BuildingTool b)
-        {
-            if (CheckSpace == null)
-            {
-                Init(b);
-            }
 
-            BuildingInfo info;
-            int relocating;
-            GetPrefabInfo(b, out info, out relocating);
-            if (info == null)
+        public static void SimulationStep(BuildingTool b)
+        {
+            BuildingInfo buildingInfo;
+            int num;
+            GetPrefabInfo(b,out buildingInfo, out num);
+            if (buildingInfo == null)
+            {
                 return;
-            ulong[] collidingSegments;
-            ulong[] collidingBuildings;
+            }
+            ulong[] collidingSegmentBuffer;
+            ulong[] collidingBuildingBuffer;
 
             ToolController m_toolController = ToolManager.instance.m_properties;
-            m_toolController.BeginColliding(out collidingSegments, out collidingBuildings);
+            m_toolController.BeginColliding(out collidingSegmentBuffer, out collidingBuildingBuffer);
             try
             {
-                ToolBase.RaycastOutput output;
                 bool m_mouseRayValid = (bool)mouseRayValid.GetValue(b);
                 float m_mouseAngle = (float)mouseAngle.GetValue(b);
                 Ray m_mouseRay = (Ray)mouseRay.GetValue(b);
                 float m_mouseRayLength = (float)mouseRayLength.GetValue(b);
- 
-                if (m_mouseRayValid && RayCast(new ToolBase.RaycastInput(m_mouseRay, m_mouseRayLength), out output))
+                float m_cachedAngle = (float)cachedAngle.GetValue(b);
+
+                ToolBase.RaycastInput input = new ToolBase.RaycastInput(m_mouseRay, m_mouseRayLength);
+                ToolBase.RaycastOutput raycastOutput;
+
+                if (m_mouseRayValid && RayCast(input, out raycastOutput))
                 {
-                    Vector3 vector3_1 = output.m_hitPos;
-                    float num1 = m_mouseAngle;
+                    Vector3 vector = raycastOutput.m_hitPos;
+                    float num2 = m_mouseAngle;
                     bool flag = (Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.Game) != ItemClass.Availability.None;
-                    float waterHeight = 0.0f;
-                    ToolBase.ToolErrors toolErrors1;
-                    if (info.m_placementMode == BuildingInfo.PlacementMode.Roadside)
+                    float num3 = 0f;
+                    ToolBase.ToolErrors toolErrors;
+                    if (buildingInfo.m_placementMode == BuildingInfo.PlacementMode.Roadside)
                     {
-                        toolErrors1 = ToolBase.ToolErrors.GridNotFound;
-                        float num2 = output.m_hitPos.x - 8f;
-                        float num3 = output.m_hitPos.z - 8f;
-                        float num4 = output.m_hitPos.x + 8f;
-                        float num5 = output.m_hitPos.z + 8f;
+                        toolErrors = ToolBase.ToolErrors.GridNotFound;
+                        float num4 = raycastOutput.m_hitPos.x - 8f;
+                        float num5 = raycastOutput.m_hitPos.z - 8f;
+                        float num6 = raycastOutput.m_hitPos.x + 8f;
+                        float num7 = raycastOutput.m_hitPos.z + 8f;
                         ZoneManager instance = Singleton<ZoneManager>.instance;
-                        float minD = 8f;
-                        float min2 = 1000000f;
-                        int num6 = Mathf.Max((int)(((double)num2 - 46.0) / 64.0 + FakeZoneManager.HALFGRID), 0);
-                        int num7 = Mathf.Max((int)(((double)num3 - 46.0) / 64.0 + FakeZoneManager.HALFGRID), 0);
-                        int num8 = Mathf.Min((int)(((double)num4 + 46.0) / 64.0 + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
-                        int num9 = Mathf.Min((int)(((double)num5 + 46.0) / 64.0 + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
-                        for (int index1 = num7; index1 <= num9; ++index1)
+                        float num8 = 8f;
+                        float num9 = 1000000f;
+                        int num10 = Mathf.Max((int)((num4 - 46f) / 64f + FakeZoneManager.HALFGRID), 0);
+                        int num11 = Mathf.Max((int)((num5 - 46f) / 64f + FakeZoneManager.HALFGRID), 0);
+                        int num12 = Mathf.Min((int)((num6 + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+                        int num13 = Mathf.Min((int)((num7 + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+                        for (int i = num11; i <= num13; i++)
                         {
-                            for (int index2 = num6; index2 <= num8; ++index2)
+                            for (int j = num10; j <= num12; j++)
                             {
-                                ushort block = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
-                                int num10 = 0;
-                                while ((int)block != 0)
+                                ushort num14 = instance.m_zoneGrid[i * FakeZoneManager.GRIDSIZE + j];
+                                int num15 = 0;
+                                while (num14 != 0)
                                 {
-                                    Vector3 vector3_2 = instance.m_blocks.m_buffer[(int)block].m_position;
-                                    if ((double)Mathf.Max(Mathf.Max(num2 - 46f - vector3_2.x, num3 - 46f - vector3_2.z), Mathf.Max((float)((double)vector3_2.x - (double)num4 - 46.0), (float)((double)vector3_2.z - (double)num5 - 46.0))) < 0.0)
-                                        FindClosestZone(info, block, output.m_hitPos, ref minD, ref min2, ref vector3_1, ref num1);
-                                    block = instance.m_blocks.m_buffer[(int)block].m_nextGridBlock;
-                                    if (++num10 >= 32768)
+                                    Vector3 position = instance.m_blocks.m_buffer[(int)num14].m_position;
+                                    float num16 = Mathf.Max(Mathf.Max(num4 - 46f - position.x, num5 - 46f - position.z), Mathf.Max(position.x - num6 - 46f, position.z - num7 - 46f));
+                                    if (num16 < 0f)
                                     {
-                                        CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
+                                        FindClosestZone(buildingInfo, num14, raycastOutput.m_hitPos, ref num8, ref num9, ref vector, ref num2);
+                                    }
+                                    num14 = instance.m_blocks.m_buffer[(int)num14].m_nextGridBlock;
+                                    if (++num15 >= 32768)
+                                    {
+                                        CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                                         break;
                                     }
                                 }
                             }
                         }
-                        if ((double)minD < 8.0)
+                        if (num8 < 8f)
                         {
-                            int offset;
-                            if (Singleton<ZoneManager>.instance.CheckSpace(vector3_1, num1, info.m_cellWidth, info.m_cellLength, out offset))
+                            int num17;
+                            if (Singleton<ZoneManager>.instance.CheckSpace(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, out num17))
                             {
-                                float minY;
-                                float maxY;
-                                float buildingY;
-                                Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-
-
-                                ToolBase.ToolErrors toolErrors2 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { info, relocating, vector3_1, minY, buildingY + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings });
-                                if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
+                                float num18;
+                                float num19;
+                                float num20;
+                                Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num18, out num19, out num20);
+                                ToolBase.ToolErrors toolErrors2 = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num18, num20 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                if (num19 - num18 > buildingInfo.m_maxHeightOffset)
+                                {
                                     toolErrors2 |= ToolBase.ToolErrors.SlopeTooSteep;
+                                }
                                 if (toolErrors2 == ToolBase.ToolErrors.None)
-                                    vector3_1.y = buildingY;
-                                toolErrors1 = toolErrors2;
-                            }
-                            else if (offset < 0)
-                            {
-                                Vector3 vector3_2 = new Vector3(Mathf.Cos(num1), 0.0f, Mathf.Sin(num1)) * 8f;
-                                int num10 = info.m_cellWidth >> 1;
-                                for (int index = 1; index <= num10; ++index)
                                 {
-                                    Vector3 vector3_3 = vector3_1 - vector3_2 * (float)index;
-                                    if (Singleton<ZoneManager>.instance.CheckSpace(vector3_3, num1, info.m_cellWidth, info.m_cellLength, out offset))
+                                    vector.y = num20;
+                                }
+                                toolErrors = toolErrors2;
+                            }
+                            else if (num17 < 0)
+                            {
+                                Vector3 a = new Vector3(Mathf.Cos(num2), 0f, Mathf.Sin(num2)) * 8f;
+                                int num21 = buildingInfo.m_cellWidth >> 1;
+                                for (int k = 1; k <= num21; k++)
+                                {
+                                    Vector3 vector2 = vector - a * (float)k;
+                                    if (Singleton<ZoneManager>.instance.CheckSpace(vector2, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, out num17))
                                     {
-                                        float minY;
-                                        float maxY;
-                                        float buildingY;
-                                        Building.SampleBuildingHeight(vector3_3, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                                        ToolBase.ToolErrors toolErrors2 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] {info, relocating, vector3_3, minY, buildingY + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings});
-                                        if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
-                                            toolErrors2 |= ToolBase.ToolErrors.SlopeTooSteep;
-                                        if (toolErrors2 == ToolBase.ToolErrors.None)
+                                        float num22;
+                                        float num23;
+                                        float num24;
+                                        Building.SampleBuildingHeight(vector2, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num22, out num23, out num24);
+                                        ToolBase.ToolErrors toolErrors3 = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector2, num22, num24 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                        if (num23 - num22 > buildingInfo.m_maxHeightOffset)
                                         {
-                                            vector3_3.y = buildingY;
-                                            vector3_1 = vector3_3;
+                                            toolErrors3 |= ToolBase.ToolErrors.SlopeTooSteep;
                                         }
-                                        toolErrors1 = toolErrors2;
+                                        if (toolErrors3 == ToolBase.ToolErrors.None)
+                                        {
+                                            vector2.y = num24;
+                                            vector = vector2;
+                                        }
+                                        toolErrors = toolErrors3;
                                         break;
                                     }
                                 }
                             }
-                            else if (offset > 0)
+                            else if (num17 > 0)
                             {
-                                Vector3 vector3_2 = new Vector3(Mathf.Cos(num1), 0.0f, Mathf.Sin(num1)) * 8f;
-                                int num10 = info.m_cellWidth >> 1;
-                                for (int index = 1; index <= num10; ++index)
+                                Vector3 a2 = new Vector3(Mathf.Cos(num2), 0f, Mathf.Sin(num2)) * 8f;
+                                int num25 = buildingInfo.m_cellWidth >> 1;
+                                for (int l = 1; l <= num25; l++)
                                 {
-                                    Vector3 vector3_3 = vector3_1 + vector3_2 * (float)index;
-                                    if (Singleton<ZoneManager>.instance.CheckSpace(vector3_3, num1, info.m_cellWidth, info.m_cellLength, out offset))
+                                    Vector3 vector3 = vector + a2 * (float)l;
+                                    if (Singleton<ZoneManager>.instance.CheckSpace(vector3, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, out num17))
                                     {
-                                        float minY;
-                                        float maxY;
-                                        float buildingY;
-                                        Building.SampleBuildingHeight(vector3_3, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                                        ToolBase.ToolErrors toolErrors2 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { info, relocating, vector3_3, minY, buildingY + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings });
-                                        if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
-                                            toolErrors2 |= ToolBase.ToolErrors.SlopeTooSteep;
-                                        if (toolErrors2 == ToolBase.ToolErrors.None)
+                                        float num26;
+                                        float num27;
+                                        float num28;
+                                        Building.SampleBuildingHeight(vector3, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num26, out num27, out num28);
+                                        ToolBase.ToolErrors toolErrors4 = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector3, num26, num28 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                        if (num27 - num26 > buildingInfo.m_maxHeightOffset)
                                         {
-                                            vector3_3.y = buildingY;
-                                            vector3_1 = vector3_3;
+                                            toolErrors4 |= ToolBase.ToolErrors.SlopeTooSteep;
                                         }
-                                        toolErrors1 = toolErrors2;
+                                        if (toolErrors4 == ToolBase.ToolErrors.None)
+                                        {
+                                            vector3.y = num28;
+                                            vector = vector3;
+                                        }
+                                        toolErrors = toolErrors4;
                                         break;
                                     }
                                 }
                             }
-                            if (toolErrors1 != ToolBase.ToolErrors.None)
+                            if (toolErrors != ToolBase.ToolErrors.None)
                             {
-                                float minY;
-                                float maxY;
-                                float buildingY;
-                                Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
+                                float num29;
+                                float num30;
+                                float num31;
+                                Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num29, out num30, out num31);
                                 m_toolController.ResetColliding();
-                                toolErrors1 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { info, relocating, vector3_1, minY, buildingY + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings});
-                                if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
-                                    toolErrors1 |= ToolBase.ToolErrors.SlopeTooSteep;
-                                vector3_1.y = buildingY;
+                                toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num29, num31 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                if (num30 - num29 > buildingInfo.m_maxHeightOffset)
+                                {
+                                    toolErrors |= ToolBase.ToolErrors.SlopeTooSteep;
+                                }
+                                vector.y = num31;
                             }
                         }
                     }
-                    else if (info.m_placementMode == BuildingInfo.PlacementMode.Shoreline)
+                    else if (buildingInfo.m_placementMode == BuildingInfo.PlacementMode.Shoreline)
                     {
-                        toolErrors1 = ToolBase.ToolErrors.ShoreNotFound;
-                        Vector3 position;
-                        Vector3 direction;
-                        if (Singleton<TerrainManager>.instance.GetShorePos(vector3_1, 50f, out position, out direction, out waterHeight))
+                        toolErrors = ToolBase.ToolErrors.ShoreNotFound;
+                        Vector3 vector4;
+                        Vector3 vector5;
+                        if (Singleton<TerrainManager>.instance.GetShorePos(vector, 50f, out vector4, out vector5, out num3))
                         {
-                            vector3_1 = position;
-                            if (Singleton<TerrainManager>.instance.GetShorePos(vector3_1, 50f, out position, out direction, out waterHeight))
+                            vector = vector4;
+                            if (Singleton<TerrainManager>.instance.GetShorePos(vector, 50f, out vector4, out vector5, out num3))
                             {
-                                vector3_1 = position;
-                                num1 = Mathf.Atan2(direction.x, -direction.z);
-                                float minY1;
-                                float maxY;
-                                float buildingY;
-                                Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY1, out maxY, out buildingY);
-                                float minY2 = Mathf.Min(waterHeight, minY1);
-                                float num2 = Mathf.Max(vector3_1.y, buildingY);
-                                toolErrors1 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { info, relocating, vector3_1, minY2, num2 + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings});
-                                if ((double)vector3_1.y - (double)waterHeight > 128.0)
-                                    toolErrors1 |= ToolBase.ToolErrors.HeightTooHigh;
-                                vector3_1.y = num2;
+                                vector = vector4;
+                                num2 = Mathf.Atan2(vector5.x, -vector5.z);
+                                float num32;
+                                float num33;
+                                float num34;
+                                Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num32, out num33, out num34);
+                                num32 = Mathf.Min(num3, num32);
+                                num34 = Mathf.Max(vector.y, num34);
+                                toolErrors =(ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num32, num34 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                if (vector.y - num3 > 128f)
+                                {
+                                    toolErrors |= ToolBase.ToolErrors.HeightTooHigh;
+                                }
+                                vector.y = num34;
                             }
                         }
                     }
-                    else if (info.m_placementMode == BuildingInfo.PlacementMode.OnSurface)
+                    else if (buildingInfo.m_placementMode == BuildingInfo.PlacementMode.OnSurface)
                     {
-                        Quaternion quaternion = Quaternion.AngleAxis(b.m_angle, Vector3.down);
-                        vector3_1 -= quaternion * info.m_centerOffset;
-                        num1 = b.m_angle * (float)(Math.PI / 180.0);
+                        Quaternion rotation = Quaternion.AngleAxis(b.m_angle, Vector3.down);
+                        vector -= rotation * buildingInfo.m_centerOffset;
+                        num2 = b.m_angle * 0.0174532924f;
                         float minY;
-                        float maxY;
-                        float buildingY;
-                        Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                        toolErrors1 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { info, relocating, vector3_1, minY, buildingY + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings});
-                        vector3_1.y = buildingY;
+                        float num35;
+                        float num36;
+                        Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out minY, out num35, out num36);
+                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, minY, num36 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                        vector.y = num36;
                     }
-                    else if (info.m_placementMode == BuildingInfo.PlacementMode.OnGround)
+                    else if (buildingInfo.m_placementMode == BuildingInfo.PlacementMode.OnGround)
                     {
-                        Quaternion quaternion = Quaternion.AngleAxis(b.m_angle, Vector3.down);
-                        vector3_1 -= quaternion * info.m_centerOffset;
-                        num1 = b.m_angle * (float)(Math.PI / 180.0);
-                        float minY;
-                        float maxY;
-                        float buildingY;
-                        Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                        toolErrors1 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { info, relocating, vector3_1, minY, buildingY + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings});
-                        if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
-                            toolErrors1 |= ToolBase.ToolErrors.SlopeTooSteep;
-                        vector3_1.y = buildingY;
+                        Quaternion rotation2 = Quaternion.AngleAxis(b.m_angle, Vector3.down);
+                        vector -= rotation2 * buildingInfo.m_centerOffset;
+                        num2 = b.m_angle * 0.0174532924f;
+                        float num37;
+                        float num38;
+                        float num39;
+                        Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num37, out num38, out num39);
+                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num37, num39 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                        if (num38 - num37 > buildingInfo.m_maxHeightOffset)
+                        {
+                            toolErrors |= ToolBase.ToolErrors.SlopeTooSteep;
+                        }
+                        vector.y = num39;
                     }
-                    else if (info.m_placementMode == BuildingInfo.PlacementMode.OnWater)
+                    else if (buildingInfo.m_placementMode == BuildingInfo.PlacementMode.OnWater)
                     {
-                        Quaternion quaternion = Quaternion.AngleAxis(b.m_angle, Vector3.down);
-                        vector3_1 -= quaternion * info.m_centerOffset;
-                        num1 = b.m_angle * (float)(Math.PI / 180.0);
-                        float minY;
-                        float maxY;
-                        float buildingY;
-                        Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                        toolErrors1 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { info, relocating, vector3_1, minY, buildingY + info.m_size.y, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings});
-                        vector3_1.y = buildingY;
+                        Quaternion rotation3 = Quaternion.AngleAxis(b.m_angle, Vector3.down);
+                        vector -= rotation3 * buildingInfo.m_centerOffset;
+                        num2 = b.m_angle * 0.0174532924f;
+                        float minY2;
+                        float num40;
+                        float num41;
+                        Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out minY2, out num40, out num41);
+                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, minY2, num41 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                        vector.y = num41;
                     }
                     else
-                        toolErrors1 = ToolBase.ToolErrors.Pending;
-                    Segment3 connectionSegment = new Segment3();
+                    {
+                        toolErrors = ToolBase.ToolErrors.Pending;
+                    }
+                    Segment3 connectionSegment = default(Segment3);
+                    float elevation = GetElevation(b,buildingInfo);
                     int productionRate;
-                    int constructionCost;
-                    ToolBase.ToolErrors toolErrors3 = toolErrors1 | info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, ref connectionSegment, out productionRate, out constructionCost);
-                    if (flag && Singleton<EconomyManager>.instance.PeekResource(EconomyManager.Resource.Construction, constructionCost) != constructionCost)
-                        toolErrors3 |= ToolBase.ToolErrors.NotEnoughMoney;
+                    int num42;
+                    toolErrors |= buildingInfo.m_buildingAI.CheckBuildPosition((ushort)num, ref vector, ref num2, num3, elevation, ref connectionSegment, out productionRate, out num42);
+                    if (buildingInfo.m_subBuildings != null && buildingInfo.m_subBuildings.Length != 0)
+                    {
+                        Matrix4x4 matrix4x = default(Matrix4x4);
+                        matrix4x.SetTRS(vector, Quaternion.AngleAxis(num2 * 57.29578f, Vector3.down), Vector3.one);
+                        for (int m = 0; m < buildingInfo.m_subBuildings.Length; m++)
+                        {
+                            BuildingInfo buildingInfo2 = buildingInfo.m_subBuildings[m].m_buildingInfo;
+                            Vector3 vector6 = matrix4x.MultiplyPoint(buildingInfo.m_subBuildings[m].m_position);
+                            float num43 = buildingInfo.m_subBuildings[m].m_angle * 0.0174532924f + m_cachedAngle;
+                            Segment3 segment = default(Segment3);
+                            int num44;
+                            int num45;
+                            toolErrors |= buildingInfo2.m_buildingAI.CheckBuildPosition((ushort)num, ref vector6, ref num43, num3, elevation, ref segment, out num44, out num45);
+                            num42 += num45;
+                        }
+                    }
+                    if (flag && Singleton<EconomyManager>.instance.PeekResource(EconomyManager.Resource.Construction, num42) != num42)
+                    {
+                        toolErrors |= ToolBase.ToolErrors.NotEnoughMoney;
+                    }
                     if (!Singleton<BuildingManager>.instance.CheckLimits())
-                        toolErrors3 |= ToolBase.ToolErrors.TooManyObjects;
+                    {
+                        toolErrors |= ToolBase.ToolErrors.TooManyObjects;
+                    }
 
-                    mousePosition.SetValue(b, vector3_1);
-                    mouseAngle.SetValue(b, num1);
+                    mousePosition.SetValue(b, vector);
+                    mouseAngle.SetValue(b, num2);
                     FakeBuildingTool.connectionSegment.SetValue(b, connectionSegment);
                     FakeBuildingTool.productionRate.SetValue(b, productionRate);
-                    FakeBuildingTool.constructionCost.SetValue(b, constructionCost);
-                    placementErrors.SetValue(b, toolErrors3);
+                    FakeBuildingTool.constructionCost.SetValue(b, num42);
+                    placementErrors.SetValue(b, toolErrors);
                 }
                 else
                 {
                     placementErrors.SetValue(b, ToolBase.ToolErrors.RaycastFailed);
-                    FakeBuildingTool.connectionSegment.SetValue(b, new Segment3());                    
+                    FakeBuildingTool.connectionSegment.SetValue(b, new Segment3());
+
                 }
             }
             finally
             {
                 m_toolController.EndColliding();
             }
+        }
+
+        private static float GetElevation(BuildingTool b,BuildingInfo info)
+        {
+            if (info == null)
+            {
+                return 0f;
+            }
+            int num;
+            int num2;
+            info.m_buildingAI.GetElevationLimits(out num, out num2);
+            if (num == num2)
+            {
+                return 0f;
+            }
+
+            float m_elevation = (float)elevation.GetValue(b);
+            return (float)Mathf.Clamp(m_elevation, num, num2) * 12f;
         }
 
         private static bool RayCast(ToolBase.RaycastInput raycastInput, out ToolBase.RaycastOutput output)
