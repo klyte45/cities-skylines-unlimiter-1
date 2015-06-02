@@ -43,9 +43,13 @@ namespace EightyOne.Zones
         }
 
         [ReplaceMethod]
-
         public static void SimulationStep(BuildingTool b)
         {
+            if (mouseRay == null)
+            {
+                Init(b);
+            }
+
             BuildingInfo buildingInfo;
             int num;
             GetPrefabInfo(b,out buildingInfo, out num);
@@ -57,21 +61,26 @@ namespace EightyOne.Zones
             ulong[] collidingBuildingBuffer;
 
             ToolController m_toolController = ToolManager.instance.m_properties;
+            if (m_toolController == null)
+            {
+                return;
+            }
+
             m_toolController.BeginColliding(out collidingSegmentBuffer, out collidingBuildingBuffer);
             try
             {
-                bool m_mouseRayValid = (bool)mouseRayValid.GetValue(b);
-                float m_mouseAngle = (float)mouseAngle.GetValue(b);
                 Ray m_mouseRay = (Ray)mouseRay.GetValue(b);
                 float m_mouseRayLength = (float)mouseRayLength.GetValue(b);
-                float m_cachedAngle = (float)cachedAngle.GetValue(b);
 
                 ToolBase.RaycastInput input = new ToolBase.RaycastInput(m_mouseRay, m_mouseRayLength);
                 ToolBase.RaycastOutput raycastOutput;
 
+                bool m_mouseRayValid = (bool)mouseRayValid.GetValue(b);
                 if (m_mouseRayValid && RayCast(input, out raycastOutput))
                 {
                     Vector3 vector = raycastOutput.m_hitPos;
+
+                    float m_mouseAngle = (float)mouseAngle.GetValue(b);
                     float num2 = m_mouseAngle;
                     bool flag = (Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.Game) != ItemClass.Availability.None;
                     float num3 = 0f;
@@ -94,7 +103,7 @@ namespace EightyOne.Zones
                         {
                             for (int j = num10; j <= num12; j++)
                             {
-                                ushort num14 = instance.m_zoneGrid[i * FakeZoneManager.GRIDSIZE + j];
+                                ushort num14 = FakeZoneManager.zoneGrid[i * FakeZoneManager.GRIDSIZE + j];
                                 int num15 = 0;
                                 while (num14 != 0)
                                 {
@@ -122,7 +131,7 @@ namespace EightyOne.Zones
                                 float num19;
                                 float num20;
                                 Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num18, out num19, out num20);
-                                ToolBase.ToolErrors toolErrors2 = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num18, num20 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                ToolBase.ToolErrors toolErrors2 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector, num18, num20 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                                 if (num19 - num18 > buildingInfo.m_maxHeightOffset)
                                 {
                                     toolErrors2 |= ToolBase.ToolErrors.SlopeTooSteep;
@@ -146,7 +155,7 @@ namespace EightyOne.Zones
                                         float num23;
                                         float num24;
                                         Building.SampleBuildingHeight(vector2, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num22, out num23, out num24);
-                                        ToolBase.ToolErrors toolErrors3 = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector2, num22, num24 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                        ToolBase.ToolErrors toolErrors3 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector2, num22, num24 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                                         if (num23 - num22 > buildingInfo.m_maxHeightOffset)
                                         {
                                             toolErrors3 |= ToolBase.ToolErrors.SlopeTooSteep;
@@ -174,7 +183,7 @@ namespace EightyOne.Zones
                                         float num27;
                                         float num28;
                                         Building.SampleBuildingHeight(vector3, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num26, out num27, out num28);
-                                        ToolBase.ToolErrors toolErrors4 = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector3, num26, num28 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                        ToolBase.ToolErrors toolErrors4 = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector3, num26, num28 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                                         if (num27 - num26 > buildingInfo.m_maxHeightOffset)
                                         {
                                             toolErrors4 |= ToolBase.ToolErrors.SlopeTooSteep;
@@ -196,7 +205,7 @@ namespace EightyOne.Zones
                                 float num31;
                                 Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num29, out num30, out num31);
                                 m_toolController.ResetColliding();
-                                toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num29, num31 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector, num29, num31 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                                 if (num30 - num29 > buildingInfo.m_maxHeightOffset)
                                 {
                                     toolErrors |= ToolBase.ToolErrors.SlopeTooSteep;
@@ -223,7 +232,7 @@ namespace EightyOne.Zones
                                 Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num32, out num33, out num34);
                                 num32 = Mathf.Min(num3, num32);
                                 num34 = Mathf.Max(vector.y, num34);
-                                toolErrors =(ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num32, num34 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                                toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector, num32, num34 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                                 if (vector.y - num3 > 128f)
                                 {
                                     toolErrors |= ToolBase.ToolErrors.HeightTooHigh;
@@ -241,7 +250,7 @@ namespace EightyOne.Zones
                         float num35;
                         float num36;
                         Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out minY, out num35, out num36);
-                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, minY, num36 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector, minY, num36 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                         vector.y = num36;
                     }
                     else if (buildingInfo.m_placementMode == BuildingInfo.PlacementMode.OnGround)
@@ -253,7 +262,7 @@ namespace EightyOne.Zones
                         float num38;
                         float num39;
                         Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out num37, out num38, out num39);
-                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, num37, num39 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector, num37, num39 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                         if (num38 - num37 > buildingInfo.m_maxHeightOffset)
                         {
                             toolErrors |= ToolBase.ToolErrors.SlopeTooSteep;
@@ -269,7 +278,7 @@ namespace EightyOne.Zones
                         float num40;
                         float num41;
                         Building.SampleBuildingHeight(vector, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, buildingInfo, out minY2, out num40, out num41);
-                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b,new object[]{buildingInfo, num, vector, minY2, num41 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer});
+                        toolErrors = (ToolBase.ToolErrors)CheckSpace.Invoke(b, new object[] { buildingInfo, num, vector, minY2, num41 + buildingInfo.m_size.y, num2, buildingInfo.m_cellWidth, buildingInfo.m_cellLength, true, collidingSegmentBuffer, collidingBuildingBuffer });
                         vector.y = num41;
                     }
                     else
@@ -277,7 +286,7 @@ namespace EightyOne.Zones
                         toolErrors = ToolBase.ToolErrors.Pending;
                     }
                     Segment3 connectionSegment = default(Segment3);
-                    float elevation = GetElevation(b,buildingInfo);
+                    float elevation = GetElevation(b, buildingInfo);
                     int productionRate;
                     int num42;
                     toolErrors |= buildingInfo.m_buildingAI.CheckBuildPosition((ushort)num, ref vector, ref num2, num3, elevation, ref connectionSegment, out productionRate, out num42);
@@ -289,7 +298,7 @@ namespace EightyOne.Zones
                         {
                             BuildingInfo buildingInfo2 = buildingInfo.m_subBuildings[m].m_buildingInfo;
                             Vector3 vector6 = matrix4x.MultiplyPoint(buildingInfo.m_subBuildings[m].m_position);
-                            float num43 = buildingInfo.m_subBuildings[m].m_angle * 0.0174532924f + m_cachedAngle;
+                            float num43 = buildingInfo.m_subBuildings[m].m_angle * 0.0174532924f + (float)cachedAngle.GetValue(b);
                             Segment3 segment = default(Segment3);
                             int num44;
                             int num45;
@@ -306,16 +315,16 @@ namespace EightyOne.Zones
                         toolErrors |= ToolBase.ToolErrors.TooManyObjects;
                     }
 
-                    mousePosition.SetValue(b, vector);
-                    mouseAngle.SetValue(b, num2);
+                    FakeBuildingTool.mousePosition.SetValue(b, vector);
+                    FakeBuildingTool.mouseAngle.SetValue(b, num2);
                     FakeBuildingTool.connectionSegment.SetValue(b, connectionSegment);
                     FakeBuildingTool.productionRate.SetValue(b, productionRate);
                     FakeBuildingTool.constructionCost.SetValue(b, num42);
-                    placementErrors.SetValue(b, toolErrors);
+                    FakeBuildingTool.placementErrors.SetValue(b, toolErrors);
                 }
                 else
                 {
-                    placementErrors.SetValue(b, ToolBase.ToolErrors.RaycastFailed);
+                    FakeBuildingTool.placementErrors.SetValue(b, ToolBase.ToolErrors.RaycastFailed);
                     FakeBuildingTool.connectionSegment.SetValue(b, new Segment3());
 
                 }
@@ -359,21 +368,19 @@ namespace EightyOne.Zones
             if (info != null)
             {
                 relocating = 0;
+                return;
             }
-            else
+            if (relocating != 0)
             {
-                if (relocating != 0)
+                BuildingManager instance = Singleton<BuildingManager>.instance;
+                if ((instance.m_buildings.m_buffer[relocating].m_flags & (Building.Flags.Created | Building.Flags.Deleted)) == Building.Flags.Created)
                 {
-                    BuildingManager instance = Singleton<BuildingManager>.instance;
-                    if ((instance.m_buildings.m_buffer[relocating].m_flags & (Building.Flags.Created | Building.Flags.Deleted)) == Building.Flags.Created)
-                    {
-                        info = instance.m_buildings.m_buffer[relocating].Info;
-                        return;
-                    }
+                    info = instance.m_buildings.m_buffer[relocating].Info;
+                    return;
                 }
-                info = (BuildingInfo)null;
-                relocating = 0;
             }
+            info = null;
+            relocating = 0;
         }
 
         private static void FindClosestZone(BuildingInfo info, ushort block, Vector3 refPos, ref float minD, ref float min2, ref Vector3 minPos, ref float minAngle)

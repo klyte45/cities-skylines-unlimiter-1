@@ -65,31 +65,46 @@ namespace EightyOne.Zones
             return true;
         }
 
-        private static void CheckZoning(Building b, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
+        private static void CheckZoning(Building bz, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
         {
-            int width = b.Width;
-            int length = b.Length;
-            Vector3 a = new Vector3(Mathf.Cos(b.m_angle), 0f, Mathf.Sin(b.m_angle)) * 8f;
+
+            BuildingInfo.ZoningMode zoningMode = bz.Info.m_zoningMode;
+            int width = bz.Width;
+            int length = bz.Length;
+            Vector3 a = new Vector3(Mathf.Cos(bz.m_angle), 0f, Mathf.Sin(bz.m_angle)) * 8f;
             Vector3 a2 = new Vector3(a.z, 0f, -a.x);
             int rowCount = block.RowCount;
             Vector3 a3 = new Vector3(Mathf.Cos(block.m_angle), 0f, Mathf.Sin(block.m_angle)) * 8f;
             Vector3 a4 = new Vector3(a3.z, 0f, -a3.x);
-            Vector3 a5 = block.m_position - b.m_position + a * ((float)width * 0.5f - 0.5f) + a2 * ((float)length * 0.5f - 0.5f);
+            Vector3 a5 = block.m_position - bz.m_position + a * ((float)width * 0.5f - 0.5f) + a2 * ((float)length * 0.5f - 0.5f);
             for (int i = 0; i < rowCount; i++)
             {
-                Vector3 bb = ((float)i - 3.5f) * a4;
+                Vector3 b = ((float)i - 3.5f) * a4;
                 int num = 0;
                 while ((long)num < 4L)
                 {
                     if ((block.m_valid & ~block.m_shared & 1uL << (i << 3 | num)) != 0uL && block.GetZone(num, i) == zone)
                     {
                         Vector3 b2 = ((float)num - 3.5f) * a3;
-                        Vector3 vector = a5 + b2 + bb;
+                        Vector3 vector = a5 + b2 + b;
                         float num2 = a.x * vector.x + a.z * vector.z;
                         float num3 = a2.x * vector.x + a2.z * vector.z;
                         int num4 = Mathf.RoundToInt(num2 / 64f);
                         int num5 = Mathf.RoundToInt(num3 / 64f);
-                        if ((num5 != 0 || num == 0) && num4 >= 0 && num5 >= 0 && num4 < width && num5 < length)
+                        bool flag = false;
+                        if (zoningMode == BuildingInfo.ZoningMode.Straight)
+                        {
+                            flag = (num5 == 0);
+                        }
+                        else if (zoningMode == BuildingInfo.ZoningMode.CornerLeft)
+                        {
+                            flag = ((num5 == 0 && num4 >= width - 2) || (num5 <= 1 && num4 == width - 1));
+                        }
+                        else if (zoningMode == BuildingInfo.ZoningMode.CornerRight)
+                        {
+                            flag = ((num5 == 0 && num4 <= 1) || (num5 <= 1 && num4 == 0));
+                        }
+                        if ((!flag || num == 0) && num4 >= 0 && num5 >= 0 && num4 < width && num5 < length)
                         {
                             validCells |= 1u << (num5 << 3) + num4;
                         }
