@@ -84,7 +84,7 @@ namespace EightyOne.Zones
                         }
                         num4 = num5;
                         num5 = zm.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 > 32768)
+                        if (++num6 > ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                             break;
@@ -125,7 +125,7 @@ namespace EightyOne.Zones
                             zm.m_blocksUpdated = true;
                         }
                         num5 = zm.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 >= 32768)
+                        if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                             break;
@@ -162,7 +162,7 @@ namespace EightyOne.Zones
                             zm.m_blocks.m_buffer[(int)num5].ZonesUpdated(num5, x, z, x2, z2);
                         }
                         num5 = zm.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 >= 32768)
+                        if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                             break;
@@ -204,7 +204,7 @@ namespace EightyOne.Zones
                             zm.CheckSpace(num14, position, angle, width, length, ref num6, ref num7, ref num8, ref num9);
                         }
                         num14 = zm.m_blocks.m_buffer[(int)num14].m_nextGridBlock;
-                        if (++num15 >= 32768)
+                        if (++num15 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                             break;
@@ -348,8 +348,8 @@ namespace EightyOne.Zones
                 if ((int)instance1.m_currentBuildIndex == (int)z.m_lastBuildIndex)
                 {
                     int num1 = (int)instance1.m_currentFrameIndex & 1023;
-                    int num2 = num1 * 32;
-                    int num3 = (num1 + 1) * 32 - 1;
+                    int num2 = num1 * 48;
+                    int num3 = (num1 + 1) * 48 - 1;
                     for (int index = num2; index <= num3; ++index)
                     {
                         if (((int)z.m_blocks.m_buffer[index].m_flags & 1) != 0)

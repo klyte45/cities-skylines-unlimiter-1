@@ -45,7 +45,7 @@ namespace EightyOne.Zones
                             ApplyBrush(z,num10,ref instance.m_blocks.m_buffer[(int)num10], mousePosition, num);                            
                         }
                         num10 = instance.m_blocks.m_buffer[(int)num10].m_nextGridBlock;
-                        if (++num11 >= 32768)
+                        if (++num11 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                             break;
@@ -160,7 +160,7 @@ namespace EightyOne.Zones
                         if ((double)Mathf.Max(Mathf.Max(num1 - 46f - vector3.x, num2 - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)num3 - 46.0), (float)((double)vector3.z - (double)num4 - 46.0))) < 0.0 && ApplyFillBuffer(z, position, direction, angle, blockIndex, ref instance1.m_blocks.m_buffer[(int)blockIndex]))
                             flag = true;
                         blockIndex = instance1.m_blocks.m_buffer[(int)blockIndex].m_nextGridBlock;
-                        if (++num9 >= 32768)
+                        if (++num9 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -228,7 +228,7 @@ namespace EightyOne.Zones
                         if ((double)Mathf.Max(Mathf.Max(vector2_6.x - 46f - vector3.x, vector2_6.y - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)vector2_7.x - 46.0), (float)((double)vector3.z - (double)vector2_7.y - 46.0))) < 0.0 && ApplyZoning(z, blockIndex, ref instance1.m_blocks.m_buffer[(int)blockIndex], quad2))
                             flag = true;
                         blockIndex = instance1.m_blocks.m_buffer[(int)blockIndex].m_nextGridBlock;
-                        if (++num9 >= 32768)
+                        if (++num9 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -339,7 +339,7 @@ namespace EightyOne.Zones
                             if ((double)Mathf.Max(Mathf.Max(num1 - 46f - vector3.x, num2 - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)num3 - 46.0), (float)((double)vector3.z - (double)num4 - 46.0))) < 0.0)
                                 CalculateFillBuffer(z, position, direction, angle, blockIndex, ref instance.m_blocks.m_buffer[(int)blockIndex], requiredZone, occupied1, occupied2);
                             blockIndex = instance.m_blocks.m_buffer[(int)blockIndex].m_nextGridBlock;
-                            if (++num9 >= 32768)
+                            if (++num9 >= ZoneManager.MAX_BLOCK_COUNT)
                             {
                                 CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                                 break;

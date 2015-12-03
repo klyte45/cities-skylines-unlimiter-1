@@ -1122,7 +1122,7 @@ namespace EightyOne.ResourceManagers
                             }
                         }
                         num10 = buildings.m_buffer[(int)num10].m_nextGridBuilding;
-                        if (++num11 >= 32768)
+                        if (++num11 >= BuildingManager.MAX_BUILDING_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                             break;

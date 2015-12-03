@@ -13,7 +13,7 @@ namespace EightyOne.Zones
     {
 
         [ReplaceMethod]
-        public static bool CheckZoning(Building b, ItemClass.Zone zone)
+        public static bool CheckZoning(Building b, ItemClass.Zone zone1, ItemClass.Zone zone2)
         {            
             int width = b.Width;
             int length = b.Length;
@@ -32,6 +32,7 @@ namespace EightyOne.Zones
             int num2 = Mathf.Max((int)((vector3_5.z - 46f) / 64f + FakeZoneManager.HALFGRID), 0);
             int num3 = Mathf.Min((int)((vector3_6.x + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
             int num4 = Mathf.Min((int)((vector3_6.z + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+            bool secondary = false;
             uint validCells = 0U;
             ZoneManager instance = Singleton<ZoneManager>.instance;
             for (int index1 = num2; index1 <= num4; ++index1)
@@ -44,9 +45,9 @@ namespace EightyOne.Zones
                     {
                         Vector3 vector3_7 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector3_5.x - 46f - vector3_7.x, vector3_5.z - 46f - vector3_7.z), Mathf.Max((float)((double)vector3_7.x - (double)vector3_6.x - 46.0), (float)((double)vector3_7.z - (double)vector3_6.z - 46.0))) < 0.0)
-                            CheckZoning(b,zone, ref validCells, ref instance.m_blocks.m_buffer[num5]);
+                            CheckZoning(b,zone1, zone2, ref validCells, ref secondary, ref instance.m_blocks.m_buffer[num5]);
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 >= 32768)
+                        if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -62,10 +63,14 @@ namespace EightyOne.Zones
                         return false;
                 }
             }
+            if (!secondary ? zone1 == ItemClass.Zone.CommercialHigh || zone1 == ItemClass.Zone.ResidentialHigh : zone2 == ItemClass.Zone.CommercialHigh || zone2 == ItemClass.Zone.ResidentialHigh)
+                b.m_flags |= Building.Flags.HighDensity;
+            else
+                b.m_flags &= ~Building.Flags.HighDensity;
             return true;
         }
 
-        private static void CheckZoning(Building bz, ItemClass.Zone zone, ref uint validCells, ref ZoneBlock block)
+        private static void CheckZoning(Building bz, ItemClass.Zone zone1, ItemClass.Zone zone2, ref uint validCells, ref bool secondary, ref ZoneBlock block)
         {
 
             BuildingInfo.ZoningMode zoningMode = bz.Info.m_zoningMode;
@@ -80,36 +85,45 @@ namespace EightyOne.Zones
             for (int i = 0; i < rowCount; i++)
             {
                 Vector3 b = ((float)i - 3.5f) * a4;
-                int num = 0;
-                while ((long)num < 4L)
+                for (int num = 0; (long)num < 4L; num++)
                 {
-                    if ((block.m_valid & ~block.m_shared & 1uL << (i << 3 | num)) != 0uL && block.GetZone(num, i) == zone)
-                    {
-                        Vector3 b2 = ((float)num - 3.5f) * a3;
-                        Vector3 vector = a5 + b2 + b;
-                        float num2 = a.x * vector.x + a.z * vector.z;
-                        float num3 = a2.x * vector.x + a2.z * vector.z;
-                        int num4 = Mathf.RoundToInt(num2 / 64f);
-                        int num5 = Mathf.RoundToInt(num3 / 64f);
-                        bool flag = false;
-                        if (zoningMode == BuildingInfo.ZoningMode.Straight)
+                        if (((long)block.m_valid & ~(long)block.m_shared & 1L << (i << 3 | num)) != 0L)
                         {
-                            flag = (num5 == 0);
+                            ItemClass.Zone zone = block.GetZone(num, i);
+                            bool flag1 = zone == zone1;
+                            if (zone == zone2 && zone2 != ItemClass.Zone.None)
+                            {
+                                flag1 = true;
+                                secondary = true;
+                            }
+                            if (flag1)
+                            {
+                                Vector3 b2 = ((float) num - 3.5f)*a3;
+                                Vector3 vector = a5 + b2 + b;
+                                float num2 = a.x*vector.x + a.z*vector.z;
+                                float num3 = a2.x*vector.x + a2.z*vector.z;
+                                int num4 = Mathf.RoundToInt(num2/64f);
+                                int num5 = Mathf.RoundToInt(num3/64f);
+                                bool flag = false;
+                                if (zoningMode == BuildingInfo.ZoningMode.Straight)
+                                {
+                                    flag = (num5 == 0);
+                                }
+                                else if (zoningMode == BuildingInfo.ZoningMode.CornerLeft)
+                                {
+                                    flag = ((num5 == 0 && num4 >= width - 2) || (num5 <= 1 && num4 == width - 1));
+                                }
+                                else if (zoningMode == BuildingInfo.ZoningMode.CornerRight)
+                                {
+                                    flag = ((num5 == 0 && num4 <= 1) || (num5 <= 1 && num4 == 0));
+                                }
+                                if ((!flag || num == 0) && num4 >= 0 && num5 >= 0 && num4 < width && num5 < length)
+                                {
+                                    validCells |= 1u << (num5 << 3) + num4;
+                                }
+                            }
                         }
-                        else if (zoningMode == BuildingInfo.ZoningMode.CornerLeft)
-                        {
-                            flag = ((num5 == 0 && num4 >= width - 2) || (num5 <= 1 && num4 == width - 1));
-                        }
-                        else if (zoningMode == BuildingInfo.ZoningMode.CornerRight)
-                        {
-                            flag = ((num5 == 0 && num4 <= 1) || (num5 <= 1 && num4 == 0));
-                        }
-                        if ((!flag || num == 0) && num4 >= 0 && num5 >= 0 && num4 < width && num5 < length)
-                        {
-                            validCells |= 1u << (num5 << 3) + num4;
-                        }
-                    }
-                    num++;
+                    
                 }
             }
         }

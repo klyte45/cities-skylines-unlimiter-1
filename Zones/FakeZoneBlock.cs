@@ -48,7 +48,7 @@ namespace EightyOne.Zones
                         if ((double)Mathf.Max(Mathf.Max(minX - 46f - vector3.x, minZ - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)maxX - 46.0), (float)((double)vector3.z - (double)maxZ - 46.0))) < 0.0 && (int)num5 != (int)blockID)
                             CalculateImplementation2(ref z, blockID, ref instance.m_blocks.m_buffer[(int)num5], ref valid, ref shared, minX, minZ, maxX, maxZ);
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 >= 32768)
+                        if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
@@ -282,7 +282,7 @@ namespace EightyOne.Zones
                             CheckBlock(b,ref instance.m_blocks.m_buffer[(int)num9], tmpXBuffer, zone, vector3, vector, vector2, quad);
                         }
                         num9 = instance.m_blocks.m_buffer[(int)num9].m_nextGridBlock;
-                        if (++num10 >= 32768)
+                        if (++num10 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                             break;
@@ -750,9 +750,14 @@ namespace EightyOne.Zones
                 vector6 = b.m_position + VectorUtils.X_Y(((float)num26 * 0.5f - 4f) * vector + ((float)num25 * 0.5f + (float)num2 - 10f) * vector2);
                 if (zone == ItemClass.Zone.Industrial)
                 {
-                    ZoneBlock.GetIndustryType(vector6, out subService, out level);
+                    ZoneBlock.GetIndustryType(vector3, out subService, out level);
                 }
-                buildingInfo = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, num27, num26, zoningMode3);
+                else if (zone == ItemClass.Zone.CommercialLow || zone == ItemClass.Zone.CommercialHigh) { 
+                    ZoneBlock.GetCommercialType(vector3, zone, num27, num26, out subService, out level);
+                }
+                byte district2 = instance2.GetDistrict(vector3);
+                ushort num28_ = instance2.m_districts.m_buffer[(int)district2].m_Style;
+                buildingInfo = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, num27, num26, zoningMode3, (int)num28_);
                 if (buildingInfo != null)
                 {
                     break;
@@ -798,6 +803,13 @@ namespace EightyOne.Zones
                         instance.m_actualWorkplaceDemand = Mathf.Max(0, instance.m_actualWorkplaceDemand - 5);
                         break;
                 }
+                switch (zone)
+                {
+                    case ItemClass.Zone.ResidentialHigh:
+                    case ItemClass.Zone.CommercialHigh:
+                        Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)num31].m_flags |= Building.Flags.HighDensity;
+                        break;
+                }
             }
             instance.m_goodAreaFound[(int)zone] = 1024;
         }
@@ -838,7 +850,7 @@ namespace EightyOne.Zones
                             }
                         }
                         num5 = array16.m_buffer[(int)num5].m_nextGridBuilding;
-                        if (++num6 >= 32768)
+                        if (++num6 >= BuildingManager.MAX_BUILDING_COUNT)
                         {
                             CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;

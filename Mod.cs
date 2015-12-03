@@ -1,5 +1,4 @@
-﻿using ColossalFramework.Plugins;
-using ICities;
+﻿using ICities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,7 +10,6 @@ using EightyOne.Attributes;
 using EightyOne.ResourceManagers;
 using EightyOne.Terrain;
 using EightyOne.Zones;
-using System.ComponentModel;
 
 namespace EightyOne
 {

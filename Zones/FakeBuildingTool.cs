@@ -114,7 +114,7 @@ namespace EightyOne.Zones
                                         FindClosestZone(buildingInfo, num14, raycastOutput.m_hitPos, ref num8, ref num9, ref vector, ref num2);
                                     }
                                     num14 = instance.m_blocks.m_buffer[(int)num14].m_nextGridBlock;
-                                    if (++num15 >= 32768)
+                                    if (++num15 >= ZoneManager.MAX_BLOCK_COUNT)
                                     {
                                         CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
                                         break;
