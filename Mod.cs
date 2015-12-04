@@ -101,7 +101,7 @@ namespace EightyOne
             var parameters = method.GetParameters();
 
             Type[] types;
-            if (parameters.Length > 0 && parameters[0].ParameterType == type1)
+            if (parameters.Length > 0 && parameters[0].ParameterType == type1 )
                 types = parameters.Skip(1).Select(p => p.ParameterType).ToArray();
             else
                 types = parameters.Select(p => p.ParameterType).ToArray();

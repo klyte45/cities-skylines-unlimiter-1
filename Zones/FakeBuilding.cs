@@ -1,6 +1,7 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using System;
+using System.Reflection;
 using UnityEngine;
 using EightyOne.Attributes;
 
@@ -13,9 +14,15 @@ namespace EightyOne.Zones
     internal class FakeBuilding
     {
 
+        private static readonly MethodInfo _CheckZoning = typeof(ZoneBlock).GetMethod("CheckZoning", BindingFlags.NonPublic | BindingFlags.Instance,
+            null, new[] {
+                typeof(ItemClass.Zone), typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(bool).MakeByRefType(), typeof(ZoneBlock).MakeByRefType()
+            }, null);
+
         [ReplaceMethod]
         public static bool CheckZoning(Building b, ItemClass.Zone zone1, ItemClass.Zone zone2)
-        {            
+        {
+            UnityEngine.Debug.Log("Calling CheckZoning");
             int width = b.Width;
             int length = b.Length;
             Vector3 vector3_1 = new Vector3(Mathf.Cos(b.m_angle), 0.0f, Mathf.Sin(b.m_angle));
@@ -29,10 +36,12 @@ namespace EightyOne.Zones
             quad3.d = b.m_position - vector3_3 + vector3_4;
             Vector3 vector3_5 = quad3.Min();
             Vector3 vector3_6 = quad3.Max();
-            int num1= Mathf.Max((int)((vector3_5.x - 46f) / 64f + FakeZoneManager.HALFGRID), 0);
-            int num2 = Mathf.Max((int)((vector3_5.z - 46f) / 64f + FakeZoneManager.HALFGRID), 0);
-            int num3 = Mathf.Min((int)((vector3_6.x + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
-            int num4 = Mathf.Min((int)((vector3_6.z + 46f) / 64f + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+            //begin mod
+            int num1 = Mathf.Max((int)(((double)vector3_5.x - 46.0) / 64.0 + FakeZoneManager.HALFGRID), 0);
+            int num2 = Mathf.Max((int)(((double)vector3_5.z - 46.0) / 64.0 + FakeZoneManager.HALFGRID), 0);
+            int num3 = Mathf.Min((int)(((double)vector3_6.x + 46.0) / 64.0 + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+            int num4 = Mathf.Min((int)(((double)vector3_6.z + 46.0) / 64.0 + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
+            //end mod
             bool secondary = false;
             uint validCells = 0U;
             ZoneManager instance = Singleton<ZoneManager>.instance;
@@ -40,13 +49,15 @@ namespace EightyOne.Zones
             {
                 for (int index2 = num1; index2 <= num3; ++index2)
                 {
+                    //begin mod
                     ushort num5 = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                    //end mod
                     int num6 = 0;
                     while ((int)num5 != 0)
                     {
                         Vector3 vector3_7 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector3_5.x - 46f - vector3_7.x, vector3_5.z - 46f - vector3_7.z), Mathf.Max((float)((double)vector3_7.x - (double)vector3_6.x - 46.0), (float)((double)vector3_7.z - (double)vector3_6.z - 46.0))) < 0.0)
-                            CheckZoning(b,zone1, zone2, ref validCells, ref secondary, ref instance.m_blocks.m_buffer[num5]);
+                            CheckZoning(ref b, zone1, zone2, ref validCells, ref secondary, ref instance.m_blocks.m_buffer[(int)num5]);
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
@@ -60,73 +71,29 @@ namespace EightyOne.Zones
             {
                 for (int index2 = 0; index2 < width; ++index2)
                 {
-                    if (((int)validCells & 1 << (index1 << 3) + index2) == 0)
+                    if (((int)validCells & 1 << (index1 << 3) + index2) == 0) {
+                        UnityEngine.Debug.Log("Check zoning: false. Valid cells: " + validCells);
                         return false;
+                    }
                 }
             }
             if (!secondary ? zone1 == ItemClass.Zone.CommercialHigh || zone1 == ItemClass.Zone.ResidentialHigh : zone2 == ItemClass.Zone.CommercialHigh || zone2 == ItemClass.Zone.ResidentialHigh)
                 b.m_flags |= Building.Flags.HighDensity;
             else
                 b.m_flags &= ~Building.Flags.HighDensity;
+            UnityEngine.Debug.Log("Check zoning: true");
             return true;
         }
 
-        private static void CheckZoning(Building bz, ItemClass.Zone zone1, ItemClass.Zone zone2, ref uint validCells, ref bool secondary, ref ZoneBlock block)
-        {
 
-            BuildingInfo.ZoningMode zoningMode = bz.Info.m_zoningMode;
-            int width = bz.Width;
-            int length = bz.Length;
-            Vector3 a = new Vector3(Mathf.Cos(bz.m_angle), 0f, Mathf.Sin(bz.m_angle)) * 8f;
-            Vector3 a2 = new Vector3(a.z, 0f, -a.x);
-            int rowCount = block.RowCount;
-            Vector3 a3 = new Vector3(Mathf.Cos(block.m_angle), 0f, Mathf.Sin(block.m_angle)) * 8f;
-            Vector3 a4 = new Vector3(a3.z, 0f, -a3.x);
-            Vector3 a5 = block.m_position - bz.m_position + a * ((float)width * 0.5f - 0.5f) + a2 * ((float)length * 0.5f - 0.5f);
-            for (int i = 0; i < rowCount; i++)
-            {
-                Vector3 b = ((float)i - 3.5f) * a4;
-                for (int num = 0; (long)num < 4L; num++)
-                {
-                        if (((long)block.m_valid & ~(long)block.m_shared & 1L << (i << 3 | num)) != 0L)
-                        {
-                            ItemClass.Zone zone = block.GetZone(num, i);
-                            bool flag1 = zone == zone1;
-                            if (zone == zone2 && zone2 != ItemClass.Zone.None)
-                            {
-                                flag1 = true;
-                                secondary = true;
-                            }
-                            if (flag1)
-                            {
-                                Vector3 b2 = ((float) num - 3.5f)*a3;
-                                Vector3 vector = a5 + b2 + b;
-                                float num2 = a.x*vector.x + a.z*vector.z;
-                                float num3 = a2.x*vector.x + a2.z*vector.z;
-                                int num4 = Mathf.RoundToInt(num2/64f);
-                                int num5 = Mathf.RoundToInt(num3/64f);
-                                bool flag = false;
-                                if (zoningMode == BuildingInfo.ZoningMode.Straight)
-                                {
-                                    flag = (num5 == 0);
-                                }
-                                else if (zoningMode == BuildingInfo.ZoningMode.CornerLeft)
-                                {
-                                    flag = ((num5 == 0 && num4 >= width - 2) || (num5 <= 1 && num4 == width - 1));
-                                }
-                                else if (zoningMode == BuildingInfo.ZoningMode.CornerRight)
-                                {
-                                    flag = ((num5 == 0 && num4 <= 1) || (num5 <= 1 && num4 == 0));
-                                }
-                                if ((!flag || num == 0) && num4 >= 0 && num5 >= 0 && num4 < width && num5 < length)
-                                {
-                                    validCells |= 1u << (num5 << 3) + num4;
-                                }
-                            }
-                        }
-                    
-                }
-            }
+        private static void CheckZoning(ref Building building, ItemClass.Zone zone1, ItemClass.Zone zone2,
+            ref uint validCells, ref bool secondary, ref ZoneBlock block)
+        {
+            var args = new object[] {zone1, zone2, validCells, secondary, block};
+            _CheckZoning.Invoke(building, args);
+            validCells = (uint) args[2];
+            secondary = (bool) args[3];
+            block = (ZoneBlock) args[4];
         }
     }
 }
