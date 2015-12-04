@@ -5,6 +5,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.Terrain
 {
+    [TargetType(typeof(TerrainManager))]
     public class FakeTerrainManager
     {
         public static void Init()

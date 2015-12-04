@@ -15,6 +15,7 @@ using System.Collections;
 
 namespace EightyOne.ResourceManagers
 {
+    [TargetType(typeof(WaterManager))]
     public class FakeWaterManager : SerializableDataExtensionBase
     {
         public class Data : IDataContainer

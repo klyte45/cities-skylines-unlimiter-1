@@ -6,6 +6,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.Areas
 {
+    [TargetType(typeof(NaturalResourceManager))]
     class FakeNatualResourceManager
     {
         [ReplaceMethod]

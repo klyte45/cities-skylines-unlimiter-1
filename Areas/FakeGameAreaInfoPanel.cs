@@ -8,6 +8,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.Areas
 {
+    [TargetType(typeof(GameAreaInfoPanel))]
     internal class FakeGameAreaInfoPanel
     {
         private static FieldInfo m_AreaIndex;

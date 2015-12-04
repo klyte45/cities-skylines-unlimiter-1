@@ -57,7 +57,7 @@ namespace EightyOne
         private static Dictionary<MethodInfo, RedirectCallsState> redirects;
         public static bool IsEnabled;
         private static BindingFlags allFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
-        
+
 
         public void EnableHooks()
         {
@@ -75,49 +75,29 @@ namespace EightyOne
             FakeNetManager.Init();
             FakeZoneTool.Init();
             FakeElectricityManager.Init();
-
-            var toReplace = new Type[]
-                {
-                    typeof(GameAreaManager), typeof(FakeGameAreaManager),
-                    typeof(GameAreaInfoPanel), typeof(FakeGameAreaInfoPanel),
-                    typeof(GameAreaTool), typeof(FakeGameAreaTool),
-
-                    typeof(NetManager), typeof(FakeNetManager),
-                    typeof(ZoneManager), typeof(FakeZoneManager),
-                    typeof(BuildingTool ), typeof(FakeBuildingTool),
-                    typeof(Building ), typeof(FakeBuilding),
-
-                    typeof(ZoneTool), typeof(FakeZoneTool),
-                    //typeof(PrivateBuildingAI), typeof(FakePrivateBuildingAI),
-                    typeof(TerrainManager), typeof(FakeTerrainManager),
-
-                    typeof(ElectricityManager), typeof(FakeElectricityManager),
-                    typeof(WaterManager), typeof(FakeWaterManager),
-                    typeof(ImmaterialResourceManager), typeof(FakeImmaterialResourceManager),
-                    typeof(DistrictManager), typeof(FakeDistrictManager),
-                    typeof(DistrictTool), typeof(FakeDistrictTool),
-                   typeof(NaturalResourceManager), typeof(FakeNatualResourceManager),
-                };
-
             redirects = new Dictionary<MethodInfo, RedirectCallsState>();
-            for (int i = 0; i < toReplace.Length; i += 2)
+            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
             {
-                var from = toReplace[i];
-                var to = toReplace[i + 1];
-
-                foreach (var method in to.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic))
+                Debug.Log("Type: " + type.Name);
+                var customAttributes = type.GetCustomAttributes(typeof(TargetType), false);
+                if (customAttributes.Length != 1)
                 {
-                    if (method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1)
-                    {
-                        AddRedirect(from, method);
-                    }
+                    continue;
                 }
+                var targetType = ((TargetType)customAttributes[0]).Type;
+                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Where(method => method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1))
+                {
+                    AddRedirect(targetType, method);
+                }
+
             }
             FakeGameAreaManager.Init();
         }
-        
+
         private void AddRedirect(Type type1, MethodInfo method)
         {
+            Debug.LogFormat("Redirecting {0}#{1}", type1.Name, method.Name);
             var parameters = method.GetParameters();
 
             Type[] types;
@@ -174,7 +154,7 @@ namespace EightyOne
             var oldArray = (IList)em.GetType().GetField(propertyName, allFlags).GetValue(em);
             for (var i = 0; i < newArray.Count; i += 1)
             {
-                 oldArray[i] = newArray[i];
+                oldArray[i] = newArray[i];
             }
         }
 
@@ -184,14 +164,14 @@ namespace EightyOne
             var fields = GetFieldsFromStruct(newArray[0], oldArray[0]);
             for (var i = 0; i < newArray.Count; i += 1)
             {
-                newArray[i] = CopyStruct((object)newArray[0], oldArray[i], fields);     
+                newArray[i] = CopyStruct((object)newArray[0], oldArray[i], fields);
             }
         }
-        
+
         public static void CopyStructArrayBack(IList newArray, object em, string propertyName)
         {
             var oldArray = (IList)em.GetType().GetField(propertyName, allFlags).GetValue(em);
-            var fields = GetFieldsFromStruct( oldArray[0],newArray[0]);
+            var fields = GetFieldsFromStruct(oldArray[0], newArray[0]);
             for (var i = 0; i < newArray.Count; i += 1)
             {
                 oldArray[i] = CopyStruct((object)oldArray[i], newArray[i], fields);
@@ -216,22 +196,23 @@ namespace EightyOne
 
         public static void SetPropertyValueBack(object result, object obj, string propName)
         {
-            obj.GetType().GetField(propName, allFlags).SetValue(obj,result);
+            obj.GetType().GetField(propName, allFlags).SetValue(obj, result);
         }
 
         public static object CopyStruct(object newObj, object original, Dictionary<FieldInfo, FieldInfo> fields)
         {
             foreach (var field in fields)
             {
-                if (field.Key.FieldType != field.Value.FieldType){
+                if (field.Key.FieldType != field.Value.FieldType)
+                {
                     if (field.Key.FieldType == typeof(byte))
                     {
-                        var oo = Mathf.Clamp((ushort)field.Value.GetValue(original),0,255);
-                        field.Key.SetValue(newObj,(byte)oo);
+                        var oo = Mathf.Clamp((ushort)field.Value.GetValue(original), 0, 255);
+                        field.Key.SetValue(newObj, (byte)oo);
                         continue;
                     }
                 }
-                field.Key.SetValue(newObj, field.Value.GetValue(original));                
+                field.Key.SetValue(newObj, field.Value.GetValue(original));
             }
             return newObj;
         }

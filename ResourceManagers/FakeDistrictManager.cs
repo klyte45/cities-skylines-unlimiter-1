@@ -13,6 +13,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.ResourceManagers
 {
+    [TargetType(typeof(DistrictManager))]
     public class FakeDistrictManager : SerializableDataExtensionBase
     {
         public class Data : IDataContainer

@@ -6,7 +6,8 @@ using UnityEngine;
 
 namespace EightyOne.Areas
 {
-  public class FakeGameAreaTool
+    [TargetType(typeof(GameAreaTool))]
+    public class FakeGameAreaTool
   {
     [ReplaceMethod]
     protected static void OnToolGUI(GameAreaTool t)

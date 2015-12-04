@@ -10,6 +10,7 @@ using System.Linq;
 
 namespace EightyOne.Areas
 {
+    [TargetType(typeof(GameAreaManager))]
     public class FakeGameAreaManager : SerializableDataExtensionBase
     {
         public class Data : IDataContainer

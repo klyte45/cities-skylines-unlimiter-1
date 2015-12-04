@@ -6,6 +6,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.Zones
 {
+    [TargetType(typeof(ZoneTool))]
     internal class FakeZoneTool
     {
 

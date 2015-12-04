@@ -11,6 +11,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.ResourceManagers
 {
+    [TargetType(typeof(DistrictTool))]
     class FakeDistrictTool
     {
         private static FieldInfo m_lastPaintPosition;

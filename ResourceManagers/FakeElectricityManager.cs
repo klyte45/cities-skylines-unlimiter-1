@@ -14,6 +14,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.ResourceManagers
 {
+    [TargetType(typeof(ElectricityManager))]
     public class FakeElectricityManager : SerializableDataExtensionBase
     {
         public class Data : IDataContainer
@@ -357,17 +358,16 @@ namespace EightyOne.ResourceManagers
                 electricityGrid = new Cell[GRID * GRID];
 
                 var oldGrid = (IList)typeof(ElectricityManager).GetField("m_electricityGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(em);
-                int oldGridSize = 256;
-                int diff = (GRID - oldGridSize) / 2;
+                int diff = (GRID - ElectricityManager.ELECTRICITYGRID_RESOLUTION) / 2;
                 var fields = Unlimiter.GetFieldsFromStruct(electricityGrid[0], oldGrid[0]);
-                for (var i = 0; i < oldGridSize; i += 1)
+                for (var i = 0; i < ElectricityManager.ELECTRICITYGRID_RESOLUTION; i += 1)
                 {
-                    for (var j = 0; j < oldGridSize; j += 1)
+                    for (var j = 0; j < ElectricityManager.ELECTRICITYGRID_RESOLUTION; j += 1)
                     {
-                        electricityGrid[(j + diff) * GRID + (i + diff)] = (Cell)Unlimiter.CopyStruct(new Cell(), oldGrid[j * oldGridSize + i], fields);                        
+                        electricityGrid[(j + diff) * GRID + (i + diff)] = (Cell)Unlimiter.CopyStruct(new Cell(), oldGrid[j * ElectricityManager.ELECTRICITYGRID_RESOLUTION + i], fields);                        
                     }
                 }
-                m_pulseGroups = new PulseGroup[1024];
+                m_pulseGroups = new PulseGroup[ElectricityManager.MAX_PULSE_GROUPS];
                 Unlimiter.CopyStructArray(m_pulseGroups, em, "m_pulseGroups");
 
                 m_pulseUnits = new PulseUnit[32768];
@@ -410,7 +410,7 @@ namespace EightyOne.ResourceManagers
         private static void UpdateElectricityMapping(ElectricityManager em)
         {
             Vector4 vec;
-            vec.z = 1 / (38.25f * GRID);
+            vec.z = 1 / (ElectricityManager.ELECTRICITYGRID_CELL_SIZE * GRID);
             vec.x = 0.5f;
             vec.y = 0.5f;
             vec.w = 0.00390625f;
@@ -490,8 +490,8 @@ namespace EightyOne.ResourceManagers
         [ReplaceMethod]
         public int TryDumpElectricity(Vector3 pos, int rate, int max)
         {
-            int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
-            int num2 = Mathf.Clamp((int)(pos.z / 38.25f + HALFGRID), 0, GRID - 1);
+            int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
+            int num2 = Mathf.Clamp((int)(pos.z / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
             if (max > 15000)
             {
                 int num3 = (max + 14999) / 15000;
@@ -541,8 +541,8 @@ namespace EightyOne.ResourceManagers
             {
                 return 0;
             }
-            int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
-            int num2 = Mathf.Clamp((int)(pos.z / 38.25f + HALFGRID), 0, GRID - 1);
+            int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
+            int num2 = Mathf.Clamp((int)(pos.z / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
             int num3 = num2 * GRID + num;
             Cell cell = electricityGrid[num3];
             if (cell.m_electrified)
@@ -561,8 +561,8 @@ namespace EightyOne.ResourceManagers
         [ReplaceMethod]
         public void CheckElectricity(Vector3 pos, out bool electricity)
         {
-            int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
-            int num2 = Mathf.Clamp((int)(pos.z / 38.25f + HALFGRID), 0, GRID - 1);
+            int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
+            int num2 = Mathf.Clamp((int)(pos.z / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
             int num3 = num2 * GRID + num;
             electricity = electricityGrid[num3].m_electrified;
         }
@@ -570,8 +570,8 @@ namespace EightyOne.ResourceManagers
         [ReplaceMethod]
         public bool CheckConductivity(Vector3 pos)
         {
-            int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
-            int num2 = Mathf.Clamp((int)(pos.z / 38.25f + HALFGRID), 0, GRID - 1);
+            int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
+            int num2 = Mathf.Clamp((int)(pos.z / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
             int num3 = num2 * GRID + num;
             int conductivity = (int)electricityGrid[num3].m_conductivity;
             if (conductivity >= 1)
@@ -701,8 +701,8 @@ namespace EightyOne.ResourceManagers
 
         private void ConductToCells(ushort group, float worldX, float worldZ)
         {
-            int num = (int)(worldX / 38.25f + HALFGRID);
-            int num2 = (int)(worldZ / 38.25f + HALFGRID);
+            int num = (int)(worldX / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID);
+            int num2 = (int)(worldZ / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID);
             if (num >= 0 && num < GRID && num2 >= 0 && num2 < GRID)
             {
                 int num3 = num2 * GRID + num;
@@ -748,10 +748,10 @@ namespace EightyOne.ResourceManagers
 
         private void ConductToNodes(ushort group, int cellX, int cellZ)
         {
-            float num = ((float)cellX - HALFGRID) * 38.25f;
-            float num2 = ((float)cellZ - HALFGRID) * 38.25f;
-            float num3 = num + 38.25f;
-            float num4 = num2 + 38.25f;
+            float num = ((float)cellX - HALFGRID) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE;
+            float num2 = ((float)cellZ - HALFGRID) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE;
+            float num3 = num + ElectricityManager.ELECTRICITYGRID_CELL_SIZE;
+            float num4 = num2 + ElectricityManager.ELECTRICITYGRID_CELL_SIZE;
             int num5 = Mathf.Max((int)(num / 64f + 135f), 0);
             int num6 = Mathf.Max((int)(num2 / 64f + 135f), 0);
             int num7 = Mathf.Min((int)(num3 / 64f + 135f), 269);
@@ -1040,10 +1040,10 @@ namespace EightyOne.ResourceManagers
         [ReplaceMethod]
         public void UpdateGrid(float minX, float minZ, float maxX, float maxZ)
         {
-            int num = Mathf.Max((int)(minX / 38.25f + HALFGRID), 0);
-            int num2 = Mathf.Max((int)(minZ / 38.25f + HALFGRID), 0);
-            int num3 = Mathf.Min((int)(maxX / 38.25f + HALFGRID), GRID - 1);
-            int num4 = Mathf.Min((int)(maxZ / 38.25f + HALFGRID), GRID - 1);
+            int num = Mathf.Max((int)(minX / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0);
+            int num2 = Mathf.Max((int)(minZ / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0);
+            int num3 = Mathf.Min((int)(maxX / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), GRID - 1);
+            int num4 = Mathf.Min((int)(maxZ / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), GRID - 1);
             for (int i = num2; i <= num4; i++)
             {
                 int num5 = i * GRID + num;
@@ -1053,10 +1053,10 @@ namespace EightyOne.ResourceManagers
                     num5++;
                 }
             }
-            int num6 = Mathf.Max((int)((((float)num - HALFGRID) * 38.25f - 96f) / 64f + 135f), 0);
-            int num7 = Mathf.Max((int)((((float)num2 - HALFGRID) * 38.25f - 96f) / 64f + 135f), 0);
-            int num8 = Mathf.Min((int)((((float)num3 - HALFGRID + 1f) * 38.25f + 96f) / 64f + 135f), 269);
-            int num9 = Mathf.Min((int)((((float)num4 - HALFGRID + 1f) * 38.25f + 96f) / 64f + 135f), 269);
+            int num6 = Mathf.Max((int)((((float)num - HALFGRID) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE - 96f) / 64f + 135f), 0);
+            int num7 = Mathf.Max((int)((((float)num2 - HALFGRID) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE - 96f) / 64f + 135f), 0);
+            int num8 = Mathf.Min((int)((((float)num3 - HALFGRID + 1f) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE + 96f) / 64f + 135f), 269);
+            int num9 = Mathf.Min((int)((((float)num4 - HALFGRID + 1f) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE + 96f) / 64f + 135f), 269);
             Array16<Building> buildings = Singleton<BuildingManager>.instance.m_buildings;
             ushort[] buildingGrid = Singleton<BuildingManager>.instance.m_buildingGrid;
             for (int k = num7; k <= num9; k++)
@@ -1091,18 +1091,18 @@ namespace EightyOne.ResourceManagers
                                     maxX = Mathf.Max(Mathf.Max(vector3.x, vector4.x), Mathf.Max(vector5.x, vector6.x)) + num14;
                                     minZ = Mathf.Min(Mathf.Min(vector3.z, vector4.z), Mathf.Min(vector5.z, vector6.z)) - num14;
                                     maxZ = Mathf.Max(Mathf.Max(vector3.z, vector4.z), Mathf.Max(vector5.z, vector6.z)) + num14;
-                                    int num15 = Mathf.Max(num, (int)(minX / 38.25f + HALFGRID));
-                                    int num16 = Mathf.Min(num3, (int)(maxX / 38.25f + HALFGRID));
-                                    int num17 = Mathf.Max(num2, (int)(minZ / 38.25f + HALFGRID));
-                                    int num18 = Mathf.Min(num4, (int)(maxZ / 38.25f + HALFGRID));
+                                    int num15 = Mathf.Max(num, (int)(minX / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID));
+                                    int num16 = Mathf.Min(num3, (int)(maxX / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID));
+                                    int num17 = Mathf.Max(num2, (int)(minZ / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID));
+                                    int num18 = Mathf.Min(num4, (int)(maxZ / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID));
                                     for (int m = num17; m <= num18; m++)
                                     {
                                         for (int n = num15; n <= num16; n++)
                                         {
                                             Vector3 a;
-                                            a.x = ((float)n + 0.5f - HALFGRID) * 38.25f;
+                                            a.x = ((float)n + 0.5f - HALFGRID) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE;
                                             a.y = position.y;
-                                            a.z = ((float)m + 0.5f - HALFGRID) * 38.25f;
+                                            a.z = ((float)m + 0.5f - HALFGRID) * ElectricityManager.ELECTRICITYGRID_CELL_SIZE;
                                             float num19 = Mathf.Max(0f, Mathf.Abs(Vector3.Dot(vector, a - position)) - (float)(num12 * 4));
                                             float num20 = Mathf.Max(0f, Mathf.Abs(Vector3.Dot(vector2, a - position)) - (float)(num13 * 4));
                                             float num21 = Mathf.Sqrt(num19 * num19 + num20 * num20);

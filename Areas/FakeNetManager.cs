@@ -4,6 +4,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.Areas
 {
+    [TargetType(typeof(NetManager))]
     internal class FakeNetManager
     {
         private static int[] m_tileNodesCount;

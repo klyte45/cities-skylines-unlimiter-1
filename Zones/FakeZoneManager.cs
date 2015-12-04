@@ -7,6 +7,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.Zones
 {
+    [TargetType(typeof(ZoneManager))]
     internal class FakeZoneManager
     {        
         public const int GRIDSIZE = 270;

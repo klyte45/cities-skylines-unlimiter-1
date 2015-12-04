@@ -9,6 +9,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.ResourceManagers
 {
+    [TargetType(typeof(ImmaterialResourceManager))]
     class FakeImmaterialResourceManager
     {
         private const int GRID = 450;

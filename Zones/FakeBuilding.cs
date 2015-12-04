@@ -9,6 +9,7 @@ namespace EightyOne.Zones
     /// <summary>
     /// Building is a struct. Calls to this may not work with Replacing the method handle.
     /// </summary>
+    [TargetType(typeof(Building))]
     internal class FakeBuilding
     {
 
