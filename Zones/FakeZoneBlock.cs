@@ -49,7 +49,7 @@ namespace EightyOne.Zones
                 for (int index2 = num1; index2 <= num3; ++index2)
                 {
                     //begin mod
-                    ushort num5 = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                    ushort num5 = instance.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     //end mod
                     int num6 = 0;
                     while ((int)num5 != 0)
@@ -160,7 +160,7 @@ namespace EightyOne.Zones
                 for (int index2 = num3; index2 <= num5; ++index2)
                 {
                     //begin mod
-                    ushort num7 = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                    ushort num7 = instance1.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     //end mod
                     int num8 = 0;
                     while ((int)num7 != 0)

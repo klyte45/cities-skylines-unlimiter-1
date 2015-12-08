@@ -22,7 +22,6 @@ namespace EightyOne.Zones
         [ReplaceMethod]
         public static bool CheckZoning(Building b, ItemClass.Zone zone1, ItemClass.Zone zone2)
         {
-            UnityEngine.Debug.Log("Calling CheckZoning");
             int width = b.Width;
             int length = b.Length;
             Vector3 vector3_1 = new Vector3(Mathf.Cos(b.m_angle), 0.0f, Mathf.Sin(b.m_angle));
@@ -50,7 +49,7 @@ namespace EightyOne.Zones
                 for (int index2 = num1; index2 <= num3; ++index2)
                 {
                     //begin mod
-                    ushort num5 = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                    ushort num5 = instance.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     //end mod
                     int num6 = 0;
                     while ((int)num5 != 0)
@@ -71,8 +70,8 @@ namespace EightyOne.Zones
             {
                 for (int index2 = 0; index2 < width; ++index2)
                 {
-                    if (((int)validCells & 1 << (index1 << 3) + index2) == 0) {
-                        UnityEngine.Debug.Log("Check zoning: false. Valid cells: " + validCells);
+                    if (((int)validCells & 1 << (index1 << 3) + index2) == 0)
+                    {
                         return false;
                     }
                 }
@@ -81,19 +80,17 @@ namespace EightyOne.Zones
                 b.m_flags |= Building.Flags.HighDensity;
             else
                 b.m_flags &= ~Building.Flags.HighDensity;
-            UnityEngine.Debug.Log("Check zoning: true");
             return true;
         }
-
 
         private static void CheckZoning(ref Building building, ItemClass.Zone zone1, ItemClass.Zone zone2,
             ref uint validCells, ref bool secondary, ref ZoneBlock block)
         {
-            var args = new object[] {zone1, zone2, validCells, secondary, block};
+            var args = new object[] { zone1, zone2, validCells, secondary, block };
             _CheckZoning.Invoke(building, args);
-            validCells = (uint) args[2];
-            secondary = (bool) args[3];
-            block = (ZoneBlock) args[4];
+            validCells = (uint)args[2];
+            secondary = (bool)args[3];
+            block = (ZoneBlock)args[4];
         }
     }
 }

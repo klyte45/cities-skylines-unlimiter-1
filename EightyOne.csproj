@@ -59,7 +59,6 @@
     <Compile Include="Areas\FakeGameAreaManager.cs" />
     <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
-    <Compile Include="Attributes\FixmeAttribute.cs" />
     <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
     <Compile Include="Attributes\TargetType.cs" />
     <Compile Include="ResourceManagers\FakeDistrictTool.cs" />

@@ -35,7 +35,7 @@ namespace EightyOne.Zones
             {
                 for (int j = num6; j <= num8; j++)
                 {
-                    ushort num10 = FakeZoneManager.zoneGrid[i * FakeZoneManager.GRIDSIZE + j];
+                    ushort num10 = instance.m_zoneGrid[i * FakeZoneManager.GRIDSIZE + j];
                     int num11 = 0;
                     while (num10 != 0)
                     {
@@ -153,7 +153,7 @@ namespace EightyOne.Zones
             {
                 for (int index2 = num5; index2 <= num7; ++index2)
                 {
-                    ushort blockIndex = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                    ushort blockIndex = instance1.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     int num9 = 0;
                     while ((int)blockIndex != 0)
                     {
@@ -221,7 +221,7 @@ namespace EightyOne.Zones
             {
                 for (int index2 = num5; index2 <= num7; ++index2)
                 {
-                    ushort blockIndex = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                    ushort blockIndex = instance1.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                     int num9 = 0;
                     while ((int)blockIndex != 0)
                     {
@@ -332,7 +332,7 @@ namespace EightyOne.Zones
                 {
                     for (int index2 = num5; index2 <= num7; ++index2)
                     {
-                        ushort blockIndex = FakeZoneManager.zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                        ushort blockIndex = instance.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                         int num9 = 0;
                         while ((int)blockIndex != 0)
                         {

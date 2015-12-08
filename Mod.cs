@@ -78,7 +78,6 @@ namespace EightyOne
             redirects = new Dictionary<MethodInfo, RedirectCallsState>();
             foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
             {
-                Debug.Log("Type: " + type.Name);
                 var customAttributes = type.GetCustomAttributes(typeof(TargetType), false);
                 if (customAttributes.Length != 1)
                 {
@@ -88,30 +87,25 @@ namespace EightyOne
                 foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
                     .Where(method => method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1))
                 {
-                    AddRedirect(targetType, method);
+                    Redirect(targetType, method);
                 }
 
             }
             FakeGameAreaManager.Init();
         }
 
-        private void AddRedirect(Type type1, MethodInfo method)
+        private static void Redirect(Type targetType, MethodInfo detour)
         {
-            Debug.LogFormat("Redirecting {0}#{1}", type1.Name, method.Name);
-            var parameters = method.GetParameters();
+            var parameters = detour.GetParameters();
 
             Type[] types;
-            if (parameters.Length > 0 && parameters[0].ParameterType == type1 )
+            if (parameters.Length > 0 && parameters[0].ParameterType == targetType )
                 types = parameters.Skip(1).Select(p => p.ParameterType).ToArray();
             else
                 types = parameters.Select(p => p.ParameterType).ToArray();
 
-            var originalMethod = type1.GetMethod(method.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types, null);
-            if (originalMethod == null)
-            {
-                Debug.Log("Cannot find " + method.Name);
-            }
-            redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, method));
+            var originalMethod = targetType.GetMethod(detour.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types, null);
+            redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, detour));
         }
 
         public void DisableHooks()

@@ -1,5 +1,4 @@
 ﻿using ColossalFramework;
-using ColossalFramework.IO;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -8,127 +7,138 @@ using EightyOne.Attributes;
 namespace EightyOne.Zones
 {
     [TargetType(typeof(ZoneManager))]
-    internal class FakeZoneManager
-    {        
+    internal class FakeZoneManager : ZoneManager
+    {
         public const int GRIDSIZE = 270;
         public const int HALFGRID = 135;
 
-        public static ushort[] zoneGrid;
-
         public static void Init()
         {
-            zoneGrid = new ushort[GRIDSIZE * GRIDSIZE];
-
-            var zm = ZoneManager.instance;
-            for(var i  = 0;  i < zm.m_blocks.m_buffer.Length; i +=1)
+            var oldGrid = instance.m_zoneGrid;
+            while (!Monitor.TryEnter(oldGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
             {
-                if (zm.m_blocks.m_buffer[i].m_flags != 0)
+
+            }
+            try
+            {
+                instance.m_zoneGrid = new ushort[GRIDSIZE * GRIDSIZE];
+                for (var i = 1; i < instance.m_blocks.m_buffer.Length; ++i)
                 {
-                    InitializeBlock(zm, (ushort)i, ref zm.m_blocks.m_buffer[i]);
+                    instance.m_blocks.m_buffer[i].m_nextGridBlock = 0;
+                    if (instance.m_blocks.m_buffer[i].m_flags != 0)
+                    {
+                        InitializeBlock(instance, (ushort)i, ref instance.m_blocks.m_buffer[i]);
+                    }
                 }
+            }
+            finally
+            {
+                Monitor.Exit(oldGrid);
             }
         }
 
         [ReplaceMethod]
         private static void InitializeBlock(ZoneManager zm, ushort block, ref ZoneBlock data)
         {
-            int num = Mathf.Clamp((int)(data.m_position.x / 64f + HALFGRID), 0, GRIDSIZE - 1);
-            int num2 = Mathf.Clamp((int)(data.m_position.z / 64f + HALFGRID), 0, GRIDSIZE - 1);
-            int num3 = num2 * GRIDSIZE + num;
-            while (!Monitor.TryEnter(zoneGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
+            //begin mod
+            int num = Mathf.Clamp((int)(data.m_position.x / 64.0 + HALFGRID), 0, GRIDSIZE - 1);
+            int index = Mathf.Clamp((int)(data.m_position.z / 64.0 + HALFGRID), 0, GRIDSIZE - 1) * GRIDSIZE + num;
+            //end mod
+            while (!Monitor.TryEnter(zm.m_zoneGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
             {
+
             }
             try
             {
-                ZoneManager.instance.m_blocks.m_buffer[(int)block].m_nextGridBlock = zoneGrid[num3];
-                zoneGrid[num3] = block;
+                zm.m_blocks.m_buffer[block].m_nextGridBlock = zm.m_zoneGrid[index];
+                zm.m_zoneGrid[index] = block;
             }
             finally
             {
-                Monitor.Exit(zoneGrid);
+                Monitor.Exit(zm.m_zoneGrid);
             }
+
         }
 
         [ReplaceMethod]
         private void ReleaseBlockImplementation(ushort block, ref ZoneBlock data)
         {
-            var zm = ZoneManager.instance;
-            if (data.m_flags != 0u)
+            if ((int)data.m_flags == 0)
+                return;
+            data.m_flags |= 2U;
+            this.m_cachedBlocks.Add(data);
+            data.m_flags = 0U;
+            //begin mod
+            int num1 = Mathf.Clamp((int)((double)data.m_position.x / 64.0 + HALFGRID), 0, GRIDSIZE - 1);
+            int index = Mathf.Clamp((int)((double)data.m_position.z / 64.0 + HALFGRID), 0, GRIDSIZE - 1) * GRIDSIZE + num1;
+            //end mod
+            do
+                ;
+            while (!Monitor.TryEnter((object)this.m_zoneGrid, SimulationManager.SYNCHRONIZE_TIMEOUT));
+            try
             {
-                data.m_flags |= 2u;
-                zm.m_cachedBlocks.Add(data);
-                data.m_flags = 0u;
-                int num = Mathf.Clamp((int)(data.m_position.x / 64f + HALFGRID), 0, GRIDSIZE - 1);
-                int num2 = Mathf.Clamp((int)(data.m_position.z / 64f + HALFGRID), 0, GRIDSIZE - 1);
-                int num3 = num2 * GRIDSIZE + num;
-                while (!Monitor.TryEnter(zoneGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
+                ushort num2 = (ushort)0;
+                ushort num3 = this.m_zoneGrid[index];
+                int num4 = 0;
+                while ((int)num3 != 0)
                 {
-                }
-                try
-                {
-                    ushort num4 = 0;
-                    ushort num5 = zoneGrid[num3];
-                    int num6 = 0;
-                    while (num5 != 0)
+                    if ((int)num3 == (int)block)
                     {
-                        if (num5 == block)
+                        if ((int)num2 == 0)
                         {
-                            if (num4 == 0)
-                            {
-                                zoneGrid[num3] = data.m_nextGridBlock;
-                            }
-                            else
-                            {
-                                zm.m_blocks.m_buffer[(int)num4].m_nextGridBlock = data.m_nextGridBlock;
-                            }
+                            this.m_zoneGrid[index] = data.m_nextGridBlock;
                             break;
                         }
-                        num4 = num5;
-                        num5 = zm.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 > ZoneManager.MAX_BLOCK_COUNT)
-                        {
-                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
-                            break;
-                        }
+                        this.m_blocks.m_buffer[(int)num2].m_nextGridBlock = data.m_nextGridBlock;
+                        break;
                     }
-                    data.m_nextGridBlock = 0;
+                    num2 = num3;
+                    num3 = this.m_blocks.m_buffer[(int)num3].m_nextGridBlock;
+                    if (++num4 > 49152)
+                    {
+                        CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
+                        break;
+                    }
                 }
-                finally
-                {
-                    Monitor.Exit(zoneGrid);
-                }
-                zm.m_blocks.ReleaseItem(block);
-                zm.m_blockCount = (int)(zm.m_blocks.ItemCount() - 1u);
+                data.m_nextGridBlock = (ushort)0;
             }
+            finally
+            {
+                Monitor.Exit((object)this.m_zoneGrid);
+            }
+            this.m_blocks.ReleaseItem(block);
+            this.m_blockCount = (int)this.m_blocks.ItemCount() - 1;
         }
 
         [ReplaceMethod]
         public void UpdateBlocks(float minX, float minZ, float maxX, float maxZ)
         {
-            var zm = ZoneManager.instance;
-            int num = Mathf.Max((int)((minX - 46f) / 64f + HALFGRID), 0);
-            int num2 = Mathf.Max((int)((minZ - 46f) / 64f + HALFGRID), 0);
-            int num3 = Mathf.Min((int)((maxX + 46f) / 64f + HALFGRID), GRIDSIZE - 1);
-            int num4 = Mathf.Min((int)((maxZ + 46f) / 64f + HALFGRID), GRIDSIZE - 1);
-            for (int i = num2; i <= num4; i++)
+            //begin mod
+            int num1 = Mathf.Max((int)(((double)minX - 46.0) / 64.0 + HALFGRID), 0);
+            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / 64.0 + HALFGRID), 0);
+            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            //end mod
+            for (int index1 = num2; index1 <= num4; ++index1)
             {
-                for (int j = num; j <= num3; j++)
+                for (int index2 = num1; index2 <= num3; ++index2)
                 {
-                    ushort num5 = zoneGrid[i * GRIDSIZE + j];
+                    //begin mod
+                    ushort num5 = this.m_zoneGrid[index1 * GRIDSIZE + index2];
+                    //end mod
                     int num6 = 0;
-                    while (num5 != 0)
+                    while ((int)num5 != 0)
                     {
-                        Vector3 position = zm.m_blocks.m_buffer[(int)num5].m_position;
-                        float num7 = Mathf.Max(Mathf.Max(minX - 46f - position.x, minZ - 46f - position.z), Mathf.Max(position.x - maxX - 46f, position.z - maxZ - 46f));
-                        if (num7 < 0f)
+                        Vector3 vector3 = this.m_blocks.m_buffer[(int)num5].m_position;
+                        if ((double)Mathf.Max(Mathf.Max(minX - 46f - vector3.x, minZ - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)maxX - 46.0), (float)((double)vector3.z - (double)maxZ - 46.0))) < 0.0)
                         {
-                            zm.m_updatedBlocks[num5 >> 6] |= 1uL << (int)num5;
-                            zm.m_blocksUpdated = true;
+                            this.m_updatedBlocks[(int)num5 >> 6] |= (ulong)(1L << (int)num5);
+                            this.m_blocksUpdated = true;
                         }
-                        num5 = zm.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
+                        num5 = this.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
+                        if (++num6 >= 49152)
                         {
-                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
                         }
                     }
@@ -139,33 +149,33 @@ namespace EightyOne.Zones
         [ReplaceMethod]
         public void TerrainUpdated(TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
         {
-            var zm = ZoneManager.instance;
-            float x = zoneArea.m_min.x;
-            float z = zoneArea.m_min.z;
-            float x2 = zoneArea.m_max.x;
-            float z2 = zoneArea.m_max.z;
-            int num = Mathf.Max((int)((x - 46f) / 64f + HALFGRID), 0);
-            int num2 = Mathf.Max((int)((z - 46f) / 64f + HALFGRID), 0);
-            int num3 = Mathf.Min((int)((x2 + 46f) / 64f + HALFGRID), GRIDSIZE - 1);
-            int num4 = Mathf.Min((int)((z2 + 46f) / 64f + HALFGRID), GRIDSIZE - 1);
-            for (int i = num2; i <= num4; i++)
+            float minX = zoneArea.m_min.x;
+            float minZ = zoneArea.m_min.z;
+            float maxX = zoneArea.m_max.x;
+            float maxZ = zoneArea.m_max.z;
+            //begin mod
+            int num1 = Mathf.Max((int)(((double)minX - 46.0) / 64.0 + HALFGRID), 0);
+            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / 64.0 + HALFGRID), 0);
+            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            //end mod
+            for (int index1 = num2; index1 <= num4; ++index1)
             {
-                for (int j = num; j <= num3; j++)
+                for (int index2 = num1; index2 <= num3; ++index2)
                 {
-                    ushort num5 = zoneGrid[i * GRIDSIZE + j];
-                    int num6 = 0;
-                    while (num5 != 0)
+                    //begin mod
+                    ushort blockID = this.m_zoneGrid[index1 * GRIDSIZE + index2];
+                    //end mod
+                    int num5 = 0;
+                    while ((int)blockID != 0)
                     {
-                        Vector3 position = zm.m_blocks.m_buffer[(int)num5].m_position;
-                        float num7 = Mathf.Max(Mathf.Max(x - 46f - position.x, z - 46f - position.z), Mathf.Max(position.x - x2 - 46f, position.z - z2 - 46f));
-                        if (num7 < 0f)
+                        Vector3 vector3 = this.m_blocks.m_buffer[(int)blockID].m_position;
+                        if ((double)Mathf.Max(Mathf.Max(minX - 46f - vector3.x, minZ - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)maxX - 46.0), (float)((double)vector3.z - (double)maxZ - 46.0))) < 0.0)
+                            this.m_blocks.m_buffer[(int)blockID].ZonesUpdated(blockID, minX, minZ, maxX, maxZ);
+                        blockID = this.m_blocks.m_buffer[(int)blockID].m_nextGridBlock;
+                        if (++num5 >= 49152)
                         {
-                            zm.m_blocks.m_buffer[(int)num5].ZonesUpdated(num5, x, z, x2, z2);
-                        }
-                        num5 = zm.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
-                        if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
-                        {
-                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
                         }
                     }
@@ -176,98 +186,62 @@ namespace EightyOne.Zones
         [ReplaceMethod]
         public bool CheckSpace(Vector3 position, float angle, int width, int length, out int offset)
         {
-            var zm = ZoneManager.instance;
-            float num = Mathf.Min(72f, (float)(width + length) * 4f) + 6f;
-            float num2 = position.x - num;
-            float num3 = position.z - num;
-            float num4 = position.x + num;
-            float num5 = position.z + num;
-            ulong num6 = 0uL;
-            ulong num7 = 0uL;
-            ulong num8 = 0uL;
-            ulong num9 = 0uL;
-            int num10 = Mathf.Max((int)((num2 - 46f) / 64f + HALFGRID), 0);
-            int num11 = Mathf.Max((int)((num3 - 46f) / 64f + HALFGRID), 0);
-            int num12 = Mathf.Min((int)((num4 + 46f) / 64f + HALFGRID), GRIDSIZE - 1);
-            int num13 = Mathf.Min((int)((num5 + 46f) / 64f + HALFGRID), GRIDSIZE - 1);
-            for (int i = num11; i <= num13; i++)
+            float num1 = Mathf.Min(72f, (float)(width + length) * 4f) + 6f;
+            float num2 = position.x - num1;
+            float num3 = position.z - num1;
+            float num4 = position.x + num1;
+            float num5 = position.z + num1;
+            ulong space1 = 0UL;
+            ulong space2 = 0UL;
+            ulong space3 = 0UL;
+            ulong space4 = 0UL;
+            //begin mod
+            int num6 = Mathf.Max((int)(((double)num2 - 46.0) / 64.0 + HALFGRID), 0);
+            int num7 = Mathf.Max((int)(((double)num3 - 46.0) / 64.0 + HALFGRID), 0);
+            int num8 = Mathf.Min((int)(((double)num4 + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            int num9 = Mathf.Min((int)(((double)num5 + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            //end mod
+            for (int index1 = num7; index1 <= num9; ++index1)
             {
-                for (int j = num10; j <= num12; j++)
+                for (int index2 = num6; index2 <= num8; ++index2)
                 {
-                    ushort num14 = zoneGrid[i * GRIDSIZE + j];
-                    int num15 = 0;
-                    while (num14 != 0)
+                    //begin mod
+                    ushort block = this.m_zoneGrid[index1 * GRIDSIZE + index2];
+                    //end mod
+                    int num10 = 0;
+                    while ((int)block != 0)
                     {
-                        Vector3 position2 = zm.m_blocks.m_buffer[(int)num14].m_position;
-                        float num16 = Mathf.Max(Mathf.Max(num2 - 46f - position2.x, num3 - 46f - position2.z), Mathf.Max(position2.x - num4 - 46f, position2.z - num5 - 46f));
-                        if (num16 < 0f)
+                        Vector3 vector3 = this.m_blocks.m_buffer[(int)block].m_position;
+                        if ((double)Mathf.Max(Mathf.Max(num2 - 46f - vector3.x, num3 - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)num4 - 46.0), (float)((double)vector3.z - (double)num5 - 46.0))) < 0.0)
+                            this.CheckSpace(block, position, angle, width, length, ref space1, ref space2, ref space3, ref space4);
+                        block = this.m_blocks.m_buffer[(int)block].m_nextGridBlock;
+                        if (++num10 >= 49152)
                         {
-                            zm.CheckSpace(num14, position, angle, width, length, ref num6, ref num7, ref num8, ref num9);
-                        }
-                        num14 = zm.m_blocks.m_buffer[(int)num14].m_nextGridBlock;
-                        if (++num15 >= ZoneManager.MAX_BLOCK_COUNT)
-                        {
-                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + Environment.StackTrace);
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
                             break;
                         }
                     }
                 }
             }
-            bool result = true;
-            bool flag = false;
+            bool flag1 = true;
             bool flag2 = false;
-            for (int k = 0; k < length; k++)
+            bool flag3 = false;
+            for (int index1 = 0; index1 < length; ++index1)
             {
-                for (int l = 0; l < width; l++)
+                for (int index2 = 0; index2 < width; ++index2)
                 {
-                    bool flag3;
-                    if (k < 4)
+                    if (!(index1 >= 4 ? (index1 >= 8 ? (index1 >= 12 ? ((long)space4 & 1L << (index1 - 12 << 4 | index2)) != 0L : ((long)space3 & 1L << (index1 - 8 << 4 | index2)) != 0L) : ((long)space2 & 1L << (index1 - 4 << 4 | index2)) != 0L) : ((long)space1 & 1L << (index1 << 4 | index2)) != 0L))
                     {
-                        flag3 = ((num6 & 1uL << (k << 4 | l)) != 0uL);
-                    }
-                    else if (k < 8)
-                    {
-                        flag3 = ((num7 & 1uL << (k - 4 << 4 | l)) != 0uL);
-                    }
-                    else if (k < 12)
-                    {
-                        flag3 = ((num8 & 1uL << (k - 8 << 4 | l)) != 0uL);
-                    }
-                    else
-                    {
-                        flag3 = ((num9 & 1uL << (k - 12 << 4 | l)) != 0uL);
-                    }
-                    if (!flag3)
-                    {
-                        result = false;
-                        if (l < width >> 1)
-                        {
-                            flag = true;
-                        }
-                        if (l >= width + 1 >> 1)
-                        {
+                        flag1 = false;
+                        if (index2 < width >> 1)
                             flag2 = true;
-                        }
+                        if (index2 >= width + 1 >> 1)
+                            flag3 = true;
                     }
                 }
             }
-            if (flag == flag2)
-            {
-                offset = 0;
-            }
-            else if (flag)
-            {
-                offset = 1;
-            }
-            else if (flag2)
-            {
-                offset = -1;
-            }
-            else
-            {
-                offset = 0;
-            }
-            return result;
+            offset = flag2 != flag3 ? (!flag2 ? (!flag3 ? 0 : -1) : 1) : 0;
+            return flag1;
         }
     }
 }

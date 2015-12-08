@@ -104,7 +104,7 @@ namespace EightyOne.Zones
                         {
                             for (int j = num10; j <= num12; j++)
                             {
-                                ushort num14 = FakeZoneManager.zoneGrid[i * FakeZoneManager.GRIDSIZE + j];
+                                ushort num14 = instance.m_zoneGrid[i * FakeZoneManager.GRIDSIZE + j];
                                 int num15 = 0;
                                 while (num14 != 0)
                                 {
