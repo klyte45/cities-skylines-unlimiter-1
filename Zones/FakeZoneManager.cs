@@ -1,5 +1,4 @@
 ﻿using ColossalFramework;
-using System;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Attributes;

@@ -1,26 +1,23 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
-using System;
 using System.Reflection;
 using UnityEngine;
 using EightyOne.Attributes;
 
 namespace EightyOne.Zones
 {
-    /// <summary>
-    /// Building is a struct. Calls to this may not work with Replacing the method handle.
-    /// </summary>
+
     [TargetType(typeof(Building))]
-    internal class FakeBuilding
+    internal struct FakeBuilding
     {
 
-        private static readonly MethodInfo _CheckZoning = typeof(ZoneBlock).GetMethod("CheckZoning", BindingFlags.NonPublic | BindingFlags.Instance,
+        private static readonly MethodInfo _CheckZoning = typeof(Building).GetMethod("CheckZoning", BindingFlags.NonPublic | BindingFlags.Instance,
             null, new[] {
                 typeof(ItemClass.Zone), typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(bool).MakeByRefType(), typeof(ZoneBlock).MakeByRefType()
             }, null);
-
+        
         [ReplaceMethod]
-        public static bool CheckZoning(Building b, ItemClass.Zone zone1, ItemClass.Zone zone2)
+        public static bool CheckZoning(ref Building b, ItemClass.Zone zone1, ItemClass.Zone zone2)
         {
             int width = b.Width;
             int length = b.Length;
@@ -56,7 +53,11 @@ namespace EightyOne.Zones
                     {
                         Vector3 vector3_7 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector3_5.x - 46f - vector3_7.x, vector3_5.z - 46f - vector3_7.z), Mathf.Max((float)((double)vector3_7.x - (double)vector3_6.x - 46.0), (float)((double)vector3_7.z - (double)vector3_6.z - 46.0))) < 0.0)
+                        {
+                            //begin mod
                             CheckZoning(ref b, zone1, zone2, ref validCells, ref secondary, ref instance.m_blocks.m_buffer[(int)num5]);
+                            //end mod
+                        }
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
                         {

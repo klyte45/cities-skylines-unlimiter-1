@@ -99,7 +99,7 @@ namespace EightyOne
             var parameters = detour.GetParameters();
 
             Type[] types;
-            if (parameters.Length > 0 && parameters[0].ParameterType == targetType )
+            if (parameters.Length > 0 && (parameters[0].ParameterType == targetType || parameters[0].ParameterType == targetType.MakeByRefType()))
                 types = parameters.Skip(1).Select(p => p.ParameterType).ToArray();
             else
                 types = parameters.Select(p => p.ParameterType).ToArray();
