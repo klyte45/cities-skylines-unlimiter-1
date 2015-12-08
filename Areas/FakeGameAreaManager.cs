@@ -151,9 +151,9 @@ namespace EightyOne.Areas
 
         public static void UnlockAll()
         {
-            for (int i = 0; i < 9; i += 1)
+            for (int i = 0; i < GRID; i += 1)
             {
-                for (int j = 0; j < 9; j += 1)
+                for (int j = 0; j < GRID; j += 1)
                 {
                     GameAreaManager.instance.UnlockArea(j * GRID + i);
                 }
@@ -346,10 +346,10 @@ namespace EightyOne.Areas
         }
 
         [ReplaceMethod]
-        public static void GetTileXZ(GameAreaManager gm,  int tile, out int x, out int z)
+        public void GetTileXZ(int tile, out int x, out int z)
         {
             x = tile % GRID;
-            z = tile / GRID;            
+            z = tile / GRID;
         }
 
         [ReplaceMethod]
