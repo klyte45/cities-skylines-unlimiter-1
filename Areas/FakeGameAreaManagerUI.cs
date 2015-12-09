@@ -11,7 +11,7 @@ namespace EightyOne.Areas
         private static FieldInfo _AreaTex = typeof(GameAreaManager).GetField("m_areaTex", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo _HighlightAreaIndex = typeof(GameAreaManager).GetField("m_highlightAreaIndex", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo _AreasUpdatedField = typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance);
-        public const int AREA_TEX_SIZE = 9;
+        public const int AREA_TEX_SIZE = 10;
 
         //[ReplaceMethod]
         private void UpdateAreaMapping()
@@ -227,10 +227,10 @@ namespace EightyOne.Areas
                     !(areaMaterial != (UnityEngine.Object)null))
                     return;
                 Vector4 vector;
-                vector.z = 1.0f / (1920.0f * AREA_TEX_SIZE);//6.510417E-05f;
-                vector.x = (1.0f * FakeGameAreaManager.GRID) / (AREA_TEX_SIZE * 2.0f);//7.0f / 16.0f;
-                vector.y = (1.0f * FakeGameAreaManager.GRID) / (AREA_TEX_SIZE * 2.0f);//7.0f / 16.0f;
-                vector.w = 1.0f / (1.0f * AREA_TEX_SIZE);//0.125f;
+                vector.z = 1.0f / (1920.0f * AREA_TEX_SIZE);
+                vector.x = (FakeGameAreaManager.GRID + 0.0f) / (AREA_TEX_SIZE * 2.0f);
+                vector.y = (FakeGameAreaManager.GRID + 0.0f) / (AREA_TEX_SIZE * 2.0f);
+                vector.w = 1.0f / (1.0f * AREA_TEX_SIZE);
                 areaMaterial.mainTexture = areaTex;
                 areaMaterial.SetColor(ID_Color, new Color(1f, 1f, 1f, areaAlpha));
                 areaMaterial.SetVector(ID_AreaMapping, vector);
