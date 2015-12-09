@@ -9,9 +9,9 @@ namespace EightyOne.Areas
     {
         private static int[] m_tileNodesCount;
 
-        public static void Init()
+        private static void Init()
         {
-            m_tileNodesCount = new int[17 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
+            m_tileNodesCount = new int[20 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
             var nodes = NetManager.instance.m_nodes.m_buffer;
             for (int n = 1; n < nodes.Length; n++)
             {
@@ -29,41 +29,40 @@ namespace EightyOne.Areas
         [ReplaceMethod]
         public void AddTileNode(Vector3 position, ItemClass.Service service, ItemClass.SubService subService)
         {
-            if (service > ItemClass.Service.Office)
-            {
-                int num = Singleton<GameAreaManager>.instance.GetAreaIndex(position);
-                if (num != -1)
-                {
-                    num *= 17;
-                    if (subService != ItemClass.SubService.None)
-                    {
-                        num += subService - ItemClass.SubService.IndustrialOre - 1 + 12;
-                    }
-                    else
-                    {
-                        num += service - ItemClass.Service.Office - 1;
-                    }
-                    m_tileNodesCount[num] += 1 ;
-                }
-            }
+            int publicServiceIndex = ItemClass.GetPublicServiceIndex(service);
+            if (publicServiceIndex == -1)
+                return;
+            int areaIndex = Singleton<GameAreaManager>.instance.GetAreaIndex(position);
+            if (areaIndex == -1)
+                return;
+            int num = areaIndex * 20;
+            int publicSubServiceIndex = ItemClass.GetPublicSubServiceIndex(subService);
+            //begin mod
+            ++m_tileNodesCount[publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 12)];
+            //end mod
         }
 
         [ReplaceMethod]
         public int GetTileNodeCount(int x, int z, ItemClass.Service service, ItemClass.SubService subService)
         {
-            int num = Singleton<GameAreaManager>.instance.GetTileIndex(x, z);
-            if (num != -1)
+            int publicServiceIndex = ItemClass.GetPublicServiceIndex(service);
+            if (publicServiceIndex != -1)
             {
-                num *= 17;
-                if (subService != ItemClass.SubService.None)
+                //begin mod
+                int tileIndex = FakeGameAreaManager.GetTileIndex(x, z); //for some reason that method can't be detoured
+                //end mod
+                if (tileIndex != -1)
                 {
-                    num += subService - ItemClass.SubService.IndustrialOre - 1 + 12;
+                    int num = tileIndex * 20;
+                    int publicSubServiceIndex = ItemClass.GetPublicSubServiceIndex(subService);
+                    //begin mod
+                    if (m_tileNodesCount == null)
+                    {
+                        Init();
+                    }
+                    return m_tileNodesCount[publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 12)];
+                    //end mod
                 }
-                else
-                {
-                    num += service - ItemClass.Service.Office - 1;
-                }
-                return m_tileNodesCount[num];
             }
             return 0;
         }

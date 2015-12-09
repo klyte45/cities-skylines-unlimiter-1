@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ColossalFramework;
 using UnityEngine;
 using EightyOne.Areas;
 using EightyOne.Attributes;
@@ -72,7 +73,6 @@ namespace EightyOne
             FakeImmaterialResourceManager.Init();
             FakeTerrainManager.Init();
             FakeZoneManager.Init();
-            FakeNetManager.Init();
             FakeZoneTool.Init();
             FakeElectricityManager.Init();
             redirects = new Dictionary<MethodInfo, RedirectCallsState>();
@@ -105,6 +105,8 @@ namespace EightyOne
                 types = parameters.Select(p => p.ParameterType).ToArray();
 
             var originalMethod = targetType.GetMethod(detour.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types, null);
+
+            Debug.Log("Redirect " + targetType.Name + "#" + originalMethod.Name+"->" + detour.DeclaringType.Name + "#" + detour.Name);
             redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, detour));
         }
 
