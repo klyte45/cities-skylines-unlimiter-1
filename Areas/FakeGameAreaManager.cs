@@ -458,10 +458,10 @@ namespace EightyOne.Areas
                             //begin mod
                             if (quad.Intersect(new Quad2()
                             {
-                                a = new Vector2((float)(((double)x - 2.5) * 1920.0 - 8.0), (float)(((double)z - HALFGRID) * 1920.0 - 8.0)),
-                                b = new Vector2((float)(((double)x - 2.5) * 1920.0 - 8.0), (float)(((double)z - HALFGRID + 1.0) * 1920.0 + 8.0)),
-                                c = new Vector2((float)(((double)x - 2.5 + 1.0) * 1920.0 + 8.0), (float)(((double)z - HALFGRID + 1.0) * 1920.0 + 8.0)),
-                                d = new Vector2((float)(((double)x - 2.5 + 1.0) * 1920.0 + 8.0), (float)(((double)z - HALFGRID) * 1920.0 - 8.0))
+                                a = new Vector2((float)(((double)x - HALFGRID) * 1920.0 - 8.0), (float)(((double)z - HALFGRID) * 1920.0 - 8.0)),
+                                b = new Vector2((float)(((double)x - HALFGRID) * 1920.0 - 8.0), (float)(((double)z - HALFGRID + 1.0) * 1920.0 + 8.0)),
+                                c = new Vector2((float)(((double)x - HALFGRID + 1.0) * 1920.0 + 8.0), (float)(((double)z - HALFGRID + 1.0) * 1920.0 + 8.0)),
+                                d = new Vector2((float)(((double)x - HALFGRID + 1.0) * 1920.0 + 8.0), (float)(((double)z - HALFGRID) * 1920.0 - 8.0))
                             }))
                                 //end mod
                                 return true;

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace EightyOne.Areas
 {
-    public class AreasSerializableDataExtension : SerializableDataExtensionBase
+    public class SerializableDataExtension : SerializableDataExtensionBase
     {
         private const string id = "fakeGAM";
 

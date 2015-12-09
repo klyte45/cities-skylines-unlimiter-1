@@ -60,7 +60,7 @@
     <Compile Include="Areas\FakeGameAreaTool.cs" />
     <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
-    <Compile Include="Areas\AreasSerializableDataExtension.cs" />
+    <Compile Include="Areas\SerializableDataExtension.cs" />
     <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
     <Compile Include="Attributes\TargetType.cs" />
     <Compile Include="Detours.cs" />
