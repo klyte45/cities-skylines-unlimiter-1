@@ -14,13 +14,16 @@ using UnityEngine;
 namespace EightyOne.Areas
 {
     [TargetType(typeof(GameAreaTool))]
-    public class FakeGameAreaTool : GameAreaTool { 
+    public class FakeGameAreaTool : GameAreaTool
+    {
+        //TODO(earalov): validate this field in a init method
+        private static FieldInfo _mouseAreaIndexField = typeof(GameAreaTool).GetField("m_mouseAreaIndex", BindingFlags.Instance | BindingFlags.NonPublic);
 
         [ReplaceMethod]
         protected override void OnToolGUI()
         {
-            ToolController toolController = (ToolController)typeof(GameAreaTool).GetField("m_toolController", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            int num = (int)typeof(GameAreaTool).GetField("m_mouseAreaIndex", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+            ToolController toolController = ToolsModifierControl.toolController;
+            int num = (int)_mouseAreaIndexField.GetValue(this);
             if (toolController.IsInsideUI)
                 return;
             Event current = Event.current;
@@ -32,14 +35,15 @@ namespace EightyOne.Areas
                 {
                     if ((Object)toolController != (Object)null && (toolController.m_mode & ItemClass.Availability.MapEditor) != ItemClass.Availability.None)
                     {
-                        Singleton<SimulationManager>.instance.AddAction(this.UnlockArea(num));
+                        //begin mod
+                        //end mod
                     }
                     else
                     {
                         int x;
                         int z;
                         //begin mod
-                        FakeGameAreaManager.GetTileXZ(num, out x, out z); //for some reason it's not possible to detour that method
+                        FakeGameAreaManager.GetTileXZ(num, out x, out z); //This method gets inlined and can't be detoured
                         //end mod
                         if (Singleton<GameAreaManager>.instance.CanUnlock(x, z) || Singleton<GameAreaManager>.instance.IsUnlocked(x, z))
                         {

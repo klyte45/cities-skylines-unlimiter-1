@@ -3,16 +3,15 @@ using ColossalFramework.IO;
 using ColossalFramework.Math;
 using ICities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Attributes;
 using System.Collections;
 
+//TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(WaterManager))]
@@ -477,29 +476,29 @@ namespace EightyOne.ResourceManagers
             var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
             int oldGridSize = 256;
             int diff = (GRID - oldGridSize) / 2;
-            var fields = Unlimiter.GetFieldsFromStruct(oldGrid[0], m_waterGrid[0]);
+            var fields = Util.GetFieldsFromStruct(oldGrid[0], m_waterGrid[0]);
             for (var i = 0; i < oldGridSize; i += 1)
             {
                 for (var j = 0; j < oldGridSize; j += 1)
                 {
                     var oldCellIndex = j * oldGridSize + i;
-                    oldGrid[oldCellIndex] = Unlimiter.CopyStruct((object)oldGrid[oldCellIndex], m_waterGrid[(j + diff) * GRID + (i + diff)], fields);                    
+                    oldGrid[oldCellIndex] = Util.CopyStruct((object)oldGrid[oldCellIndex], m_waterGrid[(j + diff) * GRID + (i + diff)], fields);                    
                 }
             }
 
-            Unlimiter.CopyStructArrayBack(m_nodeData, wm, "m_nodeData");            
-            Unlimiter.CopyStructArrayBack(m_waterPulseGroups, wm, "m_waterPulseGroups");            
-            Unlimiter.CopyStructArrayBack(m_sewagePulseGroups, wm, "m_sewagePulseGroups");            
-            Unlimiter.CopyStructArrayBack(m_waterPulseUnits, wm, "m_waterPulseUnits");            
-            Unlimiter.CopyStructArrayBack(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
+            Util.CopyStructArrayBack(m_nodeData, wm, "m_nodeData");
+            Util.CopyStructArrayBack(m_waterPulseGroups, wm, "m_waterPulseGroups");
+            Util.CopyStructArrayBack(m_sewagePulseGroups, wm, "m_sewagePulseGroups");
+            Util.CopyStructArrayBack(m_waterPulseUnits, wm, "m_waterPulseUnits");
+            Util.CopyStructArrayBack(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
 
-            Unlimiter.SetPropertyValueBack(m_waterPulseGroupCount, wm, "m_waterPulseGroupCount");
-            Unlimiter.SetPropertyValueBack(m_sewagePulseGroupCount, wm, "m_sewagePulseGroupCount");
-            Unlimiter.SetPropertyValueBack(m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
-            Unlimiter.SetPropertyValueBack(m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
-            Unlimiter.SetPropertyValueBack(m_processedCells, wm, "m_processedCells");
-            Unlimiter.SetPropertyValueBack(m_conductiveCells, wm, "m_conductiveCells");
-            Unlimiter.SetPropertyValueBack(m_canContinue, wm, "m_canContinue");
+            Util.SetPropertyValueBack(m_waterPulseGroupCount, wm, "m_waterPulseGroupCount");
+            Util.SetPropertyValueBack(m_sewagePulseGroupCount, wm, "m_sewagePulseGroupCount");
+            Util.SetPropertyValueBack(m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
+            Util.SetPropertyValueBack(m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
+            Util.SetPropertyValueBack(m_processedCells, wm, "m_processedCells");
+            Util.SetPropertyValueBack(m_conductiveCells, wm, "m_conductiveCells");
+            Util.SetPropertyValueBack(m_canContinue, wm, "m_canContinue");
 
             using (var ms = new MemoryStream())
             {
@@ -599,41 +598,41 @@ namespace EightyOne.ResourceManagers
                 var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
                 int oldGridSize = 256;
                 int diff = (GRID - oldGridSize) / 2;
-                var fields = Unlimiter.GetFieldsFromStruct(m_waterGrid[0], oldGrid[0]);
+                var fields = Util.GetFieldsFromStruct(m_waterGrid[0], oldGrid[0]);
                 for (var i = 0; i < oldGridSize; i += 1)
                 {
                     for (var j = 0; j < oldGridSize; j += 1)
                     {
-                        m_waterGrid[(j + diff) * GRID + (i + diff)] = (Cell)Unlimiter.CopyStruct(new Cell(), oldGrid[j * oldGridSize + i], fields);
+                        m_waterGrid[(j + diff) * GRID + (i + diff)] = (Cell)Util.CopyStruct(new Cell(), oldGrid[j * oldGridSize + i], fields);
                     }
                 }
 
                 m_nodeData = new Node[32768];
-                Unlimiter.CopyStructArray(m_nodeData, wm, "m_nodeData");
+                Util.CopyStructArray(m_nodeData, wm, "m_nodeData");
 
                 m_waterPulseGroups = new PulseGroup[1024];
-                Unlimiter.CopyStructArray(m_waterPulseGroups, wm, "m_waterPulseGroups");
+                Util.CopyStructArray(m_waterPulseGroups, wm, "m_waterPulseGroups");
                 m_sewagePulseGroups = new PulseGroup[1024];
-                Unlimiter.CopyStructArray(m_sewagePulseGroups, wm, "m_sewagePulseGroups");
+                Util.CopyStructArray(m_sewagePulseGroups, wm, "m_sewagePulseGroups");
 
                 m_waterPulseUnits = new PulseUnit[32768];
-                Unlimiter.CopyStructArray(m_waterPulseUnits, wm, "m_waterPulseUnits");
+                Util.CopyStructArray(m_waterPulseUnits, wm, "m_waterPulseUnits");
                 m_sewagePulseUnits = new PulseUnit[32768];
-                Unlimiter.CopyStructArray(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
+                Util.CopyStructArray(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
 
 
-                Unlimiter.SetPropertyValue(ref m_waterPulseGroupCount,wm, "m_waterPulseGroupCount");
-                Unlimiter.SetPropertyValue(ref m_sewagePulseGroupCount,wm, "m_sewagePulseGroupCount");
+                Util.SetPropertyValue(ref m_waterPulseGroupCount,wm, "m_waterPulseGroupCount");
+                Util.SetPropertyValue(ref m_sewagePulseGroupCount,wm, "m_sewagePulseGroupCount");
 
                 m_waterPulseUnitStart = 0;
                 m_sewagePulseUnitStart = 0;
 
-                Unlimiter.SetPropertyValue(ref m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
-                Unlimiter.SetPropertyValue(ref m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
+                Util.SetPropertyValue(ref m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
+                Util.SetPropertyValue(ref m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
 
-                Unlimiter.SetPropertyValue(ref m_processedCells, wm, "m_processedCells");
-                Unlimiter.SetPropertyValue(ref m_conductiveCells, wm, "m_conductiveCells");
-                Unlimiter.SetPropertyValue(ref m_canContinue, wm, "m_canContinue");
+                Util.SetPropertyValue(ref m_processedCells, wm, "m_processedCells");
+                Util.SetPropertyValue(ref m_conductiveCells, wm, "m_conductiveCells");
+                Util.SetPropertyValue(ref m_canContinue, wm, "m_canContinue");
             }
             m_modifiedX1 = 0;
             m_modifiedZ1 = 0;

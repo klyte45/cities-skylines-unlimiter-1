@@ -1,12 +1,9 @@
 ﻿using ColossalFramework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Attributes;
 
+//TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(ImmaterialResourceManager))]

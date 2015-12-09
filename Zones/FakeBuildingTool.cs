@@ -7,6 +7,7 @@ using EightyOne.Attributes;
 
 namespace EightyOne.Zones
 {
+    //TODO(earalov): review this class
     [TargetType(typeof(BuildingTool))]
     internal class FakeBuildingTool
     {

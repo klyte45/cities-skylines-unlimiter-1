@@ -1,10 +1,10 @@
-﻿using ColossalFramework.Math;
-using System;
-using UnityEngine;
+﻿using UnityEngine;
 using EightyOne.Attributes;
 
 namespace EightyOne.Terrain
 {
+
+    //TODO(earalov): review this class
     [TargetType(typeof(TerrainManager))]
     public class FakeTerrainManager
     {

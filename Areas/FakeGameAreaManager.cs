@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using ColossalFramework;
 using ColossalFramework.Math;
 using System.Reflection;
-using System.Threading;
 using ColossalFramework.Steamworks;
 using ColossalFramework.Threading;
 using UnityEngine;
@@ -21,103 +17,33 @@ namespace EightyOne.Areas
         public const float HALFGRID = 4.5f;
 
         public static int[] areaGrid;
-        private static FieldInfo _AreasUpdatedField = typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo _AreaTex = typeof(GameAreaManager).GetField("m_areaTex", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        public static void UnlockAll()
-        {
-            instance.StartCoroutine(UnlockAllCoroutine());
-        }
-
-        private static IEnumerator UnlockAllCoroutine()
-        {
-            Debug.Log("Unlock all coroutine");
-
-            var set = GetUnlockables();
-            while (set.Length > 0)
-            {
-                var counter = set.Count();
-                foreach (var keyValuePair in set)
-                {
-                    SimulationManager.instance.AddAction(() =>
-                    {
-                        if (instance.IsUnlocked(keyValuePair.Key, keyValuePair.Value))
-                        {
-                            return;
-                        }
-                        var areaIndex = FakeGameAreaManager.GetTileIndex(keyValuePair.Key, keyValuePair.Value); //for some reason this method can't be detoured
-                        instance.UnlockArea(areaIndex);
-                        Interlocked.Decrement(ref counter);
-                    });
-                    yield return null;
-                }
-                while (counter > 0)
-                {
-                    yield return new WaitForEndOfFrame();
-                }
-                set = GetUnlockables();
-                yield return null;
-            }
-
-
-            //                        var i1 = i;
-            //                        var j1 = j;
-            //                        if (instance.CanUnlock(i1, j1))
-            //                        {
-            //                            SimulationManager.instance.AddAction(() =>
-            //                            {
-            //                                if (instance.IsUnlocked(i1, j1))
-            //                                {
-            //                                    return;
-            //                                }
-            //                                var areaIndex = FakeGameAreaManager.GetTileIndex(i1, j1);
-            //                                //for some reason this method can't be detoured
-            //                                instance.UnlockArea(areaIndex);
-            //                            });
-            //                        }
-            //                        yield return null;
-        }
-
-        private static KeyValuePair<int, int>[] GetUnlockables()
-        {
-            var set = new HashSet<KeyValuePair<int, int>>();
-            for (var i = 0; i < GRID; ++i)
-            {
-                for (var j = 0; j < GRID; ++j)
-                {
-                    if (!instance.IsUnlocked(i, j))
-                    {
-                        continue;
-                    }
-                    if (!instance.IsUnlocked(i + 1, j) && instance.CanUnlock(i + 1, j))
-                    {
-                        set.Add(new KeyValuePair<int, int>(i + 1, j));
-                    }
-                    if (!instance.IsUnlocked(i - 1, j) && instance.CanUnlock(i - 1, j))
-                    {
-                        set.Add(new KeyValuePair<int, int>(i - 1, j));
-                    }
-                    if (!instance.IsUnlocked(i, j + 1) && instance.CanUnlock(i, j + 1))
-                    {
-                        set.Add(new KeyValuePair<int, int>(i, j + 1));
-                    }
-                    if (!instance.IsUnlocked(i, j - 1) && instance.CanUnlock(i, j - 1))
-                    {
-                        set.Add(new KeyValuePair<int, int>(i, j - 1));
-                    }
-                }
-            }
-            return set.ToArray();
-        }
+        private static FieldInfo _areasUpdatedField;
+        private static FieldInfo _areaTexField;
+        private static FieldInfo _unlockingField;
 
         public static void Init()
         {
+            _areasUpdatedField = typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (_areasUpdatedField == null)
+            {
+                throw new Exception("m_areasUpdated");
+            }
+            _areaTexField = typeof(GameAreaManager).GetField("m_areaTex", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (_areaTexField == null)
+            {
+                throw new Exception("m_areasUpdated");
+            }
+            _unlockingField = typeof(GameAreaManager).GetField("m_unlocking", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (_areaTexField == null)
+            {
+                throw new Exception("m_unlocking");
+            }
             var areaTex = new Texture2D(FakeGameAreaManagerUI.AREA_TEX_SIZE, FakeGameAreaManagerUI.AREA_TEX_SIZE, TextureFormat.ARGB32, false, true)
             {
                 filterMode = FilterMode.Point,
                 wrapMode = TextureWrapMode.Clamp
             };
-            _AreaTex.SetValue(GameAreaManager.instance, areaTex);
+            _areaTexField.SetValue(GameAreaManager.instance, areaTex);
 
 
             GameAreaManager.instance.m_maxAreaCount = GRID * GRID + 1;
@@ -131,7 +57,7 @@ namespace EightyOne.Areas
                         areaGrid[(i + 2) * GRID + (j + 2)] = GameAreaManager.instance.m_areaGrid[i * 5 + j];
                     }
                 }
-                _AreasUpdatedField.SetValue(GameAreaManager.instance, true);
+                _areasUpdatedField.SetValue(GameAreaManager.instance, true);
             }
 
             GameAreaManager.instance.m_areaCount = 0;
@@ -152,9 +78,6 @@ namespace EightyOne.Areas
                     }
                 }
             }
-
-            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 2800f);
-            SimulationManager.instance.AddAction(() => GameObject.FindObjectOfType<FogEffect>().m_edgeFogDistance = 2800f);
         }
 
         public static void OnDestroy()
@@ -239,7 +162,7 @@ namespace EightyOne.Areas
             //end mod
         }
 
-        //For some reason this method can't be detoured
+        //This method gets inlined and can't be detoured
         public static void GetTileXZ(int tile, out int x, out int z)
         {
             //begin mod
@@ -248,7 +171,7 @@ namespace EightyOne.Areas
             //end mod
         }
 
-        //For some reason this method can't be detoured
+        //This method gets inlined and can't be detoured
         public static int GetTileIndex(int x, int z)
         {
             //begin mod
@@ -259,7 +182,7 @@ namespace EightyOne.Areas
         [ReplaceMethod]
         public new bool UnlockArea(int index)
         {
-            typeof(GameAreaManager).GetField("m_unlocking", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, true);
+            _unlockingField.SetValue(this, true);
             try
             {
                 //begin mod
@@ -271,7 +194,7 @@ namespace EightyOne.Areas
                     this.m_areaNotUnlocked.Deactivate();
                     CODebugBase<LogChannel>.Log(LogChannel.Core, "Unlocking new area");
                     areaGrid[index] = ++this.m_areaCount;
-                    _AreasUpdatedField.SetValue(this, true);
+                    _areasUpdatedField.SetValue(this, true);
                     //begin mod
                     if (this.m_areaCount == 9)
                         //end mod
@@ -300,31 +223,31 @@ namespace EightyOne.Areas
                     --this.m_areaCount;
                     areaGrid[index] = 0;
 
-                    _AreasUpdatedField.SetValue(this, true);
+                    _areasUpdatedField.SetValue(this, true);
                 }
                 return false;
             }
             finally
             {
-                typeof(GameAreaManager).GetField("m_unlocking", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, false);
+                _unlockingField.SetValue(this, false);
             }
         }
 
+        //no changes
         private float CalculateBuildableArea(int tileX, int tileZ)
         {
-            uint num;
-            uint num2;
-            uint num3;
-            uint num4;
-            uint num5;
-            Singleton<NaturalResourceManager>.instance.GetTileResources(tileX - 2, tileZ - 2, out num, out num2, out num3, out num4, out num5);
-            float tileFlatness = Singleton<TerrainManager>.instance.GetTileFlatness(tileX - 2, tileZ - 2);
-            float num6 = 3686400f;
-            float num7 = 1139.0625f;
-            float num8 = num6 / num7 * 255f;
-            return tileFlatness * (1f - num5 / num8);
+            uint ore;
+            uint oil;
+            uint forest;
+            uint fertility;
+            uint water;
+            Singleton<NaturalResourceManager>.instance.GetTileResources(tileX, tileZ, out ore, out oil, out forest, out fertility, out water);
+            float tileFlatness = Singleton<TerrainManager>.instance.GetTileFlatness(tileX, tileZ);
+            float num = (float)(3686400.0 / (18225.0 / 16.0) * (double)byte.MaxValue);
+            return tileFlatness * (float)(1.0 - (double)water / (double)num);
         }
 
+        //TODO(earalov): review this method
         [ReplaceMethod]
         public new void UpdateData(SimulationManager.UpdateMode mode)
         {
@@ -548,7 +471,5 @@ namespace EightyOne.Areas
             }
             return false;
         }
-
-
     }
 }

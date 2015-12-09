@@ -1,7 +1,7 @@
-﻿using ColossalFramework;
+﻿using System;
+using ColossalFramework;
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
-using System;
 using System.Reflection;
 using UnityEngine;
 using EightyOne.Attributes;
@@ -9,9 +9,9 @@ using EightyOne.Attributes;
 namespace EightyOne.Areas
 {
     [TargetType(typeof(GameAreaInfoPanel))]
-    internal class FakeGameAreaInfoPanel
+    internal class FakeGameAreaInfoPanel : GameAreaInfoPanel
     {
-        private static FieldInfo m_AreaIndex;
+        private static FieldInfo _areaIndexField;
         private static UIComponent m_FullscreenContainer;
         private static UIProgressBar m_OilResources;
         private static UIProgressBar m_OreResources;
@@ -46,7 +46,11 @@ namespace EightyOne.Areas
 
         public static void Init(GameAreaInfoPanel g)
         {
-            m_AreaIndex = g.GetType().GetField("m_AreaIndex", BindingFlags.NonPublic | BindingFlags.Instance);
+            _areaIndexField = typeof(GameAreaInfoPanel).GetField("m_AreaIndex", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (_areaIndexField == null)
+            {
+                throw new Exception("m_AreaIndex");
+            }
             m_FullscreenContainer = UIView.Find("FullScreenContainer");
             m_Title = g.Find<UILabel>("Title");
             m_BuildableArea = g.Find<UILabel>("BuildableArea");
@@ -81,17 +85,17 @@ namespace EightyOne.Areas
         }
 
         [ReplaceMethod]
-        private static void ShowInternal(GameAreaInfoPanel g, int areaIndex)
+        private void ShowInternal(int areaIndex)
         {
-            if (m_AreaIndex == null)
+            if (_areaIndexField == null)
             {
-                Init(g);
+                Init(this);
             }
-            m_AreaIndex.SetValue(g, areaIndex);
+            _areaIndexField.SetValue(this, areaIndex);
             int x;
             int z;
             //begin mod
-            FakeGameAreaManager.GetTileXZ(areaIndex, out x, out z);  //for some reason it's not possible to detour that method
+            FakeGameAreaManager.GetTileXZ(areaIndex, out x, out z);  //This method gets inlined and can't be detoured
             //end mod
             uint num;
             uint num2;
@@ -102,10 +106,10 @@ namespace EightyOne.Areas
             float num6 = 3686400f;
             float num7 = 1139.0625f;
             float num8 = num6 / num7 * 255f;
-            float endValue = Mathf.Pow(num2 / num8, g.m_OilExponent);
-            float endValue2 = Mathf.Pow(num / num8, g.m_OreExponent);
-            float endValue3 = Mathf.Pow(num3 / num8, g.m_ForestryExponent);
-            float endValue4 = Mathf.Pow(num4 / num8, g.m_FarmingExponent);
+            float endValue = Mathf.Pow(num2 / num8, this.m_OilExponent);
+            float endValue2 = Mathf.Pow(num / num8, this.m_OreExponent);
+            float endValue3 = Mathf.Pow(num3 / num8, this.m_ForestryExponent);
+            float endValue4 = Mathf.Pow(num4 / num8, this.m_FarmingExponent);
             ValueAnimator.Cancel("Oil");
             ValueAnimator.Cancel("Ore");
             ValueAnimator.Cancel("Forest");
@@ -117,43 +121,43 @@ namespace EightyOne.Areas
             ValueAnimator.Animate("Oil", delegate (float val)
             {
                 m_OilResources.value = val;
-            }, new AnimatedFloat(0f, endValue, g.m_InterpolationTime, g.m_InterpolationEasingType));
+            }, new AnimatedFloat(0f, endValue, this.m_InterpolationTime, this.m_InterpolationEasingType));
             ValueAnimator.Animate("Ore", delegate (float val)
             {
                 m_OreResources.value = val;
-            }, new AnimatedFloat(0f, endValue2, g.m_InterpolationTime, g.m_InterpolationEasingType));
+            }, new AnimatedFloat(0f, endValue2, this.m_InterpolationTime, this.m_InterpolationEasingType));
             ValueAnimator.Animate("Forest", delegate (float val)
             {
                 m_ForestryResources.value = val;
-            }, new AnimatedFloat(0f, endValue3, g.m_InterpolationTime, g.m_InterpolationEasingType));
+            }, new AnimatedFloat(0f, endValue3, this.m_InterpolationTime, this.m_InterpolationEasingType));
             ValueAnimator.Animate("Fertility", delegate (float val)
             {
                 m_FertilityResources.value = val;
-            }, new AnimatedFloat(0f, endValue4, g.m_InterpolationTime, g.m_InterpolationEasingType));
-            UpdatePanel(g);
+            }, new AnimatedFloat(0f, endValue4, this.m_InterpolationTime, this.m_InterpolationEasingType));
+            UpdatePanel();
         }
 
         [ReplaceMethod]
-        private static void UpdatePanel(GameAreaInfoPanel g)
+        private void UpdatePanel()
         {
-            if (m_AreaIndex == null)
+            if (_areaIndexField == null)
             {
-                Init(g);
+                Init(this);
             }
-            var areaIndex = (int)m_AreaIndex.GetValue(g);
+            var areaIndex = (int)_areaIndexField.GetValue(this);
             if (areaIndex != -1)
             {
                 int x;
                 int z;
                 //begin mod
-                FakeGameAreaManager.GetTileXZ(areaIndex, out x, out z);  //for some reason it's not possible to detour that method
+                FakeGameAreaManager.GetTileXZ(areaIndex, out x, out z);  //This method gets inlined and can't be detoured
                 //end mod
                 Vector3 areaPositionSmooth = Singleton<GameAreaManager>.instance.GetAreaPositionSmooth(x, z);
                 Vector3 vector = Camera.main.WorldToScreenPoint(areaPositionSmooth);
-                UIView uIView = g.component.GetUIView();
+                UIView uIView = this.component.GetUIView();
                 Vector2 vector2 = (!(m_FullscreenContainer != null)) ? uIView.GetScreenResolution() : m_FullscreenContainer.size;
                 vector /= uIView.inputScale;
-                Vector3 vector3 = g.component.pivot.UpperLeftToTransform(g.component.size, g.component.arbitraryPivotOffset);
+                Vector3 vector3 = this.component.pivot.UpperLeftToTransform(this.component.size, this.component.arbitraryPivotOffset);
                 Vector3 relativePosition = uIView.ScreenPointToGUI(vector) + new Vector2(vector3.x, vector3.y);
                 if (relativePosition.x < 0f)
                 {
@@ -163,15 +167,15 @@ namespace EightyOne.Areas
                 {
                     relativePosition.y = 0f;
                 }
-                if (relativePosition.x + g.component.width > vector2.x)
+                if (relativePosition.x + this.component.width > vector2.x)
                 {
-                    relativePosition.x = vector2.x - g.component.width;
+                    relativePosition.x = vector2.x - this.component.width;
                 }
-                if (relativePosition.y + g.component.height > vector2.y)
+                if (relativePosition.y + this.component.height > vector2.y)
                 {
-                    relativePosition.y = vector2.y - g.component.height;
+                    relativePosition.y = vector2.y - this.component.height;
                 }
-                g.component.relativePosition = relativePosition;
+                this.component.relativePosition = relativePosition;
                 uint num;
                 uint num2;
                 uint num3;
@@ -226,10 +230,10 @@ namespace EightyOne.Areas
                 m_Title.text = Locale.Get((!flag6) ? "AREA_NEWTILE" : "AREA_OWNEDTILE");
                 m_PurchasePanel.isVisible = !flag6;
                 m_PurchasePanel.isEnabled = (Singleton<EconomyManager>.instance.PeekResource(EconomyManager.Resource.LandPrice, num12) == num12);
-                float value = Mathf.Pow(num2 / num10, g.m_OilExponent);
-                float value2 = Mathf.Pow(num / num10, g.m_OreExponent);
-                float value3 = Mathf.Pow(num3 / num10, g.m_ForestryExponent);
-                float value4 = Mathf.Pow(num4 / num10, g.m_FarmingExponent);
+                float value = Mathf.Pow(num2 / num10, this.m_OilExponent);
+                float value2 = Mathf.Pow(num / num10, this.m_OreExponent);
+                float value3 = Mathf.Pow(num3 / num10, this.m_ForestryExponent);
+                float value4 = Mathf.Pow(num4 / num10, this.m_FarmingExponent);
                 if (!ValueAnimator.IsAnimating("Oil"))
                 {
                     m_OilResources.value = value;

@@ -1,16 +1,14 @@
 ﻿using ColossalFramework;
 using ColossalFramework.IO;
 using ICities;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Attributes;
 
+//TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(DistrictManager))]

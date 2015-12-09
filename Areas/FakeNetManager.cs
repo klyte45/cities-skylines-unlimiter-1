@@ -49,7 +49,7 @@ namespace EightyOne.Areas
             if (publicServiceIndex != -1)
             {
                 //begin mod
-                int tileIndex = FakeGameAreaManager.GetTileIndex(x, z); //for some reason that method can't be detoured
+                int tileIndex = FakeGameAreaManager.GetTileIndex(x, z); //This method gets inlined and can't be detoured
                 //end mod
                 if (tileIndex != -1)
                 {

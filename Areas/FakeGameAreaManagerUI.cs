@@ -8,10 +8,20 @@ namespace EightyOne.Areas
     [TargetType(typeof(GameAreaManager))]
     public class FakeGameAreaManagerUI : GameAreaManager
     {
-        private static FieldInfo _AreaTex = typeof(GameAreaManager).GetField("m_areaTex", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo _HighlightAreaIndex = typeof(GameAreaManager).GetField("m_highlightAreaIndex", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo _AreasUpdatedField = typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance);
+
         public const int AREA_TEX_SIZE = 10;
+
+        //TODO(earalov): validate this fields in a init method
+        private static FieldInfo _areaTex = typeof(GameAreaManager).GetField("m_areaTex", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo _highlightAreaIndex = typeof(GameAreaManager).GetField("m_highlightAreaIndex", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo _areasUpdatedField = typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo _borderAlphaField = typeof(GameAreaManager).GetField("m_borderAlpha", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static FieldInfo _areaAlphaField = typeof(GameAreaManager).GetField("m_areaAlpha", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static FieldInfo _borderMaterialField = typeof(GameAreaManager).GetField("m_borderMaterial", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static FieldInfo _areaMaterialField = typeof(GameAreaManager).GetField("m_areaMaterial", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static FieldInfo _borderMeshField = typeof(GameAreaManager).GetField("m_borderMesh", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static FieldInfo _idColorField = typeof(GameAreaManager).GetField("ID_Color", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static FieldInfo _idAreaMappingField = typeof(GameAreaManager).GetField("ID_AreaMapping", BindingFlags.Instance | BindingFlags.NonPublic);
 
         //[ReplaceMethod]
         private void UpdateAreaMapping()
@@ -99,9 +109,9 @@ namespace EightyOne.Areas
         [ReplaceMethod]
         private void UpdateAreaTexture()
         {
-            _AreasUpdatedField.SetValue(this, false);
-            var areaTex = (Texture2D)_AreaTex.GetValue(this);
-            var highlightAreaIndex = (int)_HighlightAreaIndex.GetValue(this);
+            _areasUpdatedField.SetValue(this, false);
+            var areaTex = (Texture2D)_areaTex.GetValue(this);
+            var highlightAreaIndex = (int)_highlightAreaIndex.GetValue(this);
             //begin mod
             int num1 = 0;
             //end mod
@@ -137,15 +147,15 @@ namespace EightyOne.Areas
         [ReplaceMethod]
         protected new void BeginOverlayImpl(RenderManager.CameraInfo cameraInfo)
         {
-            float borderAlpha = (float)typeof(GameAreaManager).GetField("m_borderAlpha", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            float areaAlpha = (float)typeof(GameAreaManager).GetField("m_areaAlpha", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            Material borderMaterial = (Material)typeof(GameAreaManager).GetField("m_borderMaterial", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            Material areaMaterial = (Material)typeof(GameAreaManager).GetField("m_areaMaterial", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            Material decorationMaterial = (Material)typeof(GameAreaManager).GetField("m_decorationMaterial", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            Mesh borderMesh = (Mesh)typeof(GameAreaManager).GetField("m_borderMesh", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            int ID_Color = (int)typeof(GameAreaManager).GetField("ID_Color", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            int ID_AreaMapping = (int)typeof(GameAreaManager).GetField("ID_AreaMapping", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
-            Texture2D areaTex = (Texture2D)_AreaTex.GetValue(this);
+            float borderAlpha = (float)_borderAlphaField.GetValue(this);
+
+            float areaAlpha = (float)_areaAlphaField.GetValue(this);
+            Material borderMaterial = (Material)_borderMaterialField.GetValue(this);
+            Material areaMaterial = (Material)_areaMaterialField.GetValue(this);
+            Mesh borderMesh = (Mesh)_borderMeshField.GetValue(this);
+            int ID_Color = (int)_idColorField.GetValue(this);
+            int ID_AreaMapping = (int)_idAreaMappingField.GetValue(this);
+            Texture2D areaTex = (Texture2D)_areaTex.GetValue(this);
 
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
             if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
