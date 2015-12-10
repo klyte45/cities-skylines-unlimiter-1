@@ -35,55 +35,18 @@ namespace EightyOne.Areas
                 throw new Exception("m_areasUpdated");
             }
             _unlockingField = typeof(GameAreaManager).GetField("m_unlocking", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (_areaTexField == null)
+            if (_unlockingField == null)
             {
                 throw new Exception("m_unlocking");
             }
+
             var areaTex = new Texture2D(FakeGameAreaManagerUI.AREA_TEX_SIZE, FakeGameAreaManagerUI.AREA_TEX_SIZE, TextureFormat.ARGB32, false, true)
             {
                 filterMode = FilterMode.Point,
                 wrapMode = TextureWrapMode.Clamp
             };
             _areaTexField.SetValue(GameAreaManager.instance, areaTex);
-
-
-            GameAreaManager.instance.m_maxAreaCount = GRID * GRID + 1;
-            if (areaGrid == null)
-            {
-                areaGrid = new int[GRID * GRID];
-                for (var i = 0; i < 5; ++i)
-                {
-                    for (var j = 0; j < 5; ++j)
-                    {
-                        areaGrid[(i + 2) * GRID + (j + 2)] = GameAreaManager.instance.m_areaGrid[i * 5 + j];
-                    }
-                }
-                _areasUpdatedField.SetValue(GameAreaManager.instance, true);
-            }
-
-            GameAreaManager.instance.m_areaCount = 0;
-            var trueDetailPatchCount = 0;
-            for (int z2 = 0; z2 < GRID; ++z2)
-            {
-                for (int x2 = 0; x2 < GRID; ++x2)
-                {
-                    if (GameAreaManager.instance.GetArea(x2, z2) > 0)
-                    {
-                        if (TerrainManager.instance.SetDetailedPatch(x2, z2))
-                        {
-                            trueDetailPatchCount++;
-                        }
-                        float minX = (float)(((double)x2 - HALFGRID) * 1920.0);
-                        float maxX = (float)(((double)(x2 + 1) - HALFGRID) * 1920.0);
-                        float minZ = (float)(((double)z2 - HALFGRID) * 1920.0);
-                        float maxZ = (float)(((double)(z2 + 1) - HALFGRID) * 1920.0);
-                        ZoneManager.instance.UpdateBlocks(minX, minZ, maxX, maxZ);
-                        GameAreaManager.instance.m_areaCount += 1;
-                    }
-                }
-            }
-            //TODO(earalov): this must be set somehow because without it unlocking mechanism breaks
-            //TerrainManager.instance.m_detailPatchCount  = trueDetailPatchCount;
+            SimulationManager.instance.AddAction(FakeGameAreaManagerInit.UpdateData);
         }
 
         public static void OnDestroy()

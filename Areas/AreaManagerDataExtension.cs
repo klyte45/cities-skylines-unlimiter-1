@@ -25,9 +25,9 @@ namespace EightyOne.Areas
                     }
                 }
             }
-            GameAreaManager.instance.m_areaCount = currentCount;
+            GameAreaManager.instance.m_areaCount = currentCount; //TODO(earalov): this breaks unlocking
             typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(GameAreaManager.instance, true);
-            GameAreaManager.instance.m_maxAreaCount = 25;
+            GameAreaManager.instance.m_maxAreaCount = 25; //TODO(earalov): this breaks unlocking
 
             using (var ms = new MemoryStream())
             {
