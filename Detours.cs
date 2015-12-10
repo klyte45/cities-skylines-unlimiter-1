@@ -39,17 +39,24 @@ namespace EightyOne
                     continue;
                 }
                 var targetType = ((TargetType)customAttributes[0]).Type;
-                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
-                    .Where(method => method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false).Length == 1))
-                {
-                    Redirect(targetType, method);
-                }
+                RedirectType(type, targetType);
 
             }
             FakeGameAreaManager.Init();
         }
 
-        private static void Redirect(Type targetType, MethodInfo detour)
+        private static void RedirectType(Type type, Type targetType)
+        {
+            foreach (
+                var method in
+                    type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Where(method => method.GetCustomAttributes(typeof (ReplaceMethodAttribute), false).Length == 1))
+            {
+                RedirectMethod(targetType, method);
+            }
+        }
+
+        private static void RedirectMethod(Type targetType, MethodInfo detour)
         {
             var parameters = detour.GetParameters();
 

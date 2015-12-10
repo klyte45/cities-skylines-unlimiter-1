@@ -23,7 +23,7 @@ namespace EightyOne.Areas
         private static FieldInfo _idColorField = typeof(GameAreaManager).GetField("ID_Color", BindingFlags.Instance | BindingFlags.NonPublic);
         private static FieldInfo _idAreaMappingField = typeof(GameAreaManager).GetField("ID_AreaMapping", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        //[ReplaceMethod]
+        [ReplaceMethod]
         private void UpdateAreaMapping()
         {
             if (this.AreasVisible)
