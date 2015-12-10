@@ -62,15 +62,17 @@ namespace EightyOne.Areas
             }
 
             GameAreaManager.instance.m_areaCount = 0;
-            TerrainManager.instance.m_detailPatchCount = 0;
+            var trueDetailPatchCount = 0;
             for (int z2 = 0; z2 < GRID; ++z2)
             {
                 for (int x2 = 0; x2 < GRID; ++x2)
                 {
                     if (GameAreaManager.instance.GetArea(x2, z2) > 0)
                     {
-                        TerrainManager.instance.SetDetailedPatch(x2, z2);
-
+                        if (TerrainManager.instance.SetDetailedPatch(x2, z2))
+                        {
+                            trueDetailPatchCount++;
+                        }
                         float minX = (float)(((double)x2 - HALFGRID) * 1920.0);
                         float maxX = (float)(((double)(x2 + 1) - HALFGRID) * 1920.0);
                         float minZ = (float)(((double)z2 - HALFGRID) * 1920.0);
@@ -80,6 +82,8 @@ namespace EightyOne.Areas
                     }
                 }
             }
+            //TODO(earalov): this must be set somehow because without it unlocking mechanism breaks
+            //TerrainManager.instance.m_detailPatchCount  = trueDetailPatchCount;
         }
 
         public static void OnDestroy()

@@ -48,16 +48,25 @@ namespace EightyOne.Terrain
             int num4 = (num3 - 1) * 480 * 480;
             int num5 = x - num1 * 480;
             int num6 = z - num2 * 480;
+            //begin mod
+            var maxLimit = this.m_detailSurface.Length - 1;
+            //end mod
             if (num5 == 0 && num1 != 0 && this.m_patches[index - 1].m_simDetailIndex == 0 || num6 == 0 && num2 != 0 && this.m_patches[index - 9].m_simDetailIndex == 0)
             {
                 TerrainManager.SurfaceCell surfaceCell = this.SampleRawSurface((float)x * 0.25f, (float)z * 0.25f);
-                surfaceCell.m_clipped = this.m_detailSurface[num4 + num6 * 480 + num5].m_clipped;
+                //begin mod
+                surfaceCell.m_clipped = this.m_detailSurface[Mathf.Clamp(num4 + num6 * 480 + num5, 0, maxLimit)].m_clipped;
+                //end mod
                 return surfaceCell;
             }
             if ((num5 != 479 || num1 == 8 || this.m_patches[index + 1].m_simDetailIndex != 0) && (num6 != 479 || num2 == 8 || this.m_patches[index + 9].m_simDetailIndex != 0))
-                return this.m_detailSurface[num4 + num6 * 480 + num5];
+                //begin mod
+                return this.m_detailSurface[Mathf.Clamp(num4 + num6 * 480 + num5, 0, maxLimit)];
+                //end mod
             TerrainManager.SurfaceCell surfaceCell1 = this.SampleRawSurface((float)x * 0.25f, (float)z * 0.25f);
-            surfaceCell1.m_clipped = this.m_detailSurface[num4 + num6 * 480 + num5].m_clipped;
+            //begin mod
+            surfaceCell1.m_clipped = this.m_detailSurface[Mathf.Clamp(num4 + num6 * 480 + num5, 0, maxLimit)].m_clipped;
+            //end mod
             return surfaceCell1;
         }
     }
