@@ -2,6 +2,7 @@
 using ColossalFramework;
 using ColossalFramework.Math;
 using System.Reflection;
+using ColossalFramework.IO;
 using ColossalFramework.Steamworks;
 using ColossalFramework.Threading;
 using UnityEngine;
@@ -363,6 +364,38 @@ namespace EightyOne.Areas
                 }
             }
             return false;
+        }
+
+        public class Data : IDataContainer
+        {
+            public void Serialize(DataSerializer s)
+            {
+                int num = FakeGameAreaManager.areaGrid.Length;
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
+                for (int i = 0; i < num; i++)
+                {
+                    @byte.Write((byte)FakeGameAreaManager.areaGrid[i]);
+                }
+                @byte.EndWrite();
+            }
+
+            public void Deserialize(DataSerializer s)
+            {
+                FakeGameAreaManager.areaGrid = new int[FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
+                int num = FakeGameAreaManager.areaGrid.Length;
+
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
+                for (int i = 0; i < num; i++)
+                {
+                    FakeGameAreaManager.areaGrid[i] = (int)@byte.Read();
+                }
+                @byte.EndRead();
+            }
+
+            public void AfterDeserialize(DataSerializer s)
+            {
+                typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(GameAreaManager.instance, true);
+            }
         }
     }
 }

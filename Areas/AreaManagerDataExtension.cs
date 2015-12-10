@@ -6,41 +6,9 @@ using System.Linq;
 
 namespace EightyOne.Areas
 {
-    public class SerializableDataExtension : SerializableDataExtensionBase
+    public class AreaManagerDataExtension : SerializableDataExtensionBase
     {
         private const string id = "fakeGAM";
-
-        public class Data : IDataContainer
-        {
-            public void Serialize(DataSerializer s)
-            {
-                int num = FakeGameAreaManager.areaGrid.Length;
-                EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
-                for (int i = 0; i < num; i++)
-                {
-                    @byte.Write((byte)FakeGameAreaManager.areaGrid[i]);
-                }
-                @byte.EndWrite();
-            }
-
-            public void Deserialize(DataSerializer s)
-            {
-                FakeGameAreaManager.areaGrid = new int[FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
-                int num = FakeGameAreaManager.areaGrid.Length;
-
-                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
-                for (int i = 0; i < num; i++)
-                {
-                    FakeGameAreaManager.areaGrid[i] = (int)@byte.Read();
-                }
-                @byte.EndRead();
-            }
-
-            public void AfterDeserialize(DataSerializer s)
-            {
-                typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(GameAreaManager.instance, true);
-            }
-        }
 
         public override void OnSaveData()
         {
@@ -63,7 +31,7 @@ namespace EightyOne.Areas
 
             using (var ms = new MemoryStream())
             {
-                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
+                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new FakeGameAreaManager.Data());
                 var data = ms.ToArray();
                 serializableDataManager.SaveData(id, data);
             }
@@ -78,7 +46,7 @@ namespace EightyOne.Areas
             var data = serializableDataManager.LoadData(id);
             using (var ms = new MemoryStream(data))
             {
-                var s = DataSerializer.Deserialize<Data>(ms, DataSerializer.Mode.Memory);
+                var s = DataSerializer.Deserialize<FakeGameAreaManager.Data>(ms, DataSerializer.Mode.Memory);
             }
         }
     }
