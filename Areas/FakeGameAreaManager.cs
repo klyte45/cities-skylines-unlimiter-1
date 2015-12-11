@@ -17,7 +17,7 @@ namespace EightyOne.Areas
         public const int GRID = 9;
         public const float HALFGRID = 4.5f;
 
-        public static int[] areaGrid; //TODO(earalov): lazily initialize to prevent NullReferenceException? use m_areaGrid?
+        public static int[] areaGrid; //TODO(earalov): use m_areaGrid?
         private static FieldInfo _areasUpdatedField;
         private static FieldInfo _areaTexField;
         private static FieldInfo _unlockingField;
@@ -46,7 +46,7 @@ namespace EightyOne.Areas
                 wrapMode = TextureWrapMode.Clamp
             };
             _areaTexField.SetValue(GameAreaManager.instance, areaTex);
-            SimulationManager.instance.AddAction(FakeGameAreaManagerInit.UpdateData);
+            FakeGameAreaManagerInit.UpdateData();
         }
 
         public static void OnDestroy()
