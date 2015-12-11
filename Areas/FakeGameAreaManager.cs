@@ -17,7 +17,7 @@ namespace EightyOne.Areas
         public const int GRID = 9;
         public const float HALFGRID = 4.5f;
 
-        public static int[] areaGrid;
+        public static int[] areaGrid; //TODO(earalov): lazily initialize to prevent NullReferenceException? use m_areaGrid?
         private static FieldInfo _areasUpdatedField;
         private static FieldInfo _areaTexField;
         private static FieldInfo _unlockingField;

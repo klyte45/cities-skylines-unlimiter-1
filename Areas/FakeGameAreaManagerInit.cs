@@ -1,15 +1,13 @@
 ﻿using System.Reflection;
 using ColossalFramework;
-using UnityEngine;
 
 namespace EightyOne.Areas
 {
     public class FakeGameAreaManagerInit
     {
-        private static FieldInfo _startTileField = typeof(GameAreaManager).GetField("m_startTile", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo _areasUpdatedField = typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        //losely based on GameAreaManager's method of the same name
+        //based on GameAreaManager's method of the same name
         public static void UpdateData()
         {
             var instance = GameAreaManager.instance;
@@ -38,23 +36,19 @@ namespace EightyOne.Areas
                 }
             }
 
-            int x1;
-            int z1;
-            GetStartTile(out x1, out z1);
-            //TODO(earalov): this must be set somehow because without it unlocking mechanism breaks. But right now it causes terrain distortion
-            //TerrainManager.instance.m_detailPatchCount  = 0;
+            TerrainManager.instance.m_detailPatchCount = 0;
+            for (int index1 = 0; index1 < 9; ++index1)
+            {
+                for (int index2 = 0; index2 < 9; ++index2)
+                    TerrainManager.instance.m_patches[index1 * 9 + index2].m_simDetailIndex = 0;
+            }
             for (int z2 = 0; z2 < FakeGameAreaManager.GRID; ++z2)
             {
                 for (int x2 = 0; x2 < FakeGameAreaManager.GRID; ++x2)
                 {
-                    if (x1 == x2 && z1 == z2)
-                    {
-                        continue;
-                    }
                     if (instance.GetArea(x2, z2) > 0)
                     {
                         Singleton<TerrainManager>.instance.SetDetailedPatch(x2, z2);
-
                         float minX = (float)(((double)x2 - FakeGameAreaManager.HALFGRID) * 1920.0);
                         float maxX = (float)(((double)(x2 + 1) - FakeGameAreaManager.HALFGRID) * 1920.0);
                         float minZ = (float)(((double)z2 - FakeGameAreaManager.HALFGRID) * 1920.0);
@@ -63,15 +57,6 @@ namespace EightyOne.Areas
                     }
                 }
             }
-        }
-
-        private static void GetStartTile(out int x, out int z)
-        {
-            int num = (int)_startTileField.GetValue(GameAreaManager.instance);
-            //begin mod
-            x = num % 5 + 2;
-            z = num / 5 + 2;
-            //end mod
         }
     }
 }
