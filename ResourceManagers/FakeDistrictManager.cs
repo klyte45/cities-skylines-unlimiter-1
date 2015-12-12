@@ -2,10 +2,10 @@
 using ColossalFramework.IO;
 using System.Reflection;
 using System.Threading;
+using EightyOne.Areas;
 using UnityEngine;
 using EightyOne.Attributes;
 
-//TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(DistrictManager))]
@@ -142,6 +142,7 @@ namespace EightyOne.ResourceManagers
         private static FieldInfo modifyLockField;
         private static FieldInfo namesModifiedField;
         private static FieldInfo areaMaterialField;
+        private static FieldInfo highlightPolicyField;
 
         private static int ID_Districts1;
         private static int ID_Districts2;
@@ -218,6 +219,7 @@ namespace EightyOne.ResourceManagers
             modifyLockField = typeof(DistrictManager).GetField("m_modifyLock", BindingFlags.Instance | BindingFlags.NonPublic);
             namesModifiedField = typeof(DistrictManager).GetField("m_namesModified", BindingFlags.Instance | BindingFlags.NonPublic);
             areaMaterialField = typeof(DistrictManager).GetField("m_areaMaterial", BindingFlags.Instance | BindingFlags.NonPublic);
+            highlightPolicyField = typeof(DistrictManager).GetField("m_highlightPolicy", BindingFlags.Instance | BindingFlags.NonPublic);
 
             districtTexture1 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
@@ -228,6 +230,17 @@ namespace EightyOne.ResourceManagers
             ID_DistrictMapping = Shader.PropertyToID("_DistrictMapping");
             ID_Highlight1 = Shader.PropertyToID("_Highlight1");
             ID_Highlight2 = Shader.PropertyToID("_Highlight2");
+        }
+
+        [ReplaceMethod]
+        public void set_HighlightPolicy(DistrictPolicies.Policies value)
+        {
+            if (value == (DistrictPolicies.Policies)highlightPolicyField.GetValue(this))
+                return;
+            highlightPolicyField.SetValue(this, value);
+            //begin mod
+            this.AreaModified(0, 0, GRID - 1, GRID - 1, false);
+            //end mod
         }
 
         [ReplaceMethod]
@@ -297,9 +310,9 @@ namespace EightyOne.ResourceManagers
             int[] areaGrid = Singleton<GameAreaManager>.instance.m_areaGrid;
             int num5 = Mathf.RoundToInt(99.99999f);
             //begin mod
-            int num6 = (5 * num5 >> 1) - HALFGRID; //TODO(earalov): 5 looks like area manager's grid size. Replace with 9? Or: 5 * 100 = 500~512. Maybe related to district manager's grid?
+            int num6 = (FakeGameAreaManager.GRID * num5 >> 1) - HALFGRID;
             //end mod
-            if ((num3 - num + 1) * (num4 - num2 + 1) > 65536) //TODO(earalov): 65536 = 256*256. Maybe replace with HALFGRID * HALFGRID?
+            if ((num3 - num + 1) * (num4 - num2 + 1) > HALFGRID * HALFGRID)
             {
                 num = 1;
                 num2 = 1;
@@ -341,8 +354,10 @@ namespace EightyOne.ResourceManagers
                         bool inArea = false;
                         int num9 = (l + num6) / num5;
                         int num10 = (k + num6) / num5;
-                        if (num9 >= 0 && num9 < 5 && num10 >= 0 && num10 < 5)  //TODO(earalov): 5 looks like area manager's grid size. Replace with 9?
-                            inArea = (areaGrid[num10 * 5 + num9] != 0);        //TODO(earalov): 5 looks like area manager's grid size. Replace with 9?
+                        //begin mod
+                        if (num9 >= 0 && num9 < FakeGameAreaManager.GRID && num10 >= 0 && num10 < FakeGameAreaManager.GRID)
+                            inArea = (areaGrid[num10 * FakeGameAreaManager.GRID + num9] != 0);
+                        //end mod
                         Color32 color2 = new Color32(128, 128, 128, 128);
                         AddDistrictColor2(cell2.m_district1, this.HighlightPolicy, cell2.m_alpha1, inArea, ref color2);
                         AddDistrictColor2(cell2.m_district2, this.HighlightPolicy, cell2.m_alpha2, inArea, ref color2);
@@ -386,8 +401,10 @@ namespace EightyOne.ResourceManagers
                         bool inArea2 = false;
                         int num12 = (n + num6) / num5;
                         int num13 = (m + num6) / num5;
-                        if (num12 >= 0 && num12 < 5 && num13 >= 0 && num13 < 5)  //TODO(earalov): 5 looks like area manager's grid size. Replace with 9?
-                            inArea2 = (areaGrid[num13 * 5 + num12] != 0);        //TODO(earalov): 5 looks like area manager's grid size. Replace with 9?
+                        //begin mod
+                        if (num12 >= 0 && num12 < FakeGameAreaManager.GRID && num13 >= 0 && num13 < FakeGameAreaManager.GRID)
+                            inArea2 = (areaGrid[num13 * FakeGameAreaManager.GRID + num12] != 0);
+                        //end mod
                         Color32 c2 = new Color32(128, 128, 128, 128);
                         AddDistrictColor2(cell3.m_district1, this.HighlightPolicy, cell3.m_alpha1, inArea2, ref c2);
                         AddDistrictColor2(cell3.m_district2, this.HighlightPolicy, cell3.m_alpha2, inArea2, ref c2);
