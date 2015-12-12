@@ -17,7 +17,6 @@ namespace EightyOne.Areas
         public const int GRID = 9;
         public const float HALFGRID = 4.5f;
 
-        public static int[] areaGrid; //TODO(earalov): use m_areaGrid?
         private static FieldInfo _areasUpdatedField;
         private static FieldInfo _areaTexField;
         private static FieldInfo _unlockingField;
@@ -47,11 +46,6 @@ namespace EightyOne.Areas
             };
             _areaTexField.SetValue(GameAreaManager.instance, areaTex);
             FakeGameAreaManagerInit.UpdateData();
-        }
-
-        public static void OnDestroy()
-        {
-            areaGrid = null;
         }
 
         [ReplaceMethod]
@@ -89,7 +83,7 @@ namespace EightyOne.Areas
         public new bool CanUnlock(int x, int z)
         {
             //begin mod
-            if (x < 0 || z < 0 || (x >= GRID || z >= GRID) || (this.m_areaCount >= this.MaxAreaCount || !Singleton<UnlockManager>.instance.Unlocked(this.m_areaCount) || areaGrid[z * GRID + x] != 0))
+            if (x < 0 || z < 0 || (x >= GRID || z >= GRID) || (this.m_areaCount >= this.MaxAreaCount || !Singleton<UnlockManager>.instance.Unlocked(this.m_areaCount) || this.m_areaGrid[z * GRID + x] != 0))
                 return false;
             //end mod
             bool result = this.IsUnlocked(x, z - 1) || this.IsUnlocked(x - 1, z) || this.IsUnlocked(x + 1, z) || this.IsUnlocked(x, z + 1);
@@ -103,7 +97,7 @@ namespace EightyOne.Areas
         {
             //begin mod
             if (x >= 0 && z >= 0 && (x < GRID && z < GRID))
-                return areaGrid[z * GRID + x];
+                return this.m_areaGrid[z * GRID + x];
             int num = 0;
             return x < -num || z < -num || (x >= GRID + num || z >= GRID + num) ? -2 : -1;
             //end mod
@@ -115,7 +109,7 @@ namespace EightyOne.Areas
             //begin mod
             if (x < 0 || z < 0 || (x >= GRID || z >= GRID))
                 return false;
-            return areaGrid[z * GRID + x] != 0;
+            return this.m_areaGrid[z * GRID + x] != 0;
             //end mod
         }
 
@@ -162,7 +156,7 @@ namespace EightyOne.Areas
                 {
                     this.m_areaNotUnlocked.Deactivate();
                     CODebugBase<LogChannel>.Log(LogChannel.Core, "Unlocking new area");
-                    areaGrid[index] = ++this.m_areaCount;
+                    this.m_areaGrid[index] = ++this.m_areaCount;
                     _areasUpdatedField.SetValue(this, true);
                     //begin mod
                     if (this.m_areaCount == 9)
@@ -190,7 +184,7 @@ namespace EightyOne.Areas
 
                     }
                     --this.m_areaCount;
-                    areaGrid[index] = 0;
+                    this.m_areaGrid[index] = 0;
 
                     _areasUpdatedField.SetValue(this, true);
                 }
@@ -333,35 +327,92 @@ namespace EightyOne.Areas
             return false;
         }
 
-        public class Data : IDataContainer
+        [TargetType(typeof(GameAreaManager.Data))]
+        public class FakeData : IDataContainer
         {
+            private static FieldInfo _startTileField = typeof(GameAreaManager).GetField("m_startTile", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static FieldInfo _fieldInfo1 = typeof(GameAreaManager).GetField("m_buildableArea0", BindingFlags.Instance | BindingFlags.NonPublic);
+            private static FieldInfo _fieldInfo2 = typeof(GameAreaManager).GetField("m_buildableArea1", BindingFlags.Instance | BindingFlags.NonPublic);
+            private static FieldInfo _fieldInfo3 = typeof(GameAreaManager).GetField("m_buildableArea2", BindingFlags.Instance | BindingFlags.NonPublic);
+            private static FieldInfo _fieldInfo4 = typeof(GameAreaManager).GetField("m_buildableArea3", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            [ReplaceMethod]
             public void Serialize(DataSerializer s)
             {
-                int num = FakeGameAreaManager.areaGrid.Length;
-                EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
-                for (int i = 0; i < num; i++)
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginSerialize(s, "GameAreaManager");
+                GameAreaManager instance = Singleton<GameAreaManager>.instance;
+                //begin mod
+                int[] numArray = new int[AREAGRID_RESOLUTION * AREAGRID_RESOLUTION];
+                int length = numArray.Length;
+                int areaCount = 0;
+                for (var i = 0; i < 5; i += 1)
                 {
-                    @byte.Write((byte)FakeGameAreaManager.areaGrid[i]);
+                    for (var j = 0; j < 5; j += 1)
+                    {
+                        var grid = GameAreaManager.instance.m_areaGrid[(j + 2) * GRID + (i + 2)];
+                        numArray[j * AREAGRID_RESOLUTION + i] = grid;
+                        if (grid != 0)
+                        {
+                            areaCount += 1;
+                        }
+                    }
+                }
+                s.WriteUInt8((uint)areaCount);
+                //end mod
+                s.WriteUInt8((uint)(int)_startTileField.GetValue(instance));
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
+                for (int index = 0; index < length; ++index)
+                    @byte.Write((byte)numArray[index]);
+                @byte.EndWrite();
+
+                s.WriteObject<GenericGuide>(instance.m_areaNotUnlocked);
+                s.WriteFloat((float)_fieldInfo1.GetValue(instance));
+                s.WriteFloat((float)_fieldInfo2.GetValue(instance));
+                s.WriteFloat((float)_fieldInfo3.GetValue(instance));
+                s.WriteFloat((float)_fieldInfo4.GetValue(instance));
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "GameAreaManager");
+            }
+
+            public void Deserialize(DataSerializer s)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AfterDeserialize(DataSerializer s)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class Data : IDataContainer
+        {
+            public static int[] _loadedGrid;
+
+            public void Serialize(DataSerializer s)
+            {
+                var num = instance.m_areaGrid.Length;
+                var @byte = EncodedArray.Byte.BeginWrite(s);
+                for (var i = 0; i < num; i++)
+                {
+                    @byte.Write((byte)instance.m_areaGrid[i]);
                 }
                 @byte.EndWrite();
             }
 
             public void Deserialize(DataSerializer s)
             {
-                FakeGameAreaManager.areaGrid = new int[FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
-                int num = FakeGameAreaManager.areaGrid.Length;
-
-                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
-                for (int i = 0; i < num; i++)
+                _loadedGrid = new int[GRID * GRID];
+                var @byte = EncodedArray.Byte.BeginRead(s);
+                for (var i = 0; i < _loadedGrid.Length; i++)
                 {
-                    FakeGameAreaManager.areaGrid[i] = (int)@byte.Read();
+                    _loadedGrid[i] = (int)@byte.Read();
                 }
                 @byte.EndRead();
             }
 
             public void AfterDeserialize(DataSerializer s)
             {
-                typeof(GameAreaManager).GetField("m_areasUpdated", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(GameAreaManager.instance, true);
+ 
             }
         }
     }

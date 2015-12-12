@@ -86,7 +86,6 @@ namespace EightyOne
             FakeDistrictManager.OnDestroy();
             FakeWaterManager.OnDestroy();
             FakeElectricityManager.OnDestroy();
-            FakeGameAreaManager.OnDestroy();
         }
     }
 }

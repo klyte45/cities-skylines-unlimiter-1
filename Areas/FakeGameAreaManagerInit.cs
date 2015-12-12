@@ -12,24 +12,30 @@ namespace EightyOne.Areas
         {
             var instance = GameAreaManager.instance;
             instance.m_maxAreaCount = FakeGameAreaManager.GRID * FakeGameAreaManager.GRID;
-            if (FakeGameAreaManager.areaGrid == null)
+            if (FakeGameAreaManager.Data._loadedGrid == null)
             {
-                FakeGameAreaManager.areaGrid = new int[FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
-                for (var i = 0; i < 5; ++i)
+                var areaGrid = new int[FakeGameAreaManager.GRID*FakeGameAreaManager.GRID];
+                for (var i = 0; i < GameAreaManager.AREAGRID_RESOLUTION; ++i)
                 {
-                    for (var j = 0; j < 5; ++j)
+                    for (var j = 0; j < GameAreaManager.AREAGRID_RESOLUTION; ++j)
                     {
-                        FakeGameAreaManager.areaGrid[(i + 2) * FakeGameAreaManager.GRID + (j + 2)] = GameAreaManager.instance.m_areaGrid[i * 5 + j];
+                        areaGrid[(i + 2)*FakeGameAreaManager.GRID + (j + 2)] =
+                            GameAreaManager.instance.m_areaGrid[i*GameAreaManager.AREAGRID_RESOLUTION + j];
                     }
                 }
-                _areasUpdatedField.SetValue(GameAreaManager.instance, true);
+                GameAreaManager.instance.m_areaGrid = areaGrid;
             }
+            else
+            {
+                GameAreaManager.instance.m_areaGrid = FakeGameAreaManager.Data._loadedGrid;
+            }
+            _areasUpdatedField.SetValue(GameAreaManager.instance, true);
             instance.m_areaCount = 0;
             for (var i = 0; i < FakeGameAreaManager.GRID; ++i)
             {
                 for (var j = 0; j < FakeGameAreaManager.GRID; ++j)
                 {
-                    if (FakeGameAreaManager.areaGrid[i * FakeGameAreaManager.GRID + j] > 0)
+                    if (GameAreaManager.instance.m_areaGrid[i * FakeGameAreaManager.GRID + j] > 0)
                     {
                         instance.m_areaCount++;
                     }
@@ -37,10 +43,10 @@ namespace EightyOne.Areas
             }
 
             TerrainManager.instance.m_detailPatchCount = 0;
-            for (int index1 = 0; index1 < 9; ++index1)
+            for (int index1 = 0; index1 < TerrainManager.PATCH_RESOLUTION; ++index1)
             {
-                for (int index2 = 0; index2 < 9; ++index2)
-                    TerrainManager.instance.m_patches[index1 * 9 + index2].m_simDetailIndex = 0;
+                for (int index2 = 0; index2 < TerrainManager.PATCH_RESOLUTION; ++index2)
+                    TerrainManager.instance.m_patches[index1 * TerrainManager.PATCH_RESOLUTION + index2].m_simDetailIndex = 0;
             }
             for (int z2 = 0; z2 < FakeGameAreaManager.GRID; ++z2)
             {
