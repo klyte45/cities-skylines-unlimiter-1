@@ -23,7 +23,7 @@ namespace EightyOne.ResourceManagers
         private static void ApplyBrush(DistrictTool dt, byte district)
         {
             GameAreaManager instance = Singleton<GameAreaManager>.instance;
-            DistrictManager.Cell[] districtGrid = FakeDistrictManager.m_districtGrid;
+            DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
             float num = 19.2f;
             float num2 = dt.m_brushSize * 0.35f + num;
             int num3 = FakeDistrictManager.GRID;
@@ -214,7 +214,7 @@ namespace EightyOne.ResourceManagers
         private static bool ForceDistrictAlpha(int x, int z, byte district, int min, int max)
         {
             
-            DistrictManager.Cell[] districtGrid = FakeDistrictManager.m_districtGrid;
+            DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
             DistrictManager.Cell cell = districtGrid[z * FakeDistrictManager.GRID + x];
             int num2 = Mathf.Clamp(GetAlpha(ref cell, district), min, max);
             DistrictManager.Cell cell2 = default(DistrictManager.Cell);
@@ -232,7 +232,7 @@ namespace EightyOne.ResourceManagers
 
         private static bool SetDistrictAlpha(int x, int z, byte district, int min, int max)
         {            
-            DistrictManager.Cell cell = FakeDistrictManager.m_districtGrid[z * FakeDistrictManager.GRID + x];
+            DistrictManager.Cell cell = FakeDistrictManager.districtGrid[z * FakeDistrictManager.GRID + x];
             if (cell.m_district1 == district)
             {
                 int num2 = Mathf.Clamp((int)cell.m_alpha1, min, max);
@@ -405,7 +405,7 @@ namespace EightyOne.ResourceManagers
         min = 255;
 		max = 0;
         int num = FakeDistrictManager.GRID;
-		DistrictManager.Cell[] districtGrid = FakeDistrictManager.m_districtGrid;
+		DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
 		if (z > 0)
 		{
 			if (x > 0)

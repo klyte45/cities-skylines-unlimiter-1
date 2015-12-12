@@ -39,6 +39,7 @@ namespace EightyOne.Areas
                 throw new Exception("m_unlocking");
             }
 
+            DestroyImmediate((Texture2D)_areaTexField.GetValue(instance));
             var areaTex = new Texture2D(FakeGameAreaManagerUI.AREA_TEX_SIZE, FakeGameAreaManagerUI.AREA_TEX_SIZE, TextureFormat.ARGB32, false, true)
             {
                 filterMode = FilterMode.Point,
@@ -328,7 +329,7 @@ namespace EightyOne.Areas
         }
 
         [TargetType(typeof(GameAreaManager.Data))]
-        public class FakeData : IDataContainer
+        public class FakeData
         {
             private static FieldInfo _startTileField = typeof(GameAreaManager).GetField("m_startTile", BindingFlags.NonPublic | BindingFlags.Instance);
             private static FieldInfo _fieldInfo1 = typeof(GameAreaManager).GetField("m_buildableArea0", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -372,19 +373,9 @@ namespace EightyOne.Areas
                 s.WriteFloat((float)_fieldInfo4.GetValue(instance));
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "GameAreaManager");
             }
-
-            public void Deserialize(DataSerializer s)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void AfterDeserialize(DataSerializer s)
-            {
-                throw new NotImplementedException();
-            }
         }
 
-        public class Data : IDataContainer
+        public new class Data : IDataContainer
         {
             public static int[] _loadedGrid;
 

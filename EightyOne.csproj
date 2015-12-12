@@ -66,6 +66,7 @@
     <Compile Include="Attributes\TargetType.cs" />
     <Compile Include="Detours.cs" />
     <Compile Include="LoadingExtension.cs" />
+    <Compile Include="ResourceManagers\DistrictManagerDataExtension.cs" />
     <Compile Include="ResourceManagers\FakeDistrictTool.cs" />
     <Compile Include="ResourceManagers\FakeElectricityManager.cs" />
     <Compile Include="ResourceManagers\FakeDistrictManager.cs" />
