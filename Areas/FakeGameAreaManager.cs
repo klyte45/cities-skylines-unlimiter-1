@@ -329,7 +329,7 @@ namespace EightyOne.Areas
         }
 
         [TargetType(typeof(GameAreaManager.Data))]
-        public class FakeData
+        public class FakeData : IDataContainer
         {
             private static FieldInfo _startTileField = typeof(GameAreaManager).GetField("m_startTile", BindingFlags.NonPublic | BindingFlags.Instance);
             private static FieldInfo _fieldInfo1 = typeof(GameAreaManager).GetField("m_buildableArea0", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -372,6 +372,48 @@ namespace EightyOne.Areas
                 s.WriteFloat((float)_fieldInfo3.GetValue(instance));
                 s.WriteFloat((float)_fieldInfo4.GetValue(instance));
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "GameAreaManager");
+            }
+
+            [ReplaceMethod(true)]
+            public void Deserialize(DataSerializer s)
+            {
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginDeserialize(s, "GameAreaManager");
+                GameAreaManager instance = Singleton<GameAreaManager>.instance;
+                //begin mod
+                instance.m_areaGrid = new int[AREAGRID_RESOLUTION * AREAGRID_RESOLUTION];
+                //end mod
+                int[] numArray = instance.m_areaGrid;
+                int length = numArray.Length;
+                instance.m_areaCount = (int)s.ReadUInt8();
+                //begin mod
+                instance.m_maxAreaCount = AREAGRID_RESOLUTION * AREAGRID_RESOLUTION;
+                //end mod
+                _startTileField.SetValue(instance, s.version < 137U ? 12 : (int)s.ReadUInt8());
+                EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
+                for (int index = 0; index < length; ++index)
+                    numArray[index] = (int)@byte.Read();
+                @byte.EndRead();
+                instance.m_areaNotUnlocked = s.version < 87U ? (GenericGuide)null : s.ReadObject<GenericGuide>();
+                if (s.version >= 199U)
+                {
+                    _fieldInfo1.SetValue(instance, s.ReadFloat());
+                    _fieldInfo2.SetValue(instance, s.ReadFloat());
+                    _fieldInfo3.SetValue(instance, s.ReadFloat());
+                    _fieldInfo4.SetValue(instance, s.ReadFloat());
+                }
+                else
+                {
+                    _fieldInfo1.SetValue(instance, -1f);
+                    _fieldInfo2.SetValue(instance, -1f);
+                    _fieldInfo3.SetValue(instance, -1f);
+                    _fieldInfo4.SetValue(instance, -1f);
+                }
+                Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "GameAreaManager");
+            }
+
+            public void AfterDeserialize(DataSerializer s)
+            {
+                throw new NotImplementedException();
             }
         }
 

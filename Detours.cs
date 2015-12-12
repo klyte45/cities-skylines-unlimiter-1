@@ -12,10 +12,16 @@ namespace EightyOne
 {
     public static class Detours
     {
-        private static Dictionary<MethodInfo, RedirectCallsState> redirects;
+        private static Dictionary<MethodInfo, RedirectCallsState> redirectsOnLoaded;
+        private static Dictionary<MethodInfo, RedirectCallsState> redirectsOnCreated;
         public static bool IsEnabled;
 
-        public static void Redirect()
+        public static void SetUp()
+        {
+            Redirect(true);
+        }
+
+        public static void Deploy()
         {
             if (IsEnabled)
             {
@@ -30,7 +36,21 @@ namespace EightyOne
             FakeZoneManager.Init();
             FakeZoneTool.Init();
             FakeElectricityManager.Init();
-            redirects = new Dictionary<MethodInfo, RedirectCallsState>();
+            Redirect(false);
+            FakeGameAreaManager.Init();
+        }
+
+        public static void Redirect(bool onCreated)
+        {
+            if (onCreated)
+            {
+                redirectsOnCreated = new Dictionary<MethodInfo, RedirectCallsState>();
+            }
+            else
+            {
+                redirectsOnLoaded = new Dictionary<MethodInfo, RedirectCallsState>();
+            }
+            var redirects = onCreated ? redirectsOnCreated : redirectsOnLoaded;
             foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
             {
                 var customAttributes = type.GetCustomAttributes(typeof(TargetType), false);
@@ -39,36 +59,50 @@ namespace EightyOne
                     continue;
                 }
                 var targetType = ((TargetType)customAttributes[0]).Type;
-                RedirectType(type, targetType);
-
+                foreach (
+                    var method in
+                        type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance |
+                                        BindingFlags.NonPublic)
+                            .Where(method =>
+                            {
+                                var attributes = method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false);
+                                if (attributes.Length != 1)
+                                {
+                                    return false;
+                                }
+                                return ((ReplaceMethodAttribute)attributes[0]).OnCreated == onCreated;
+                            }))
+                {
+                    RedirectMethod(targetType, method, redirects);
+                }
             }
-            FakeGameAreaManager.Init();
         }
 
-        private static void RedirectType(Type type, Type targetType)
-        {
-            foreach (
-                var method in
-                    type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
-                        .Where(method => method.GetCustomAttributes(typeof (ReplaceMethodAttribute), false).Length == 1))
-            {
-                RedirectMethod(targetType, method);
-            }
-        }
-
-        private static void RedirectMethod(Type targetType, MethodInfo detour)
+        private static void RedirectMethod(Type targetType, MethodInfo detour,
+            Dictionary<MethodInfo, RedirectCallsState> redirects)
         {
             var parameters = detour.GetParameters();
-
             Type[] types;
-            if (parameters.Length > 0 && (parameters[0].ParameterType == targetType || parameters[0].ParameterType == targetType.MakeByRefType()))
+            if (parameters.Length > 0 &&
+                (parameters[0].ParameterType == targetType || parameters[0].ParameterType == targetType.MakeByRefType()))
                 types = parameters.Skip(1).Select(p => p.ParameterType).ToArray();
             else
                 types = parameters.Select(p => p.ParameterType).ToArray();
 
-            var originalMethod = targetType.GetMethod(detour.Name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types, null);
-
+            var originalMethod = targetType.GetMethod(detour.Name,
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types,
+                null);
             redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, detour));
+        }
+
+        private static void RevertRedirect(bool onCreated)
+        {
+            var redirects = onCreated ? redirectsOnCreated : redirectsOnLoaded;
+            foreach (var kvp in redirects)
+            {
+                RedirectionHelper.RevertRedirect(kvp.Key, kvp.Value);
+            }
+            redirects.Clear();
         }
 
         public static void Revert()
@@ -78,14 +112,16 @@ namespace EightyOne
                 return;
             }
             IsEnabled = false;
-            foreach (var kvp in redirects)
-            {
-                RedirectionHelper.RevertRedirect(kvp.Key, kvp.Value);
-            }
+            RevertRedirect(false);
             FakeImmaterialResourceManager.OnDestroy();
             FakeDistrictManager.OnDestroy();
             FakeWaterManager.OnDestroy();
             FakeElectricityManager.OnDestroy();
+        }
+
+        public static void TearDown()
+        {
+            RevertRedirect(true);
         }
     }
 }

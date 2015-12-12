@@ -7,6 +7,12 @@ namespace EightyOne
     {
         private const string CheatGameObject = "UnlockAllCheat";
 
+        public override void OnCreated(ILoading loading)
+        {
+            base.OnCreated(loading);
+            Detours.SetUp();
+        }
+
         public override void OnLevelLoaded(LoadMode mode)
         {
             if (mode != LoadMode.NewGame && mode != LoadMode.LoadGame)
@@ -15,7 +21,7 @@ namespace EightyOne
             }
             var cheat = new GameObject(CheatGameObject);
             cheat.AddComponent<UnlockAllCheat>();
-            Detours.Redirect();
+            Detours.Deploy();
             SimulationManager.instance.AddAction(() => Object.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 2800f);
             SimulationManager.instance.AddAction(() => Object.FindObjectOfType<FogEffect>().m_edgeFogDistance = 2800f);
         }
@@ -28,6 +34,12 @@ namespace EightyOne
             {
                 Object.Destroy(cheat);
             }
+        }
+
+        public override void OnReleased()
+        {
+            base.OnReleased();
+            Detours.TearDown();
         }
     }
 }

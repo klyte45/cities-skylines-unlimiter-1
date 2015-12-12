@@ -14,13 +14,13 @@ namespace EightyOne.Areas
             instance.m_maxAreaCount = FakeGameAreaManager.GRID * FakeGameAreaManager.GRID;
             if (FakeGameAreaManager.Data._loadedGrid == null)
             {
-                var areaGrid = new int[FakeGameAreaManager.GRID*FakeGameAreaManager.GRID];
+                var areaGrid = new int[FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
                 for (var i = 0; i < GameAreaManager.AREAGRID_RESOLUTION; ++i)
                 {
                     for (var j = 0; j < GameAreaManager.AREAGRID_RESOLUTION; ++j)
                     {
-                        areaGrid[(i + 2)*FakeGameAreaManager.GRID + (j + 2)] =
-                            GameAreaManager.instance.m_areaGrid[i*GameAreaManager.AREAGRID_RESOLUTION + j];
+                        areaGrid[(i + 2) * FakeGameAreaManager.GRID + (j + 2)] =
+                            GameAreaManager.instance.m_areaGrid[i * GameAreaManager.AREAGRID_RESOLUTION + j];
                     }
                 }
                 GameAreaManager.instance.m_areaGrid = areaGrid;
@@ -29,6 +29,7 @@ namespace EightyOne.Areas
             {
                 GameAreaManager.instance.m_areaGrid = FakeGameAreaManager.Data._loadedGrid;
             }
+            FakeGameAreaManager.Data._loadedGrid = null;
             _areasUpdatedField.SetValue(GameAreaManager.instance, true);
             instance.m_areaCount = 0;
             for (var i = 0; i < FakeGameAreaManager.GRID; ++i)
