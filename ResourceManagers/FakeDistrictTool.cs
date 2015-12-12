@@ -8,7 +8,7 @@ using EightyOne.Attributes;
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(DistrictTool))]
-    class FakeDistrictTool
+    class FakeDistrictTool : DistrictTool
     {
         private static FieldInfo m_lastPaintPosition;
         private static FieldInfo m_mousePosition;
@@ -20,16 +20,18 @@ namespace EightyOne.ResourceManagers
         }
 
         [ReplaceMethod]
-        private static void ApplyBrush(DistrictTool dt, byte district)
+        private void ApplyBrush(byte district)
         {
             GameAreaManager instance = Singleton<GameAreaManager>.instance;
+            //begin mod
             DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
+            //end mod
             float num = 19.2f;
-            float num2 = dt.m_brushSize * 0.35f + num;
+            float num2 = this.m_brushSize * 0.35f + num;
             int num3 = FakeDistrictManager.GRID;
 
-            Vector3 vector = (Vector3)m_lastPaintPosition.GetValue(dt);
-            Vector3 mousePosition = (Vector3)m_mousePosition.GetValue(dt);
+            Vector3 vector = (Vector3)m_lastPaintPosition.GetValue(this);
+            Vector3 mousePosition = (Vector3)m_mousePosition.GetValue(this);
             if (vector.x < -50000f)
             {
                 vector = mousePosition;
@@ -60,7 +62,7 @@ namespace EightyOne.ResourceManagers
                         float num14 = Mathf.Clamp01(-num13 / (num * 2f));
                         if (num14 != 0f)
                         {
-                            int min = Mathf.Clamp((int)(256f * num14), 0, 255);
+                            int min = Mathf.Clamp((int)(256f * num14), 0, 255); //TODO(earalov): should that 256f be replaced with HALFGRID?
                             bool flag;
                             if (num12 > 1f && district != 0)
                             {
@@ -211,11 +213,13 @@ namespace EightyOne.ResourceManagers
             Singleton<DistrictManager>.instance.m_districtsNotUsed.Disable();
         }
 
+        [ReplaceMethod]
         private static bool ForceDistrictAlpha(int x, int z, byte district, int min, int max)
         {
-            
+            //begin mod
             DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
             DistrictManager.Cell cell = districtGrid[z * FakeDistrictManager.GRID + x];
+            //end mod
             int num2 = Mathf.Clamp(GetAlpha(ref cell, district), min, max);
             DistrictManager.Cell cell2 = default(DistrictManager.Cell);
             cell2.m_district1 = district;
@@ -230,9 +234,12 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
+        [ReplaceMethod]
         private static bool SetDistrictAlpha(int x, int z, byte district, int min, int max)
-        {            
+        {
+            //begin mod         
             DistrictManager.Cell cell = FakeDistrictManager.districtGrid[z * FakeDistrictManager.GRID + x];
+            //end mod
             if (cell.m_district1 == district)
             {
                 int num2 = Mathf.Clamp((int)cell.m_alpha1, min, max);
@@ -340,6 +347,7 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
+        //no changes
         private static void Normalize(ref DistrictManager.Cell cell, int ignoreIndex)
         {
             int num = 0;
@@ -400,69 +408,74 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        [ReplaceMethod]
         private static void CheckNeighbourCells(int x, int z, byte district, out int min, out int max)
-	{
-        min = 255;
-		max = 0;
-        int num = FakeDistrictManager.GRID;
-		DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
-		if (z > 0)
-		{
-			if (x > 0)
-			{
-				DistrictManager.Cell cell = districtGrid[(z - 1) * num + x - 1];
-				int alpha = GetAlpha(ref cell, district);
-				min = Mathf.Min(min, alpha);
-				max = Mathf.Max(max, alpha);
-			}
-			DistrictManager.Cell cell2 = districtGrid[(z - 1) * num + x];
-			int alpha2 = GetAlpha(ref cell2, district);
-			min = Mathf.Min(min, alpha2);
-			max = Mathf.Max(max, alpha2);
-			if (x < num - 1)
-			{
-				DistrictManager.Cell cell3 = districtGrid[(z - 1) * num + x + 1];
-				int alpha3 = GetAlpha(ref cell3, district);
-				min = Mathf.Min(min, alpha3);
-				max = Mathf.Max(max, alpha3);
-			}
-		}
-		if (x > 0)
-		{
-			DistrictManager.Cell cell4 = districtGrid[z * num + x - 1];
-			int alpha4 = GetAlpha(ref cell4, district);
-			min = Mathf.Min(min, alpha4);
-			max = Mathf.Max(max, alpha4);
-		}
-		if (x < num - 1)
-		{
-			DistrictManager.Cell cell5 = districtGrid[z * num + x + 1];
-			int alpha5 = GetAlpha(ref cell5, district);
-			min = Mathf.Min(min, alpha5);
-			max = Mathf.Max(max, alpha5);
-		}
-		if (z < num - 1)
-		{
-			if (x > 0)
-			{
-				DistrictManager.Cell cell6 = districtGrid[(z + 1) * num + x - 1];
-				int alpha6 = GetAlpha(ref cell6, district);
-				min = Mathf.Min(min, alpha6);
-				max = Mathf.Max(max, alpha6);
-			}
-			DistrictManager.Cell cell7 = districtGrid[(z + 1) * num + x];
-			int alpha7 = GetAlpha(ref cell7, district);
-			min = Mathf.Min(min, alpha7);
-			max = Mathf.Max(max, alpha7);
-			if (x < num - 1)
-			{
-				DistrictManager.Cell cell8 = districtGrid[(z + 1) * num + x + 1];
-				int alpha8 = GetAlpha(ref cell8, district);
-				min = Mathf.Min(min, alpha8);
-				max = Mathf.Max(max, alpha8);
-			}
-		}
-	}
+        {
+            min = 255;
+            max = 0;
+            //begin mod
+            int num = FakeDistrictManager.GRID;
+            DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
+            //end mod
+            if (z > 0)
+            {
+                if (x > 0)
+                {
+                    DistrictManager.Cell cell = districtGrid[(z - 1) * num + x - 1];
+                    int alpha = GetAlpha(ref cell, district);
+                    min = Mathf.Min(min, alpha);
+                    max = Mathf.Max(max, alpha);
+                }
+                DistrictManager.Cell cell2 = districtGrid[(z - 1) * num + x];
+                int alpha2 = GetAlpha(ref cell2, district);
+                min = Mathf.Min(min, alpha2);
+                max = Mathf.Max(max, alpha2);
+                if (x < num - 1)
+                {
+                    DistrictManager.Cell cell3 = districtGrid[(z - 1) * num + x + 1];
+                    int alpha3 = GetAlpha(ref cell3, district);
+                    min = Mathf.Min(min, alpha3);
+                    max = Mathf.Max(max, alpha3);
+                }
+            }
+            if (x > 0)
+            {
+                DistrictManager.Cell cell4 = districtGrid[z * num + x - 1];
+                int alpha4 = GetAlpha(ref cell4, district);
+                min = Mathf.Min(min, alpha4);
+                max = Mathf.Max(max, alpha4);
+            }
+            if (x < num - 1)
+            {
+                DistrictManager.Cell cell5 = districtGrid[z * num + x + 1];
+                int alpha5 = GetAlpha(ref cell5, district);
+                min = Mathf.Min(min, alpha5);
+                max = Mathf.Max(max, alpha5);
+            }
+            if (z < num - 1)
+            {
+                if (x > 0)
+                {
+                    DistrictManager.Cell cell6 = districtGrid[(z + 1) * num + x - 1];
+                    int alpha6 = GetAlpha(ref cell6, district);
+                    min = Mathf.Min(min, alpha6);
+                    max = Mathf.Max(max, alpha6);
+                }
+                DistrictManager.Cell cell7 = districtGrid[(z + 1) * num + x];
+                int alpha7 = GetAlpha(ref cell7, district);
+                min = Mathf.Min(min, alpha7);
+                max = Mathf.Max(max, alpha7);
+                if (x < num - 1)
+                {
+                    DistrictManager.Cell cell8 = districtGrid[(z + 1) * num + x + 1];
+                    int alpha8 = GetAlpha(ref cell8, district);
+                    min = Mathf.Min(min, alpha8);
+                    max = Mathf.Max(max, alpha8);
+                }
+            }
+        }
+
+        //no changes
         private static int GetAlpha(ref DistrictManager.Cell cell, byte district)
         {
             if (cell.m_district1 == district)
