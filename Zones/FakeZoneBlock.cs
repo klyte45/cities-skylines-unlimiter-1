@@ -9,16 +9,15 @@ namespace EightyOne.Zones
 {
 
     [TargetType(typeof(ZoneBlock))]
-    internal class FakeZoneBlock
+    internal struct FakeZoneBlock
     {
         private static readonly MethodInfo _CheckBlock = typeof(ZoneBlock).GetMethod("CheckBlock", BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly MethodInfo _IsGoodPlace = typeof(ZoneBlock).GetMethod("IsGoodPlace", BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly MethodInfo _CalculateImplementation2 = typeof(ZoneBlock).GetMethod("CalculateImplementation2", BindingFlags.NonPublic | BindingFlags.Instance);
 
         [ReplaceMethod]
-        public void CalculateBlock2(ushort blockID)
+        public static void CalculateBlock2(ref ZoneBlock block, ushort blockID)
         {
-            var block = ZoneManager.instance.m_blocks.m_buffer[blockID]; //instead of `this`
             if (((int)block.m_flags & 3) != 1)
                 return;
             int rowCount = block.RowCount;
@@ -74,7 +73,6 @@ namespace EightyOne.Zones
             }
             block.m_valid = valid;
             block.m_shared = shared;
-            ZoneManager.instance.m_blocks.m_buffer[blockID] = block;
         }
 
 
@@ -93,11 +91,9 @@ namespace EightyOne.Zones
 
 
         [ReplaceMethod]
-        public void SimulationStep(ushort blockID)
+        public static void SimulationStep(ref ZoneBlock block, ushort blockID)
         {
             ZoneManager instance1 = Singleton<ZoneManager>.instance;
-            var block = instance1.m_blocks.m_buffer[blockID]; //instead of `this`
-
             int rowCount = block.RowCount;
             Vector2 xDir = new Vector2(Mathf.Cos(block.m_angle), Mathf.Sin(block.m_angle)) * 8f;
             Vector2 zDir = new Vector2(xDir.y, -xDir.x);
@@ -134,7 +130,6 @@ namespace EightyOne.Zones
                     num2 = instance1.m_actualWorkplaceDemand + instance2.m_districts.m_buffer[(int)district1].CalculateOfficeDemandOffset();
                     break;
                 default:
-                    instance1.m_blocks.m_buffer[blockID] = block;
                     return;
             }
             Vector2 vector2_1 = VectorUtils.XZ(block.m_position);
@@ -205,7 +200,6 @@ namespace EightyOne.Zones
             {
                 if (!flag3)
                 {
-                    instance1.m_blocks.m_buffer[blockID] = block;
                     return;
                 }
                 instance1.m_goodAreaFound[(int)zone] = (short)1024;
@@ -214,7 +208,6 @@ namespace EightyOne.Zones
             {
                 if ((int) instance1.m_goodAreaFound[(int) zone] != 0)
                 {
-                    instance1.m_blocks.m_buffer[blockID] = block;
                     return;
                 }
                 instance1.m_goodAreaFound[(int)zone] = (short)-1;
@@ -471,7 +464,6 @@ namespace EightyOne.Zones
                         subService = ItemClass.SubService.None;
                         break;
                     default:
-                        instance1.m_blocks.m_buffer[blockID] = block;
                         return;
                 }
                 BuildingInfo info = (BuildingInfo)null;
@@ -558,7 +550,6 @@ namespace EightyOne.Zones
                 if (info == null ||
                     (double) Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double) vector3.y)
                 {
-                    instance1.m_blocks.m_buffer[blockID] = block;
                     return;
                 }
                 float angle = block.m_angle + 1.570796f;
@@ -601,7 +592,6 @@ namespace EightyOne.Zones
                 }
                 instance1.m_goodAreaFound[(int)zone] = (short)1024;
             }
-            instance1.m_blocks.m_buffer[blockID] = block;
         }
     }
 }
