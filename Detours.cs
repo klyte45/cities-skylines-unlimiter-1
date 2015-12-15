@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using EightyOne.Areas;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 using EightyOne.ResourceManagers;
 using EightyOne.Terrain;
 using EightyOne.Zones;
@@ -65,34 +65,18 @@ namespace EightyOne
                                         BindingFlags.NonPublic)
                             .Where(method =>
                             {
-                                var attributes = method.GetCustomAttributes(typeof(ReplaceMethodAttribute), false);
+                                var attributes = method.GetCustomAttributes(typeof(RedirectMethodAttribute), false);
                                 if (attributes.Length != 1)
                                 {
                                     return false;
                                 }
-                                return ((ReplaceMethodAttribute)attributes[0]).OnCreated == onCreated;
+                                return ((RedirectMethodAttribute)attributes[0]).OnCreated == onCreated;
                             }))
                 {
-                    RedirectMethod(targetType, method, redirects);
+                    var tuple = RedirectionUtil.RedirectMethod(targetType, method);
+                    redirects.Add(tuple.First, tuple.Second);
                 }
             }
-        }
-
-        private static void RedirectMethod(Type targetType, MethodInfo detour,
-            Dictionary<MethodInfo, RedirectCallsState> redirects)
-        {
-            var parameters = detour.GetParameters();
-            Type[] types;
-            if (parameters.Length > 0 &&
-                (parameters[0].ParameterType == targetType || parameters[0].ParameterType == targetType.MakeByRefType()))
-                types = parameters.Skip(1).Select(p => p.ParameterType).ToArray();
-            else
-                types = parameters.Select(p => p.ParameterType).ToArray();
-
-            var originalMethod = targetType.GetMethod(detour.Name,
-                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static, null, types,
-                null);
-            redirects.Add(originalMethod, RedirectionHelper.RedirectCalls(originalMethod, detour));
         }
 
         private static void RevertRedirect(bool onCreated)

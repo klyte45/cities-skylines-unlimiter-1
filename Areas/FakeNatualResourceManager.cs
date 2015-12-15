@@ -1,11 +1,11 @@
-﻿using EightyOne.Attributes;
+﻿using EightyOne.Redirection;
 
 namespace EightyOne.Areas
 {
     [TargetType(typeof(NaturalResourceManager))]
     class FakeNatualResourceManager
     {
-        [ReplaceMethod]
+        [RedirectMethod]
         public void GetTileResources(int x, int z, out uint ore, out uint oil, out uint forest, out uint fertility, out uint water)
         {
             //begin mod
@@ -19,7 +19,7 @@ namespace EightyOne.Areas
             this.GetTileResourcesImpl(x + num, z + num, ref ore, ref oil, ref forest, ref fertility, ref water);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void GetTileResourcesImpl(int x, int z, ref uint ore, ref uint oil, ref uint forest, ref uint fertility, ref uint water)
         {
             //begin mod

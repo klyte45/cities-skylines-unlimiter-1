@@ -4,7 +4,7 @@ using ColossalFramework.Globalization;
 using ColossalFramework.UI;
 using System.Reflection;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Areas
 {
@@ -84,7 +84,7 @@ namespace EightyOne.Areas
             m_OutPlane = m_Plane.Find<UISprite>("Outgoing");
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void ShowInternal(int areaIndex)
         {
             if (_areaIndexField == null)
@@ -137,7 +137,7 @@ namespace EightyOne.Areas
             UpdatePanel();
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void UpdatePanel()
         {
             if (_areaIndexField == null)

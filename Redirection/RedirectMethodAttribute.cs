@@ -1,16 +1,16 @@
 ﻿using System;
 
-namespace EightyOne.Attributes
+namespace EightyOne.Redirection
 {
     [AttributeUsage(AttributeTargets.Method)]
-    internal class ReplaceMethodAttribute : Attribute
+    internal class RedirectMethodAttribute : Attribute
     {
-        public ReplaceMethodAttribute()
+        public RedirectMethodAttribute()
         {
             this.OnCreated = false;
         }
 
-        public ReplaceMethodAttribute(bool onCreated)
+        public RedirectMethodAttribute(bool onCreated)
         {
             this.OnCreated = onCreated;
         }

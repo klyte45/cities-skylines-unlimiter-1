@@ -1,9 +1,9 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using UnityEngine;
-using EightyOne.Attributes;
 using System;
 using System.Reflection;
+using EightyOne.Redirection;
 
 namespace EightyOne.Zones
 {
@@ -15,7 +15,7 @@ namespace EightyOne.Zones
         private static readonly MethodInfo _IsGoodPlace = typeof(ZoneBlock).GetMethod("IsGoodPlace", BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly MethodInfo _CalculateImplementation2 = typeof(ZoneBlock).GetMethod("CalculateImplementation2", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public static void CalculateBlock2(ref ZoneBlock block, ushort blockID)
         {
             if (((int)block.m_flags & 3) != 1)
@@ -90,7 +90,7 @@ namespace EightyOne.Zones
         }
 
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public static void SimulationStep(ref ZoneBlock block, ushort blockID)
         {
             ZoneManager instance1 = Singleton<ZoneManager>.instance;

@@ -2,9 +2,10 @@
 using ColossalFramework.IO;
 using System.Reflection;
 using System.Threading;
+using ColossalFramework.UI;
 using EightyOne.Areas;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.ResourceManagers
 {
@@ -143,6 +144,8 @@ namespace EightyOne.ResourceManagers
         private static FieldInfo namesModifiedField;
         private static FieldInfo areaMaterialField;
         private static FieldInfo highlightPolicyField;
+        private static FieldInfo nameMeshField;
+        private static FieldInfo iconMeshField;
 
         private static int ID_Districts1;
         private static int ID_Districts2;
@@ -181,6 +184,7 @@ namespace EightyOne.ResourceManagers
 
         public static void Init()
         {
+            var districtManager = DistrictManager.instance;
             if (districtGrid == null)
             {
                 districtGrid = new DistrictManager.Cell[GRID * GRID];
@@ -195,8 +199,7 @@ namespace EightyOne.ResourceManagers
                     districtGrid[i].m_alpha3 = 0;
                     districtGrid[i].m_alpha4 = 0;
                 }
-
-                var oldGrid = DistrictManager.instance.m_districtGrid;
+                var oldGrid = districtManager.m_districtGrid;
                 int diff = (GRID - DISTRICTGRID_RESOLUTION) / 2;
                 for (var i = 0; i < DISTRICTGRID_RESOLUTION; i += 1)
                 {
@@ -220,6 +223,8 @@ namespace EightyOne.ResourceManagers
             namesModifiedField = typeof(DistrictManager).GetField("m_namesModified", BindingFlags.Instance | BindingFlags.NonPublic);
             areaMaterialField = typeof(DistrictManager).GetField("m_areaMaterial", BindingFlags.Instance | BindingFlags.NonPublic);
             highlightPolicyField = typeof(DistrictManager).GetField("m_highlightPolicy", BindingFlags.Instance | BindingFlags.NonPublic);
+            nameMeshField = typeof(DistrictManager).GetField("m_nameMesh", BindingFlags.Instance | BindingFlags.NonPublic);
+            iconMeshField = typeof(DistrictManager).GetField("m_iconMesh", BindingFlags.Instance | BindingFlags.NonPublic);
 
             districtTexture1 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
@@ -230,9 +235,21 @@ namespace EightyOne.ResourceManagers
             ID_DistrictMapping = Shader.PropertyToID("_DistrictMapping");
             ID_Highlight1 = Shader.PropertyToID("_Highlight1");
             ID_Highlight2 = Shader.PropertyToID("_Highlight2");
+
+            SimulationManager.instance.AddAction(() =>
+            {
+                nameMeshField.SetValue(districtManager, null);
+                iconMeshField.SetValue(districtManager, null);
+                modifiedX1Field.SetValue(districtManager, 0);
+                modifiedZ1Field.SetValue(districtManager, 0);
+                modifiedX2Field.SetValue(districtManager, GRID);
+                modifiedZ2Field.SetValue(districtManager, GRID);
+                fullUpdateField.SetValue(districtManager, true);
+                districtManager.NamesModified();
+            });
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void set_HighlightPolicy(DistrictPolicies.Policies value)
         {
             if (value == (DistrictPolicies.Policies)highlightPolicyField.GetValue(this))
@@ -243,7 +260,7 @@ namespace EightyOne.ResourceManagers
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         protected override void BeginOverlayImpl(RenderManager.CameraInfo cameraInfo)
         {
             var areaMaterial = (Material)areaMaterialField.GetValue(this);
@@ -278,7 +295,136 @@ namespace EightyOne.ResourceManagers
             Singleton<RenderManager>.instance.OverlayEffect.DrawEffect(cameraInfo, areaMaterial, 0, bounds);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
+        private void UpdateNames()
+        {
+            UIFontManager.Invalidate(this.m_properties.m_areaNameFont);
+            namesModifiedField.SetValue(this, false);
+            UIRenderData destination = UIRenderData.Obtain();
+            UIRenderData uiRenderData = UIRenderData.Obtain();
+            try
+            {
+                destination.Clear();
+                uiRenderData.Clear();
+                PoolList<Vector3> vertices1 = uiRenderData.vertices;
+                PoolList<Vector3> normals1 = uiRenderData.normals;
+                PoolList<Color32> colors1 = uiRenderData.colors;
+                PoolList<Vector2> uvs1 = uiRenderData.uvs;
+                PoolList<int> triangles1 = uiRenderData.triangles;
+                PoolList<Vector3> vertices2 = destination.vertices;
+                PoolList<Vector3> normals2 = destination.normals;
+                PoolList<Color32> colors2 = destination.colors;
+                PoolList<Vector2> uvs2 = destination.uvs;
+                PoolList<int> triangles2 = destination.triangles;
+                for (int district = 1; district < 128; ++district)
+                {
+                    if (this.m_districts.m_buffer[district].m_flags != District.Flags.None)
+                    {
+                        string text = this.GetDistrictName(district) + "\n";
+                        PositionData<DistrictPolicies.Policies>[] orderedEnumData = Utils.GetOrderedEnumData<DistrictPolicies.Policies>();
+                        for (int index = 0; index < orderedEnumData.Length; ++index)
+                        {
+                            if (this.IsDistrictPolicySet(orderedEnumData[index].enumValue, (byte)district))
+                            {
+                                string str = "IconPolicy" + orderedEnumData[index].enumName;
+                                text = text + "<sprite " + str + "> ";
+                            }
+                        }
+                        if (text != null)
+                        {
+                            int count1 = normals2.Count;
+                            int count2 = normals1.Count;
+                            using (UIFontRenderer uiFontRenderer = this.m_properties.m_areaNameFont.ObtainRenderer())
+                            {
+                                UIDynamicFont.DynamicFontRenderer dynamicFontRenderer = uiFontRenderer as UIDynamicFont.DynamicFontRenderer;
+                                if (dynamicFontRenderer != null)
+                                {
+                                    dynamicFontRenderer.spriteAtlas = this.m_properties.m_areaIconAtlas;
+                                    dynamicFontRenderer.spriteBuffer = uiRenderData;
+                                }
+                                uiFontRenderer.defaultColor = new Color32(byte.MaxValue, byte.MaxValue, byte.MaxValue, (byte)64);
+                                uiFontRenderer.textScale = 2f;
+                                uiFontRenderer.pixelRatio = 1f;
+                                uiFontRenderer.processMarkup = true;
+                                uiFontRenderer.multiLine = true;
+                                uiFontRenderer.wordWrap = true;
+                                uiFontRenderer.textAlign = UIHorizontalAlignment.Center;
+                                uiFontRenderer.maxSize = new Vector2(450f, 900f);
+                                uiFontRenderer.shadow = false;
+                                uiFontRenderer.shadowColor = (Color32)Color.black;
+                                uiFontRenderer.shadowOffset = Vector2.one;
+                                Vector2 vector2 = uiFontRenderer.MeasureString(text);
+                                this.m_districts.m_buffer[district].m_nameSize = vector2;
+                                vertices2.Add(new Vector3(-vector2.x, -vector2.y, 1f));
+                                vertices2.Add(new Vector3(-vector2.x, vector2.y, 1f));
+                                vertices2.Add(new Vector3(vector2.x, vector2.y, 1f));
+                                vertices2.Add(new Vector3(vector2.x, -vector2.y, 1f));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                uvs2.Add(new Vector2(-1f, -1f));
+                                uvs2.Add(new Vector2(-1f, 1f));
+                                uvs2.Add(new Vector2(1f, 1f));
+                                uvs2.Add(new Vector2(1f, -1f));
+                                triangles2.Add(vertices2.Count - 4);
+                                triangles2.Add(vertices2.Count - 3);
+                                triangles2.Add(vertices2.Count - 1);
+                                triangles2.Add(vertices2.Count - 1);
+                                triangles2.Add(vertices2.Count - 3);
+                                triangles2.Add(vertices2.Count - 2);
+                                uiFontRenderer.vectorOffset = new Vector3(-225f, vector2.y * 0.5f, 0.0f);
+                                uiFontRenderer.Render(text, destination);
+                            }
+                            int count3 = vertices2.Count;
+                            int count4 = normals2.Count;
+                            Vector3 vector3 = this.m_districts.m_buffer[district].m_nameLocation;
+                            for (int index = count1; index < count4; ++index)
+                                normals2[index] = vector3;
+                            for (int index = count4; index < count3; ++index)
+                                normals2.Add(vector3);
+                            int count5 = vertices1.Count;
+                            int count6 = normals1.Count;
+                            for (int index = count2; index < count6; ++index)
+                                normals1[index] = vector3;
+                            for (int index = count6; index < count5; ++index)
+                                normals1.Add(vector3);
+                        }
+                    }
+                }
+                if ((Mesh)nameMeshField.GetValue(this) == null)
+                    nameMeshField.SetValue(this, new Mesh());
+                var nameMesh = (Mesh) nameMeshField.GetValue(this);
+                nameMesh.Clear();
+                nameMesh.vertices = vertices2.ToArray();
+                nameMesh.normals = normals2.ToArray();
+                nameMesh.colors32 = colors2.ToArray();
+                nameMesh.uv = uvs2.ToArray();
+                nameMesh.triangles = triangles2.ToArray();
+                //begin mod
+                nameMesh.bounds = new Bounds(Vector3.zero, new Vector3(GRID * 19.2f, 1024f, GRID * 19.2f));
+                //end mod
+                if ((Mesh)iconMeshField.GetValue(this) == null)
+                    iconMeshField.SetValue(this, new Mesh());
+                var iconMesh = (Mesh)iconMeshField.GetValue(this);
+                iconMesh.Clear();
+                iconMesh.vertices = vertices1.ToArray();
+                iconMesh.normals = normals1.ToArray();
+                iconMesh.colors32 = colors1.ToArray();
+                iconMesh.uv = uvs1.ToArray();
+                iconMesh.triangles = triangles1.ToArray();
+                //begin mod
+                iconMesh.bounds = new Bounds(Vector3.zero, new Vector3(GRID * 19.2f, 1024f, GRID * 19.2f));
+                //end mod
+            }
+            finally
+            {
+                destination.Release();
+                uiRenderData.Release();
+            }
+        }
+
+        [RedirectMethod]
         private void UpdateTexture()
         {
             var modifyLock = modifyLockField.GetValue(this);
@@ -452,7 +598,7 @@ namespace EightyOne.ResourceManagers
                 color2.a = (byte)Mathf.Min((int)color2.a, (int)byte.MaxValue - (int)alpha);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new void NamesModified()
         {
             //begin mod
@@ -571,7 +717,7 @@ namespace EightyOne.ResourceManagers
             namesModifiedField.SetValue(this, true);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new void GetDistrictArea(byte district, out int minX, out int minZ, out int maxX, out int maxZ)
         {
             minX = 10000;
@@ -634,7 +780,7 @@ namespace EightyOne.ResourceManagers
         }
 
         //TODO(earalov): make sure this method doesn't get inlined
-        [ReplaceMethod]
+        [RedirectMethod]
         public new byte GetDistrict(int x, int z)
         {
             //begin mod
@@ -642,7 +788,7 @@ namespace EightyOne.ResourceManagers
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public byte GetDistrict(Vector3 worldPos)
         {
             //begin mod
@@ -653,7 +799,7 @@ namespace EightyOne.ResourceManagers
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new byte SampleDistrict(Vector3 worldPos)
         {
             //begin mod
@@ -747,7 +893,7 @@ namespace EightyOne.ResourceManagers
                 b7 = Mathf.Min(b7, 128 - alpha);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void ModifyCell(int x, int z, DistrictManager.Cell cell)
         {
             if ((int)cell.m_alpha2 > (int)cell.m_alpha1)

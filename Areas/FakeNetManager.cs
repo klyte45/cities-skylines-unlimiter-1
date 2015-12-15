@@ -1,6 +1,6 @@
 ﻿using ColossalFramework;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Areas
 {
@@ -26,7 +26,7 @@ namespace EightyOne.Areas
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void AddTileNode(Vector3 position, ItemClass.Service service, ItemClass.SubService subService)
         {
             int publicServiceIndex = ItemClass.GetPublicServiceIndex(service);
@@ -42,7 +42,7 @@ namespace EightyOne.Areas
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int GetTileNodeCount(int x, int z, ItemClass.Service service, ItemClass.SubService subService)
         {
             int publicServiceIndex = ItemClass.GetPublicServiceIndex(service);
@@ -60,7 +60,8 @@ namespace EightyOne.Areas
                     {
                         Init();
                     }
-                    return m_tileNodesCount[publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 12)];
+                    var index0 = publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 12);
+                    return m_tileNodesCount[index0];
                     //end mod
                 }
             }

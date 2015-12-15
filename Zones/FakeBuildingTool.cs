@@ -3,7 +3,7 @@ using ColossalFramework.Math;
 using System;
 using System.Reflection;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Zones
 {
@@ -59,7 +59,7 @@ namespace EightyOne.Zones
 
 
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public override void SimulationStep()
         {
             //begin mod

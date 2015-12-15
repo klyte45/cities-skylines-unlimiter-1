@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EightyOne</RootNamespace>
-    <AssemblyName>EightyOne</AssemblyName>
+    <AssemblyName>81Tiles_BP</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -31,7 +31,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\EightyOne.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\81Tiles_BP.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -62,10 +62,12 @@
     <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="Areas\AreaManagerDataExtension.cs" />
-    <Compile Include="Attributes\ReplaceMethodAttribute.cs" />
-    <Compile Include="Attributes\TargetType.cs" />
+    <Compile Include="Redirection\RedirectMethodAttribute.cs" />
+    <Compile Include="Redirection\TargetType.cs" />
     <Compile Include="Detours.cs" />
     <Compile Include="LoadingExtension.cs" />
+    <Compile Include="Redirection\RedirectionUtil.cs" />
+    <Compile Include="Redirection\Tuple.cs" />
     <Compile Include="ResourceManagers\DistrictManagerDataExtension.cs" />
     <Compile Include="ResourceManagers\FakeDistrictTool.cs" />
     <Compile Include="ResourceManagers\FakeElectricityManager.cs" />
@@ -82,9 +84,10 @@
     <Compile Include="Zones\FakeZoneManager.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RedirectionHelper.cs" />
+    <Compile Include="Redirection\RedirectionHelper.cs" />
     <Compile Include="Zones\FakeZoneTool.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>mkdir "%25LOCALAPPDATA%25\Colossal Order\Cities_Skylines\Addons\Mods\$(ProjectName)"

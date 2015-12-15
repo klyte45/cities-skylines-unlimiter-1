@@ -1,6 +1,6 @@
 ﻿using EightyOne.Areas;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Terrain
 {
@@ -26,7 +26,7 @@ namespace EightyOne.Terrain
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public float GetTileFlatness(int x, int z)
         {
             //begin mod
@@ -34,7 +34,7 @@ namespace EightyOne.Terrain
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public TerrainManager.SurfaceCell GetSurfaceCell(int x, int z)
         {
             //begin mod

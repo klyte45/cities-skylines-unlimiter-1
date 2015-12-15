@@ -7,8 +7,8 @@
 
 using ColossalFramework;
 using ColossalFramework.UI;
-using EightyOne.Attributes;
 using System.Reflection;
+using EightyOne.Redirection;
 using UnityEngine;
 
 namespace EightyOne.Areas
@@ -19,7 +19,7 @@ namespace EightyOne.Areas
         //TODO(earalov): validate this field in a init method
         private static FieldInfo _mouseAreaIndexField = typeof(GameAreaTool).GetField("m_mouseAreaIndex", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        [ReplaceMethod]
+        [RedirectMethod]
         protected override void OnToolGUI()
         {
             ToolController toolController = ToolsModifierControl.toolController;

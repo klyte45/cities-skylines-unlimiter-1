@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EightyOne.Attributes
+namespace EightyOne.Redirection
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class TargetType : Attribute

@@ -6,7 +6,7 @@ using ColossalFramework.IO;
 using ColossalFramework.Steamworks;
 using ColossalFramework.Threading;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Areas
 {
@@ -20,6 +20,7 @@ namespace EightyOne.Areas
         private static FieldInfo _areasUpdatedField;
         private static FieldInfo _areaTexField;
         private static FieldInfo _unlockingField;
+        private static MethodInfo _isCrossingLineProhibited;
 
         public static void Init()
         {
@@ -46,10 +47,21 @@ namespace EightyOne.Areas
                 wrapMode = TextureWrapMode.Clamp
             };
             _areaTexField.SetValue(GameAreaManager.instance, areaTex);
+            _isCrossingLineProhibited = null;
+            if (Util.IsModActive("CrossTheLine"))
+            {
+                Debug.Log("FakeGameAreaManager - Cross The Line is enabled");
+                var crossTheLine = Util.FindType("CrossTheLine");
+                if (crossTheLine != null)
+                {
+                    _isCrossingLineProhibited = crossTheLine.GetMethod("IsCrossingLineProhibited",
+                        BindingFlags.Static | BindingFlags.Public);
+                }
+            }
             FakeGameAreaManagerInit.UpdateData();
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int get_MaxAreaCount()
         {
             if (this.m_maxAreaCount == 0)
@@ -59,7 +71,7 @@ namespace EightyOne.Areas
             return this.m_maxAreaCount;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new Vector3 GetAreaPositionSmooth(int x, int z)
         {
             //begin mod
@@ -80,7 +92,7 @@ namespace EightyOne.Areas
             return vector;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new bool CanUnlock(int x, int z)
         {
             //begin mod
@@ -93,7 +105,7 @@ namespace EightyOne.Areas
             return result;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new int GetArea(int x, int z)
         {
             //begin mod
@@ -104,7 +116,7 @@ namespace EightyOne.Areas
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new bool IsUnlocked(int x, int z)
         {
             //begin mod
@@ -114,7 +126,7 @@ namespace EightyOne.Areas
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new int GetAreaIndex(Vector3 p)
         {
             //begin mod
@@ -143,7 +155,7 @@ namespace EightyOne.Areas
             //end mod
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new bool UnlockArea(int index)
         {
             _unlockingField.SetValue(this, true);
@@ -197,7 +209,7 @@ namespace EightyOne.Areas
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new bool ClampPoint(ref Vector3 position)
         {
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
@@ -261,8 +273,39 @@ namespace EightyOne.Areas
 
         }
 
+        [RedirectMethod]
+        public int CalculateTilePrice(int tile)
+        {
+            //begin mod
+            int x = tile % GRID;
+            int z = tile / GRID;
+            //end mod
+            if (!this.CanUnlock(x, z))
+                return 0;
+            int incoming;
+            int outgoing;
+            Singleton<BuildingManager>.instance.CalculateOutsideConnectionCount(ItemClass.Service.Road, ItemClass.SubService.None, out incoming, out outgoing);
+            int tileNodeCount1 = Singleton<NetManager>.instance.GetTileNodeCount(x, z, ItemClass.Service.Road, ItemClass.SubService.None);
+            bool road = (incoming != 0 || outgoing != 0) && tileNodeCount1 != 0;
+            Singleton<BuildingManager>.instance.CalculateOutsideConnectionCount(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportTrain, out incoming, out outgoing);
+            int tileNodeCount2 = Singleton<NetManager>.instance.GetTileNodeCount(x, z, ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportTrain);
+            bool train = (incoming != 0 || outgoing != 0) && tileNodeCount2 != 0;
+            Singleton<BuildingManager>.instance.CalculateOutsideConnectionCount(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportShip, out incoming, out outgoing);
+            int tileNodeCount3 = Singleton<NetManager>.instance.GetTileNodeCount(x, z, ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportShip);
+            bool ship = (incoming != 0 || outgoing != 0) && tileNodeCount3 != 0;
+            Singleton<BuildingManager>.instance.CalculateOutsideConnectionCount(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportPlane, out incoming, out outgoing);
+            bool plane = incoming != 0 || outgoing != 0;
+            uint ore;
+            uint oil;
+            uint forest;
+            uint fertility;
+            uint water;
+            Singleton<NaturalResourceManager>.instance.GetTileResources(x, z, out ore, out oil, out forest, out fertility, out water);
+            float tileFlatness = Singleton<TerrainManager>.instance.GetTileFlatness(x, z);
+            return this.CalculateTilePrice(ore, oil, forest, fertility, water, road, train, ship, plane, tileFlatness);
+        }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new bool PointOutOfArea(Vector3 p)
         {
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
@@ -284,9 +327,17 @@ namespace EightyOne.Areas
         }
 
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public new bool QuadOutOfArea(Quad2 quad)
         {
+            if (_isCrossingLineProhibited != null)
+            {
+                if (!(bool)_isCrossingLineProhibited.Invoke(null, new object[] {}))
+                {
+                    return false;
+                }
+            }
+
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
             if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
             {
@@ -337,7 +388,7 @@ namespace EightyOne.Areas
             private static FieldInfo _fieldInfo3 = typeof(GameAreaManager).GetField("m_buildableArea2", BindingFlags.Instance | BindingFlags.NonPublic);
             private static FieldInfo _fieldInfo4 = typeof(GameAreaManager).GetField("m_buildableArea3", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            [ReplaceMethod]
+            [RedirectMethod]
             public void Serialize(DataSerializer s)
             {
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginSerialize(s, "GameAreaManager");
@@ -374,7 +425,7 @@ namespace EightyOne.Areas
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "GameAreaManager");
             }
 
-            [ReplaceMethod(true)]
+            [RedirectMethod(true)]
             public void Deserialize(DataSerializer s)
             {
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginDeserialize(s, "GameAreaManager");
@@ -445,7 +496,7 @@ namespace EightyOne.Areas
 
             public void AfterDeserialize(DataSerializer s)
             {
- 
+
             }
         }
     }

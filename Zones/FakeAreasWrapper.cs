@@ -1,12 +1,12 @@
 ﻿using EightyOne.Areas;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Zones
 {
     [TargetType(typeof(AreasWrapper))]
     public class FakeAreasWrapper
     {
-        [ReplaceMethod]
+        [RedirectMethod]
         public void set_maxAreaCount(int value)
         {
             //begin mod
@@ -17,7 +17,7 @@ namespace EightyOne.Zones
             GameAreaManager.instance.m_maxAreaCount = num;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void OnCanUnlockArea(int x, int z, ref bool result)
         {
             //begin mod

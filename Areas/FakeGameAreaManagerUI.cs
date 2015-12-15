@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using ColossalFramework;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 using UnityEngine;
 
 namespace EightyOne.Areas
@@ -23,7 +23,7 @@ namespace EightyOne.Areas
         private static FieldInfo _idColorField = typeof(GameAreaManager).GetField("ID_Color", BindingFlags.Instance | BindingFlags.NonPublic);
         private static FieldInfo _idAreaMappingField = typeof(GameAreaManager).GetField("ID_AreaMapping", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void UpdateAreaMapping()
         {
             if (this.AreasVisible)
@@ -80,7 +80,7 @@ namespace EightyOne.Areas
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private Bounds GetFreeBounds()
         {
             Vector3 zero1 = Vector3.zero;
@@ -106,7 +106,7 @@ namespace EightyOne.Areas
             return bounds;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void UpdateAreaTexture()
         {
             _areasUpdatedField.SetValue(this, false);
@@ -144,7 +144,7 @@ namespace EightyOne.Areas
             areaTex.Apply(false);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         protected new void BeginOverlayImpl(RenderManager.CameraInfo cameraInfo)
         {
             float borderAlpha = (float)_borderAlphaField.GetValue(this);

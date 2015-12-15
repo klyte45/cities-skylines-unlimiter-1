@@ -1,7 +1,7 @@
 ﻿using ColossalFramework;
 using System.Threading;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Zones
 {
@@ -36,7 +36,7 @@ namespace EightyOne.Zones
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static void InitializeBlock(ZoneManager zm, ushort block, ref ZoneBlock data)
         {
             //begin mod
@@ -59,7 +59,7 @@ namespace EightyOne.Zones
 
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void ReleaseBlockImplementation(ushort block, ref ZoneBlock data)
         {
             if ((int)data.m_flags == 0)
@@ -109,7 +109,7 @@ namespace EightyOne.Zones
             this.m_blockCount = (int)this.m_blocks.ItemCount() - 1;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void UpdateBlocks(float minX, float minZ, float maxX, float maxZ)
         {
             //begin mod
@@ -145,7 +145,7 @@ namespace EightyOne.Zones
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void TerrainUpdated(TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
         {
             float minX = zoneArea.m_min.x;
@@ -182,7 +182,7 @@ namespace EightyOne.Zones
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public bool CheckSpace(Vector3 position, float angle, int width, int length, out int offset)
         {
             float num1 = Mathf.Min(72f, (float)(width + length) * 4f) + 6f;

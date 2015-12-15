@@ -2,7 +2,7 @@
 using ColossalFramework.Math;
 using System.Reflection;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 //TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
@@ -19,7 +19,7 @@ namespace EightyOne.ResourceManagers
             m_mousePosition = typeof(DistrictTool).GetField("m_mousePosition", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void ApplyBrush(byte district)
         {
             GameAreaManager instance = Singleton<GameAreaManager>.instance;
@@ -213,7 +213,7 @@ namespace EightyOne.ResourceManagers
             Singleton<DistrictManager>.instance.m_districtsNotUsed.Disable();
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static bool ForceDistrictAlpha(int x, int z, byte district, int min, int max)
         {
             //begin mod
@@ -234,7 +234,7 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static bool SetDistrictAlpha(int x, int z, byte district, int min, int max)
         {
             //begin mod         
@@ -408,7 +408,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static void CheckNeighbourCells(int x, int z, byte district, out int min, out int max)
         {
             min = 255;

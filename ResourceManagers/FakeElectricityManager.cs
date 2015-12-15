@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 //TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
@@ -405,7 +405,7 @@ namespace EightyOne.ResourceManagers
             electricityGrid = null;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static void UpdateElectricityMapping(ElectricityManager em)
         {
             Vector4 vec;
@@ -416,7 +416,7 @@ namespace EightyOne.ResourceManagers
             Shader.SetGlobalVector("_ElectricityMapping", vec);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void UpdateTexture()
         {
             while (!Monitor.TryEnter(electricityGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
@@ -467,7 +467,7 @@ namespace EightyOne.ResourceManagers
             m_electricityTexture.Apply();
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void AreaModified(int minX, int minZ, int maxX, int maxZ)
         {
             while (!Monitor.TryEnter(electricityGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
@@ -486,7 +486,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int TryDumpElectricity(Vector3 pos, int rate, int max)
         {
             int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
@@ -533,7 +533,7 @@ namespace EightyOne.ResourceManagers
             return rate;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int TryFetchElectricity(Vector3 pos, int rate, int max)
         {
             if (max == 0)
@@ -557,7 +557,7 @@ namespace EightyOne.ResourceManagers
             return rate;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void CheckElectricity(Vector3 pos, out bool electricity)
         {
             int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
@@ -566,7 +566,7 @@ namespace EightyOne.ResourceManagers
             electricity = electricityGrid[num3].m_electrified;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public bool CheckConductivity(Vector3 pos)
         {
             int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
@@ -809,7 +809,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         protected void SimulationStepImpl(int subStep)
         {
             if (subStep != 0 && subStep != 1000)
@@ -1036,7 +1036,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void UpdateGrid(float minX, float minZ, float maxX, float maxZ)
         {
             int num = Mathf.Max((int)(minX / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0);
@@ -1152,7 +1152,7 @@ namespace EightyOne.ResourceManagers
 
 
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void UpdateData(SimulationManager.UpdateMode mode)
         {
             Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("ElectricityManager.UpdateData");

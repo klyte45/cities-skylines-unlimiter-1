@@ -2,7 +2,7 @@
 using ColossalFramework.Math;
 using System;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Zones
 {
@@ -18,7 +18,7 @@ namespace EightyOne.Zones
             m_fillPositions = new FastList<FillPos>();
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static void ApplyBrush(ZoneTool z)
         {
             float num = z.m_brushSize * 0.5f;
@@ -131,7 +131,7 @@ namespace EightyOne.Zones
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static void ApplyFill(ZoneTool z)
         {
             bool m_validPosition = (bool)z.GetType().GetField("m_validPosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
@@ -185,7 +185,7 @@ namespace EightyOne.Zones
             Singleton<EffectManager>.instance.DispatchEffect(effect, instance2, spawnArea, Vector3.zero, 0.0f, 1f, Singleton<AudioManager>.instance.DefaultGroup);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static void ApplyZoning(ZoneTool z)
         {
             Vector3 m_startPosition = (Vector3)z.GetType().GetField("m_startPosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
@@ -311,7 +311,7 @@ namespace EightyOne.Zones
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static bool CalculateFillBuffer(ZoneTool z, Vector3 position, Vector3 direction, ItemClass.Zone requiredZone, bool occupied1, bool occupied2)
         {
             var m_fillBuffer1 = (ulong[])typeof(ZoneTool).GetField("m_fillBuffer1", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(z);

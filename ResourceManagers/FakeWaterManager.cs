@@ -8,8 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using UnityEngine;
-using EightyOne.Attributes;
 using System.Collections;
+using EightyOne.Redirection;
 
 //TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
@@ -659,7 +659,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private static void UpdateWaterMapping(WaterManager wm)
         {
             var cam = (Camera)undergroundCamera.GetValue(WaterManager.instance);
@@ -682,7 +682,7 @@ namespace EightyOne.ResourceManagers
             Shader.SetGlobalVector("_WaterMapping", vec);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void UpdateTexture()
         {
             while (!Monitor.TryEnter(m_waterGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
@@ -768,7 +768,7 @@ namespace EightyOne.ResourceManagers
             m_waterTexture.Apply();
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void AreaModified(int minX, int minZ, int maxX, int maxZ)
         {
             while (!Monitor.TryEnter(m_waterGrid, SimulationManager.SYNCHRONIZE_TIMEOUT))
@@ -787,7 +787,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int TryDumpWater(ushort node, int rate, int max, byte waterPollution)
         {
             if (node == 0)
@@ -816,7 +816,7 @@ namespace EightyOne.ResourceManagers
             return rate;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int TryDumpSewage(Vector3 pos, int rate, int max)
         {
             if (max == 0)
@@ -912,7 +912,7 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int TryFetchWater(Vector3 pos, int rate, int max, ref byte waterPollution)
         {
             if (max == 0)
@@ -1009,7 +1009,7 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int TryFetchSewage(ushort node, int rate, int max)
         {
             if (node == 0)
@@ -1034,7 +1034,7 @@ namespace EightyOne.ResourceManagers
             return rate;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void CheckWater(Vector3 pos, out bool water, out bool sewage, out byte waterPollution)
         {
             int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
@@ -1407,7 +1407,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         protected void SimulationStepImpl(int subStep)
         {
             if (subStep != 0 && subStep != 1000)
@@ -1749,7 +1749,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void UpdateGrid(float minX, float minZ, float maxX, float maxZ)
         {
             int num = Mathf.Max((int)(minX / 38.25f + HALFGRID), 0);

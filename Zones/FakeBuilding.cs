@@ -2,7 +2,7 @@
 using ColossalFramework.Math;
 using System.Reflection;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 namespace EightyOne.Zones
 {
@@ -16,7 +16,7 @@ namespace EightyOne.Zones
                 typeof(ItemClass.Zone), typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(bool).MakeByRefType(), typeof(ZoneBlock).MakeByRefType()
             }, null);
         
-        [ReplaceMethod]
+        [RedirectMethod]
         public static bool CheckZoning(ref Building b, ItemClass.Zone zone1, ItemClass.Zone zone2)
         {
             int width = b.Width;

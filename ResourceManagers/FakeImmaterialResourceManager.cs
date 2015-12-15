@@ -1,7 +1,7 @@
 ﻿using ColossalFramework;
 using System.Threading;
 using UnityEngine;
-using EightyOne.Attributes;
+using EightyOne.Redirection;
 
 //TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
@@ -51,7 +51,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void UpdateResourceMapping()
         {
             Vector4 vec;
@@ -73,7 +73,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void LateUpdate()
         {
             if (!Singleton<LoadingManager>.instance.m_loadingComplete)
@@ -87,7 +87,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         private void UpdateTexture()
         {
             for (int i = 0; i < GRID; i++)
@@ -143,7 +143,7 @@ namespace EightyOne.ResourceManagers
             amount += (int)m_localFinalResources[num] * multiplier;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void AreaModified(int minX, int minZ, int maxX, int maxZ)
         {
             minX = Mathf.Max(0, minX - 1);
@@ -178,7 +178,7 @@ namespace EightyOne.ResourceManagers
             buffer = Mathf.Min(buffer + rate, 2147483647);
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int AddResource(ImmaterialResourceManager.Resource resource, int rate, Vector3 position, float radius)
         {
             if (rate == 0)
@@ -214,7 +214,7 @@ namespace EightyOne.ResourceManagers
             return rate;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public int AddResource(ImmaterialResourceManager.Resource resource, int rate)
         {
             if (rate == 0)
@@ -225,7 +225,7 @@ namespace EightyOne.ResourceManagers
             return rate;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public static int CalculateResourceEffect(int resourceRate, int middleRate, int maxRate, int middleEffect, int maxEffect)
         {
             if (resourceRate <= 0)
@@ -560,7 +560,7 @@ namespace EightyOne.ResourceManagers
             target[19] = num20;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void CheckResource(ImmaterialResourceManager.Resource resource, Vector3 position, out int local, out int total)
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
@@ -570,7 +570,7 @@ namespace EightyOne.ResourceManagers
             total = m_totalFinalResources[(int)resource];
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void CheckLocalResource(ImmaterialResourceManager.Resource resource, Vector3 position, out int local)
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
@@ -579,7 +579,7 @@ namespace EightyOne.ResourceManagers
             local = (int)m_localFinalResources[num3];
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void CheckLocalResources(Vector3 position, out ushort[] resources, out int index)
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
@@ -588,13 +588,13 @@ namespace EightyOne.ResourceManagers
             resources = m_localFinalResources;
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         public void CheckTotalResource(ImmaterialResourceManager.Resource resource, out int total)
         {
             total = m_totalFinalResources[(int)resource];
         }
 
-        [ReplaceMethod]
+        [RedirectMethod]
         protected void SimulationStepImpl(int subStep)
         {
             if (subStep != 0 && subStep != 1000)
