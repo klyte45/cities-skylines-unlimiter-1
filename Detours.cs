@@ -59,24 +59,32 @@ namespace EightyOne
                     continue;
                 }
                 var targetType = ((TargetType)customAttributes[0]).Type;
-                foreach (
-                    var method in
-                        type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance |
-                                        BindingFlags.NonPublic)
+                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
                             .Where(method =>
                             {
-                                var attributes = method.GetCustomAttributes(typeof(RedirectMethodAttribute), false);
-                                if (attributes.Length != 1)
+                                var redirectAttributes = method.GetCustomAttributes(typeof(RedirectMethodAttribute), false);
+                                if (redirectAttributes.Length != 1)
                                 {
                                     return false;
                                 }
-                                return ((RedirectMethodAttribute)attributes[0]).OnCreated == onCreated;
+                                var ignoreAttributes = method.GetCustomAttributes(typeof (IgnoreIfOtherModEnabledAtribute), false);
+                                if (ignoreAttributes.Any(attribute => Util.IsModActive(((IgnoreIfOtherModEnabledAtribute) attribute).ModName)))
+                                {
+                                    UnityEngine.Debug.Log($"Method {method.Name} won't be redirected.");
+                                    return false;
+                                }
+                                return ((RedirectMethodAttribute)redirectAttributes[0]).OnCreated == onCreated;
                             }))
                 {
-                    var tuple = RedirectionUtil.RedirectMethod(targetType, method);
-                    redirects.Add(tuple.First, tuple.Second);
+                    RedirectMethod(targetType, method, redirects);
                 }
             }
+        }
+
+        private static void RedirectMethod(Type targetType, MethodInfo method, Dictionary<MethodInfo, RedirectCallsState> redirects)
+        {
+            var tuple = RedirectionUtil.RedirectMethod(targetType, method);
+            redirects.Add(tuple.First, tuple.Second);
         }
 
         private static void RevertRedirect(bool onCreated)
