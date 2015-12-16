@@ -392,6 +392,8 @@ namespace EightyOne.ResourceManagers
             m_electricityTexture.filterMode = FilterMode.Point;
             m_electricityTexture.wrapMode = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_ElectricityTexture", m_electricityTexture);
+            em.UpdateGrid(-100000f, -100000f, 100000f, 100000f);
+            UpdateElectricityMapping(em);
         }
 
 
