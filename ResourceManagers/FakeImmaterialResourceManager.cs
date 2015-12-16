@@ -1,4 +1,5 @@
-﻿using ColossalFramework;
+﻿using System.Reflection;
+using ColossalFramework;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Redirection;
@@ -23,10 +24,24 @@ namespace EightyOne.ResourceManagers
         private static int[] m_modifiedX1;
         private static int[] m_modifiedX2;
         private static bool m_modified;
+        private static FieldInfo _buildingThemesPositionField;
+        private static readonly string BUILDING_THEMES_MOD_TYPE = "BuildingThemesMod";
+        private static readonly string BUILDING_THEMES_POSITION_FIELD = "position";
+
 
         public static void Init()
         {
-            
+            _buildingThemesPositionField = null;
+            if (Util.IsModActive(Mod.BUILDING_THEMES_MOD))
+            {
+                var buildingThemesType = Util.FindType(BUILDING_THEMES_MOD_TYPE);
+                if (buildingThemesType != null)
+                {
+                    _buildingThemesPositionField = buildingThemesType.GetField(BUILDING_THEMES_POSITION_FIELD,
+                        BindingFlags.Public | BindingFlags.Static);
+                }
+            }
+
             m_localFinalResources = new ushort[GRID * GRID * 20];
             m_localTempResources = new ushort[GRID * GRID * 20];
             m_globalFinalResources = new int[20];
@@ -39,7 +54,7 @@ namespace EightyOne.ResourceManagers
             m_modified = true;
             m_resourceTexture = new Texture2D(GRID, GRID, TextureFormat.Alpha8, false, true);
             m_resourceTexture.wrapMode = TextureWrapMode.Clamp;
-            Shader.SetGlobalTexture("_ImmaterialResources", m_resourceTexture);            
+            Shader.SetGlobalTexture("_ImmaterialResources", m_resourceTexture);
         }
 
         public static void OnDestroy()
@@ -139,7 +154,7 @@ namespace EightyOne.ResourceManagers
         {
             x = Mathf.Clamp(x, 0, GRID - 1);
             z = Mathf.Clamp(z, 0, GRID - 1);
-            int num = (int)((z * GRID  + x) * 20 + ImmaterialResourceManager.instance.ResourceMapVisible);
+            int num = (int)((z * GRID + x) * 20 + ImmaterialResourceManager.instance.ResourceMapVisible);
             amount += (int)m_localFinalResources[num] * multiplier;
         }
 
@@ -181,6 +196,16 @@ namespace EightyOne.ResourceManagers
         [RedirectMethod]
         public int AddResource(ImmaterialResourceManager.Resource resource, int rate, Vector3 position, float radius)
         {
+            //begin mod
+            if (_buildingThemesPositionField != null)
+            {
+                if (resource == ImmaterialResourceManager.Resource.Abandonment)
+                {
+                    _buildingThemesPositionField.SetValue(null, position);
+                }
+            }
+            //end mod
+
             if (rate == 0)
             {
                 return 0;
@@ -206,7 +231,7 @@ namespace EightyOne.ResourceManagers
                             float num11 = Mathf.Clamp01((num2 - Mathf.Sqrt(num9)) / (num2 - num));
                             num10 = Mathf.RoundToInt((float)num10 * num11);
                         }
-                        int num12 = (int)((i * GRID  + j) * 20 + resource);
+                        int num12 = (int)((i * GRID + j) * 20 + resource);
                         AddResource(ref m_localTempResources[num12], num10);
                     }
                 }
@@ -565,7 +590,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int)((num2 * GRID  + num) * 20 + resource);
+            int num3 = (int)((num2 * GRID + num) * 20 + resource);
             local = (int)m_localFinalResources[num3];
             total = m_totalFinalResources[(int)resource];
         }
@@ -575,7 +600,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int)((num2 * GRID  + num) * 20 + resource);
+            int num3 = (int)((num2 * GRID + num) * 20 + resource);
             local = (int)m_localFinalResources[num3];
         }
 
@@ -584,7 +609,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            index = (num2 * GRID  + num) * 20;
+            index = (num2 * GRID + num) * 20;
             resources = m_localFinalResources;
         }
 

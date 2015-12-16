@@ -91,7 +91,7 @@ namespace EightyOne.Zones
 
 
         [RedirectMethod]
-        [IgnoreIfOtherModEnabledAtribute("Building Themes")]
+        [IgnoreIfBuildingThemesEnabled]
         public static void SimulationStep(ref ZoneBlock block, ushort blockID)
         {
             ZoneManager instance1 = Singleton<ZoneManager>.instance;

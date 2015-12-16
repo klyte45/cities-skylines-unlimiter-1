@@ -48,7 +48,7 @@ namespace EightyOne.Areas
             };
             _areaTexField.SetValue(GameAreaManager.instance, areaTex);
             _isCrossingLineProhibited = null;
-            if (Util.IsModActive("CrossTheLine"))
+            if (Util.IsModActive(Mod.CROSS_THE_LINE_MOD))
             {
                 Debug.Log("FakeGameAreaManager - Cross The Line is enabled");
                 var crossTheLine = Util.FindType("CrossTheLine");

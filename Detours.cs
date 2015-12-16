@@ -70,7 +70,7 @@ namespace EightyOne
                                 var ignoreAttributes = method.GetCustomAttributes(typeof (IgnoreIfOtherModEnabledAtribute), false);
                                 if (ignoreAttributes.Any(attribute => Util.IsModActive(((IgnoreIfOtherModEnabledAtribute) attribute).ModName)))
                                 {
-                                    UnityEngine.Debug.Log($"Method {method.Name} won't be redirected.");
+                                    UnityEngine.Debug.Log($"Method {targetType.Name}#{method.Name} won't be redirected. Some other mod will redirect it for us.");
                                     return false;
                                 }
                                 return ((RedirectMethodAttribute)redirectAttributes[0]).OnCreated == onCreated;

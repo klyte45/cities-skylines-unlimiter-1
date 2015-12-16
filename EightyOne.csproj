@@ -49,6 +49,7 @@
     <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="Areas\AreaManagerDataExtension.cs" />
+    <Compile Include="Redirection\IgnoreIfBuildingThemesEnabledAttribute.cs" />
     <Compile Include="Redirection\IgnoreIfOtherModEnabledAtribute.cs" />
     <Compile Include="Redirection\RedirectMethodAttribute.cs" />
     <Compile Include="Redirection\TargetType.cs" />
