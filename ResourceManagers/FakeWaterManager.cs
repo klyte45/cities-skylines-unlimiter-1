@@ -591,9 +591,9 @@ namespace EightyOne.ResourceManagers
 
         public static void Init()
         {
+            var wm = WaterManager.instance;
             if (m_waterGrid == null)
             {
-                var wm = WaterManager.instance;
                 m_waterGrid = new Cell[GRID * GRID];
                 var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
                 int oldGridSize = 256;
@@ -647,6 +647,7 @@ namespace EightyOne.ResourceManagers
             m_waterTexture.wrapMode = TextureWrapMode.Clamp;
 
             Shader.SetGlobalTexture("_WaterTexture", m_waterTexture);
+            wm.UpdateGrid(-100000f, -100000f, 100000f, 100000f);
             UpdateWaterMapping(WaterManager.instance);
         }
 
