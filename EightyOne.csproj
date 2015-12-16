@@ -74,6 +74,7 @@
     <Compile Include="ResourceManagers\FakeDistrictManager.cs" />
     <Compile Include="ResourceManagers\FakeImmaterialResourceManager.cs" />
     <Compile Include="ResourceManagers\FakeWaterManager.cs" />
+    <Compile Include="ResourceManagers\WaterManagerDataExtension.cs" />
     <Compile Include="Terrain\FakeTerrainManager.cs" />
     <Compile Include="UnlockAllCheat.cs" />
     <Compile Include="Util.cs" />

@@ -1,10 +1,7 @@
 ﻿using ColossalFramework;
 using ColossalFramework.IO;
 using ColossalFramework.Math;
-using ICities;
 using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using UnityEngine;
@@ -15,7 +12,7 @@ using EightyOne.Redirection;
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(WaterManager))]
-    public class FakeWaterManager : SerializableDataExtensionBase
+    public class FakeWaterManager : WaterManager
     {
         public class Data : IDataContainer
         {
@@ -468,59 +465,6 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        private const string id = "fakeWM";
-
-        public override void OnSaveData()
-        {
-            var wm = WaterManager.instance;
-            var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
-            int oldGridSize = 256;
-            int diff = (GRID - oldGridSize) / 2;
-            var fields = Util.GetFieldsFromStruct(oldGrid[0], m_waterGrid[0]);
-            for (var i = 0; i < oldGridSize; i += 1)
-            {
-                for (var j = 0; j < oldGridSize; j += 1)
-                {
-                    var oldCellIndex = j * oldGridSize + i;
-                    oldGrid[oldCellIndex] = Util.CopyStruct((object)oldGrid[oldCellIndex], m_waterGrid[(j + diff) * GRID + (i + diff)], fields);                    
-                }
-            }
-
-            Util.CopyStructArrayBack(m_nodeData, wm, "m_nodeData");
-            Util.CopyStructArrayBack(m_waterPulseGroups, wm, "m_waterPulseGroups");
-            Util.CopyStructArrayBack(m_sewagePulseGroups, wm, "m_sewagePulseGroups");
-            Util.CopyStructArrayBack(m_waterPulseUnits, wm, "m_waterPulseUnits");
-            Util.CopyStructArrayBack(m_sewagePulseUnits, wm, "m_sewagePulseUnits");
-
-            Util.SetPropertyValueBack(m_waterPulseGroupCount, wm, "m_waterPulseGroupCount");
-            Util.SetPropertyValueBack(m_sewagePulseGroupCount, wm, "m_sewagePulseGroupCount");
-            Util.SetPropertyValueBack(m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
-            Util.SetPropertyValueBack(m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
-            Util.SetPropertyValueBack(m_processedCells, wm, "m_processedCells");
-            Util.SetPropertyValueBack(m_conductiveCells, wm, "m_conductiveCells");
-            Util.SetPropertyValueBack(m_canContinue, wm, "m_canContinue");
-
-            using (var ms = new MemoryStream())
-            {
-                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
-                var data = ms.ToArray();
-                serializableDataManager.SaveData(id, data);
-            }
-        }
-
-        public override void OnLoadData()
-        {
-            if (!serializableDataManager.EnumerateData().Contains(id))
-            {
-                return;
-            }
-            var data = serializableDataManager.LoadData(id);
-            using (var ms = new MemoryStream(data))
-            {
-                var s = DataSerializer.Deserialize<Data>(ms, DataSerializer.Mode.Memory);
-            }
-        }
-
         public struct Cell
         {
             public short m_currentWaterPressure;
@@ -535,7 +479,8 @@ namespace EightyOne.ResourceManagers
             public bool m_hasWater;
             public bool m_hasSewage;
         }
-        private struct PulseGroup
+
+        internal struct PulseGroup
         {
             public uint m_origPressure;
             public uint m_curPressure;
@@ -543,7 +488,8 @@ namespace EightyOne.ResourceManagers
             public ushort m_mergeCount;
             public ushort m_node;
         }
-        private struct PulseUnit
+
+        internal struct PulseUnit
         {
             public ushort m_group;
             public ushort m_node;
@@ -564,36 +510,36 @@ namespace EightyOne.ResourceManagers
         public const int GRID = 462;
         public const int HALFGRID = 231;
 
-        private static int m_processedCells;
-        private static int m_conductiveCells;
-        private static bool m_canContinue;
+        internal static int m_processedCells;
+        internal static int m_conductiveCells;
+        internal static bool m_canContinue;
         private static int m_modifiedX1;
         private static int m_modifiedZ1;
         private static int m_modifiedX2;
         private static int m_modifiedZ2;
 
         public static Node[] m_nodeData;
-        private static Cell[] m_waterGrid;
-        private static PulseGroup[] m_waterPulseGroups;
-        private static PulseGroup[] m_sewagePulseGroups;
-        private static PulseUnit[] m_waterPulseUnits;
-        private static PulseUnit[] m_sewagePulseUnits;
+        internal static Cell[] m_waterGrid;
+        internal static PulseGroup[] m_waterPulseGroups;
+        internal static PulseGroup[] m_sewagePulseGroups;
+        internal static PulseUnit[] m_waterPulseUnits;
+        internal static PulseUnit[] m_sewagePulseUnits;
         private static Texture2D m_waterTexture;
-        private static int m_waterPulseGroupCount;
+        internal static int m_waterPulseGroupCount;
         private static int m_waterPulseUnitStart;
-        private static int m_waterPulseUnitEnd;
-        private static int m_sewagePulseGroupCount;
+        internal static int m_waterPulseUnitEnd;
+        internal static int m_sewagePulseGroupCount;
         private static int m_sewagePulseUnitStart;
-        private static int m_sewagePulseUnitEnd;
+        internal static int m_sewagePulseUnitEnd;
 
         static FieldInfo m_refreshGrid;
         static FieldInfo undergroundCamera;
 
         public static void Init()
         {
+            var wm = WaterManager.instance;
             if (m_waterGrid == null)
             {
-                var wm = WaterManager.instance;
                 m_waterGrid = new Cell[GRID * GRID];
                 var oldGrid = (IList)typeof(WaterManager).GetField("m_waterGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
                 int oldGridSize = 256;
