@@ -168,7 +168,7 @@ namespace EightyOne.ResourceManagers
                 EncodedArray.Bool @bool = EncodedArray.Bool.BeginRead(s);
                 for (int num3 = 0; num3 < num; num3++)
                 {
-                    if (electricityGrid[num3].m_conductivity != 0 )
+                    if (electricityGrid[num3].m_conductivity != 0)
                     {
                         electricityGrid[num3].m_electrified = @bool.Read();
                     }
@@ -181,7 +181,7 @@ namespace EightyOne.ResourceManagers
                 EncodedArray.Bool bool2 = EncodedArray.Bool.BeginRead(s);
                 for (int num4 = 0; num4 < num; num4++)
                 {
-                    if (electricityGrid[num4].m_conductivity != 0 )
+                    if (electricityGrid[num4].m_conductivity != 0)
                     {
                         electricityGrid[num4].m_tmpElectrified = bool2.Read();
                     }
@@ -225,16 +225,16 @@ namespace EightyOne.ResourceManagers
                     FakeElectricityManager.m_nodeGroups[num8] = uShort4.Read();
                 }
                 uShort4.EndRead();
-                
+
                 FakeElectricityManager.m_processedCells = s.ReadInt32();
                 FakeElectricityManager.m_conductiveCells = s.ReadInt32();
                 FakeElectricityManager.m_canContinue = s.ReadBool();
             }
 
             public void AfterDeserialize(DataSerializer s)
-            {                
-                Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();                
-                ElectricityManager.instance.AreaModified(0, 0, GRID, GRID);                
+            {
+                Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();
+                ElectricityManager.instance.AreaModified(0, 0, GRID, GRID);
             }
         }
 
@@ -244,14 +244,13 @@ namespace EightyOne.ResourceManagers
         {
             var em = ElectricityManager.instance;
             var oldGrid = (IList)typeof(ElectricityManager).GetField("m_electricityGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(em);
-            int oldGridSize = 256;
-            int diff = (GRID - oldGridSize) / 2;
-            var fields = Util.GetFieldsFromStruct(oldGrid[0],electricityGrid[0]);
-            for (var i = 0; i < oldGridSize; i += 1)
+            int diff = (GRID - ElectricityManager.ELECTRICITYGRID_RESOLUTION) / 2;
+            var fields = Util.GetFieldsFromStruct(oldGrid[0], electricityGrid[0]);
+            for (var i = 0; i < ElectricityManager.ELECTRICITYGRID_RESOLUTION; i += 1)
             {
-                for (var j = 0; j < oldGridSize; j += 1)
+                for (var j = 0; j < ElectricityManager.ELECTRICITYGRID_RESOLUTION; j += 1)
                 {
-                    var oldCellIndex = j * oldGridSize + i;
+                    var oldCellIndex = j * ElectricityManager.ELECTRICITYGRID_RESOLUTION + i;
                     oldGrid[oldCellIndex] = Util.CopyStruct((object)oldGrid[oldCellIndex], electricityGrid[(j + diff) * GRID + (i + diff)], fields);
                 }
             }
@@ -260,11 +259,11 @@ namespace EightyOne.ResourceManagers
             Util.CopyStructArrayBack(m_pulseUnits, em, "m_pulseUnits");
             Util.CopyArrayBack(m_nodeGroups, em, "m_nodeGroups");
 
-            Util.SetPropertyValueBack(m_pulseGroupCount,em, "m_pulseGroupCount");
+            Util.SetPropertyValueBack(m_pulseGroupCount, em, "m_pulseGroupCount");
             Util.SetPropertyValueBack(m_pulseUnitEnd % m_pulseUnits.Length, em, "m_pulseUnitEnd");
-            Util.SetPropertyValueBack(m_processedCells,em, "m_processedCells");
-            Util.SetPropertyValueBack(m_conductiveCells,em, "m_conductiveCells");
-            Util.SetPropertyValueBack(m_canContinue,em, "m_canContinue");
+            Util.SetPropertyValueBack(m_processedCells, em, "m_processedCells");
+            Util.SetPropertyValueBack(m_conductiveCells, em, "m_conductiveCells");
+            Util.SetPropertyValueBack(m_canContinue, em, "m_canContinue");
 
             using (var ms = new MemoryStream())
             {
@@ -363,7 +362,7 @@ namespace EightyOne.ResourceManagers
                 {
                     for (var j = 0; j < ElectricityManager.ELECTRICITYGRID_RESOLUTION; j += 1)
                     {
-                        electricityGrid[(j + diff) * GRID + (i + diff)] = (Cell)Util.CopyStruct(new Cell(), oldGrid[j * ElectricityManager.ELECTRICITYGRID_RESOLUTION + i], fields);                        
+                        electricityGrid[(j + diff) * GRID + (i + diff)] = (Cell)Util.CopyStruct(new Cell(), oldGrid[j * ElectricityManager.ELECTRICITYGRID_RESOLUTION + i], fields);
                     }
                 }
                 m_pulseGroups = new PulseGroup[ElectricityManager.MAX_PULSE_GROUPS];
@@ -411,10 +410,14 @@ namespace EightyOne.ResourceManagers
         private static void UpdateElectricityMapping(ElectricityManager em)
         {
             Vector4 vec;
+            //begin mod
             vec.z = 1 / (ElectricityManager.ELECTRICITYGRID_CELL_SIZE * GRID);
+            //end mod
             vec.x = 0.5f;
             vec.y = 0.5f;
-            vec.w = 0.00390625f;
+            //begin mod
+            vec.w = 1.0f / GRID;
+            //end mod
             Shader.SetGlobalVector("_ElectricityMapping", vec);
         }
 
@@ -520,18 +523,22 @@ namespace EightyOne.ResourceManagers
 
         private int TryDumpElectricity(int x, int z, int rate, int max)
         {
-            int num = z * GRID + x;
-            Cell cell = electricityGrid[num];
-            if (cell.m_extraCharge != 0)
+            //beging mod
+            int index = z * GRID + x;
+            FakeElectricityManager.Cell cell = electricityGrid[index];
+            //end mod
+            if ((int)cell.m_extraCharge != 0)
             {
-                int num2 = Mathf.Min(rate, (int)cell.m_extraCharge);
-                cell.m_currentCharge += (short)num2;
-                cell.m_extraCharge -= (ushort)num2;
-                rate -= num2;
+                int num = Mathf.Min(rate, (int)cell.m_extraCharge);
+                cell.m_currentCharge += (short)num;
+                cell.m_extraCharge -= (ushort)num;
+                rate -= num;
             }
-            rate = Mathf.Min(Mathf.Min(rate, max), (int)(32767 - cell.m_currentCharge));
+            rate = Mathf.Min(Mathf.Min(rate, max), (int)short.MaxValue - (int)cell.m_currentCharge);
             cell.m_currentCharge += (short)rate;
-            electricityGrid[num] = cell;
+            //begin mod
+            electricityGrid[index] = cell;
+            //end
             return rate;
         }
 
@@ -846,7 +853,7 @@ namespace EightyOne.ResourceManagers
                         m_nodeGroups[i] = 65535;
                     }
 
-                   
+
                     int num4 = num * 4;
                     if (num4 < GRID)
                     {

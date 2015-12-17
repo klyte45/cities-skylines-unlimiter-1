@@ -676,10 +676,14 @@ namespace EightyOne.ResourceManagers
                 }
             }
             Vector4 vec;
+            //begin mod
             vec.z = 1 / (38.25f * GRID);
+            //end mod
             vec.x = 0.5f;
             vec.y = 0.5f;
-            vec.w = 0.00390625f;
+            //begin mod
+            vec.w = 1.0f / GRID;
+            //end mod
             Shader.SetGlobalVector("_WaterMapping", vec);
         }
 
