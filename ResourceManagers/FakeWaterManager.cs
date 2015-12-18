@@ -793,6 +793,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPipesEnabled]
         public int TryDumpWater(ushort node, int rate, int max, byte waterPollution)
         {
             if (node == 0)
@@ -822,6 +823,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPipesEnabled]
         public int TryDumpSewage(Vector3 pos, int rate, int max)
         {
             if (max == 0)
@@ -891,6 +893,7 @@ namespace EightyOne.ResourceManagers
             return 0;
         }
 
+        [RedirectMethod]
         private bool TryDumpSewageImpl(Vector3 pos, int x, int z, int rate, int max, ref int result)
         {
             int num = z * GRID + x;
@@ -918,6 +921,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPipesEnabled]
         public int TryFetchWater(Vector3 pos, int rate, int max, ref byte waterPollution)
         {
             if (max == 0)
@@ -987,6 +991,7 @@ namespace EightyOne.ResourceManagers
             return 0;
         }
 
+        [RedirectMethod]
         private bool TryFetchWaterImpl(Vector3 pos, int x, int z, int rate, int max, ref int result, ref byte waterPollution)
         {
             int num = z * GRID + x;
@@ -1015,6 +1020,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPipesEnabled]
         public int TryFetchSewage(ushort node, int rate, int max)
         {
             if (node == 0)
@@ -1040,6 +1046,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPipesEnabled]
         public void CheckWater(Vector3 pos, out bool water, out bool sewage, out byte waterPollution)
         {
             int num = Mathf.Clamp((int)(pos.x / 38.25f + HALFGRID), 0, GRID - 1);
@@ -1103,6 +1110,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        [RedirectMethod]
         private bool CheckWaterImpl(Vector3 pos, int x, int z, out bool water, out bool sewage, out byte waterPollution)
         {
             int num = z * GRID + x;
@@ -1138,6 +1146,7 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
+        [RedirectMethod]
         private ushort GetRootWaterGroup(ushort group)
         {
             for (ushort mergeIndex = m_waterPulseGroups[(int)group].m_mergeIndex; mergeIndex != 65535; mergeIndex = m_waterPulseGroups[(int)group].m_mergeIndex)
@@ -1147,6 +1156,7 @@ namespace EightyOne.ResourceManagers
             return group;
         }
 
+        [RedirectMethod]
         private ushort GetRootSewageGroup(ushort group)
         {
             for (ushort mergeIndex = m_sewagePulseGroups[(int)group].m_mergeIndex; mergeIndex != 65535; mergeIndex = m_sewagePulseGroups[(int)group].m_mergeIndex)
@@ -1156,6 +1166,7 @@ namespace EightyOne.ResourceManagers
             return group;
         }
 
+        [RedirectMethod]
         private void MergeWaterGroups(ushort root, ushort merged)
         {
             PulseGroup pulseGroup = m_waterPulseGroups[(int)root];
@@ -1183,6 +1194,7 @@ namespace EightyOne.ResourceManagers
             m_waterPulseGroups[(int)merged] = pulseGroup2;
         }
 
+        [RedirectMethod]
         private void MergeSewageGroups(ushort root, ushort merged)
         {
             PulseGroup pulseGroup = m_sewagePulseGroups[(int)root];
@@ -1209,6 +1221,7 @@ namespace EightyOne.ResourceManagers
             m_sewagePulseGroups[(int)merged] = pulseGroup2;
         }
 
+        //this method can't be reditected since it uses different Cell class in parameters
         private void ConductWaterToCell(ref Cell cell, ushort group, int x, int z)
         {
             if (cell.m_conductivity >= 96 && cell.m_waterPulseGroup == 65535)
@@ -1228,6 +1241,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        //this method can't be reditected since it uses different Cell class in parameters
         private void ConductSewageToCell(ref Cell cell, ushort group, int x, int z)
         {
             if (cell.m_conductivity >= 96 && cell.m_sewagePulseGroup == 65535)
@@ -1247,6 +1261,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        [RedirectMethod]
         private void ConductWaterToCells(ushort group, float worldX, float worldZ, float radius)
         {
             int num = Mathf.Max((int)((worldX - radius) / 38.25f + HALFGRID), 0);
@@ -1270,6 +1285,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        [RedirectMethod]
         private void ConductSewageToCells(ushort group, float worldX, float worldZ, float radius)
         {
             int num = Mathf.Max((int)((worldX - radius) / 38.25f + HALFGRID), 0);
@@ -1293,6 +1309,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        [RedirectMethod]
         private void ConductWaterToNode(ushort nodeIndex, ref NetNode node, ushort group)
         {
             NetInfo info = node.Info;
@@ -1326,6 +1343,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        [RedirectMethod]
         private void ConductSewageToNode(ushort nodeIndex, ref NetNode node, ushort group)
         {
             NetInfo info = node.Info;
@@ -1359,6 +1377,7 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        [RedirectMethod]
         private void UpdateNodeWater(int nodeID, int water, int sewage)
         {
             InfoManager.InfoMode currentMode = Singleton<InfoManager>.instance.CurrentMode;

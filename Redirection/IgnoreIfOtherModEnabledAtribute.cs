@@ -3,9 +3,9 @@
 namespace EightyOne.Redirection
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class IgnoreIfOtherModEnabledAtribute : Attribute
+    public abstract class IgnoreIfOtherModEnabledAtribute : Attribute
     {
-        public IgnoreIfOtherModEnabledAtribute(string modName)
+        protected IgnoreIfOtherModEnabledAtribute(string modName)
         {
             ModName = modName;
         }

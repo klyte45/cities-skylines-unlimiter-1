@@ -76,6 +76,7 @@ namespace EightyOne
                                 return ((RedirectMethodAttribute)redirectAttributes[0]).OnCreated == onCreated;
                             }))
                 {
+                    UnityEngine.Debug.Log($"81 Tiles - Redirecting {targetType.Name}#{method.Name}...");
                     RedirectMethod(targetType, method, redirects);
                 }
             }
