@@ -1,4 +1,5 @@
-﻿using EightyOne.Redirection;
+﻿using ColossalFramework;
+using EightyOne.Redirection;
 
 namespace EightyOne.Areas
 {
@@ -35,6 +36,46 @@ namespace EightyOne.Areas
             forest = forest + cell.m_finalForest;
             fertility = fertility + cell.m_finalFertility;
             water = water + cell.m_finalWater;
+        }
+
+        [RedirectMethod]
+        public void CalculateUnlockedResources(out uint ore, out uint oil, out uint forest, out uint fertility, out uint water)
+        {
+            ore = 0U;
+            oil = 0U;
+            forest = 0U;
+            fertility = 0U;
+            water = 0U;
+            GameAreaManager instance = Singleton<GameAreaManager>.instance;
+            //begin mod
+            int num = 0;
+            for (int z = 0; z < FakeGameAreaManager.GRID; ++z)
+            {
+                for (int x = 0; x < FakeGameAreaManager.GRID; ++x)
+                {
+                    //end mod
+                    if (instance.IsUnlocked(x, z))
+                        this.GetTileResourcesImpl(x + num, z + num, ref ore, ref oil, ref forest, ref fertility, ref water);
+                }
+            }
+        }
+
+        [RedirectMethod]
+        public void CalculateUnlockableResources(out uint ore, out uint oil, out uint forest, out uint fertility, out uint water)
+        {
+            ore = 0U;
+            oil = 0U;
+            forest = 0U;
+            fertility = 0U;
+            water = 0U;
+            //begin mod
+            int num = 0;
+            for (int index1 = 0; index1 < FakeGameAreaManager.GRID; ++index1)
+            {
+                for (int index2 = 0; index2 < FakeGameAreaManager.GRID; ++index2)
+                    //end mod
+                    this.GetTileResourcesImpl(index2 + num, index1 + num, ref ore, ref oil, ref forest, ref fertility, ref water);
+            }
         }
     }
 }
