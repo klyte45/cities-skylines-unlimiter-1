@@ -12,7 +12,7 @@ namespace EightyOne.Terrain
         {
         }
 
-        //[ReplaceMethod]
+        [RedirectMethod]
         public float GetUnlockableTerrainFlatness()
         {
             float num1 = 0.0f;

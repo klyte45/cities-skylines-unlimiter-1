@@ -647,8 +647,12 @@ namespace EightyOne.ResourceManagers
             m_waterTexture.wrapMode = TextureWrapMode.Clamp;
 
             Shader.SetGlobalTexture("_WaterTexture", m_waterTexture);
-            wm.UpdateGrid(-100000f, -100000f, 100000f, 100000f);
-            UpdateWaterMapping(WaterManager.instance);
+            SimulationManager.instance.AddAction(() =>
+            {
+                wm.UpdateGrid(-100000f, -100000f, 100000f, 100000f);
+                UpdateWaterMapping(WaterManager.instance);
+            });
+
         }
 
         internal static void OnDestroy()

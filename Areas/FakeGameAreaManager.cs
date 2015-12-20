@@ -58,7 +58,7 @@ namespace EightyOne.Areas
                         BindingFlags.Static | BindingFlags.Public);
                 }
             }
-            FakeGameAreaManagerInit.UpdateData();
+            SimulationManager.instance.AddAction(FakeGameAreaManagerInit.UpdateData);
         }
 
         [RedirectMethod]
