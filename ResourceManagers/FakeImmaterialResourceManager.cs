@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using ColossalFramework;
 using System.Threading;
+using ColossalFramework.Math;
 using UnityEngine;
 using EightyOne.Redirection;
 
@@ -55,6 +56,7 @@ namespace EightyOne.ResourceManagers
             m_resourceTexture = new Texture2D(GRID, GRID, TextureFormat.Alpha8, false, true);
             m_resourceTexture.wrapMode = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_ImmaterialResources", m_resourceTexture);
+            ImmaterialResourceManager.instance.AreaModified(0, 0, GRID, GRID);
         }
 
         public static void OnDestroy()
@@ -270,197 +272,183 @@ namespace EightyOne.ResourceManagers
 
         private static bool CalculateLocalResources(int x, int z, ushort[] buffer, int[] global, ushort[] target, int index)
         {
-            int num = (int)buffer[index] + global[0];
-            int num2 = (int)buffer[index + 1] + global[1];
-            int num3 = (int)buffer[index + 2] + global[2];
-            int num4 = (int)buffer[index + 3] + global[3];
-            int num5 = (int)buffer[index + 4] + global[4];
-            int num6 = (int)buffer[index + 5] + global[5];
-            int num7 = (int)buffer[index + 6] + global[6];
-            int num8 = (int)buffer[index + 7] + global[7];
-            int num9 = (int)buffer[index + 8] + global[8];
-            int num10 = (int)buffer[index + 9] + global[9];
-            int num11 = (int)buffer[index + 10] + global[10];
-            int num12 = (int)buffer[index + 11] + global[11];
-            int num13 = (int)buffer[index + 12] + global[12];
-            int num14 = (int)buffer[index + 13] + global[13];
-            int num15 = (int)buffer[index + 14] + global[14];
-            int num16 = (int)buffer[index + 15] + global[15];
-            int num17 = (int)buffer[index + 16] + global[16];
-            int num18 = (int)buffer[index + 17] + global[17];
-            int num19 = (int)buffer[index + 18] + global[18];
-            int num20 = (int)buffer[index + 19] + global[19];
-            Vector3 pos;
-            pos.x = ((float)x - HALFGRID + 0.5f) * 38.4f;
-            pos.y = 0f;
-            pos.z = ((float)z - HALFGRID + 0.5f) * 38.4f;
-            byte b;
-            Singleton<NaturalResourceManager>.instance.CheckPollution(pos, out b);
-            int num21 = (int)b;
-            num18 = num18 * 2 / (num2 + 50);
-            if (num13 == 0)
+            int resourceRate1 = (int)buffer[index] + global[0];
+            int resourceRate2 = (int)buffer[index + 1] + global[1];
+            int resourceRate3 = (int)buffer[index + 2] + global[2];
+            int resourceRate4 = (int)buffer[index + 3] + global[3];
+            int resourceRate5 = (int)buffer[index + 4] + global[4];
+            int resourceRate6 = (int)buffer[index + 5] + global[5];
+            int resourceRate7 = (int)buffer[index + 6] + global[6];
+            int resourceRate8 = (int)buffer[index + 7] + global[7];
+            int resourceRate9 = (int)buffer[index + 8] + global[8];
+            int num1 = (int)buffer[index + 9] + global[9];
+            int num2 = (int)buffer[index + 10] + global[10];
+            int num3 = (int)buffer[index + 11] + global[11];
+            int a = (int)buffer[index + 12] + global[12];
+            int resourceRate10 = (int)buffer[index + 13] + global[13];
+            int num4 = (int)buffer[index + 14] + global[14];
+            int num5 = (int)buffer[index + 15] + global[15];
+            int num6 = (int)buffer[index + 16] + global[16];
+            int num7 = (int)buffer[index + 17] + global[17];
+            int resourceRate11 = (int)buffer[index + 18] + global[18];
+            int resourceRate12 = (int)buffer[index + 19] + global[19];
+            //begin mod
+            Rect area = new Rect((float)(((double)x - HALFGRID - 1.5) * 38.4000015258789), (float)(((double)z - HALFGRID - 1.5) * 38.4000015258789), 153.6f, 153.6f);
+            //end mod
+            float groundPollution;
+            float waterProximity;
+            Singleton<NaturalResourceManager>.instance.AveragePollutionAndWater(area, out groundPollution, out waterProximity);
+            int num8 = (int)((double)groundPollution * 100.0);
+            int resourceRate13 = (int)((double)waterProximity * 100.0);
+            int resourceRate14 = num7 * 2 / (resourceRate2 + 50);
+            int resourceRate15;
+            int resourceRate16;
+            int resourceRate17;
+            if (a == 0)
             {
-                num10 = 0;
-                num11 = 50;
-                num12 = 50;
+                resourceRate15 = 0;
+                resourceRate16 = 50;
+                resourceRate17 = 50;
             }
             else
             {
-                num10 /= num13;
-                num11 /= num13;
-                num12 /= num13;
-                num17 += Mathf.Min(num13, 10) * 10;
+                resourceRate15 = num1 / a;
+                resourceRate16 = num2 / a;
+                resourceRate17 = num3 / a;
+                num6 += Mathf.Min(a, 10) * 10;
             }
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num3, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num2, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num4, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num5, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num6, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num7, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num8, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num20, 100, 500, 50, 100);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num14, 100, 500, 100, 200);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num12, 60, 100, 0, 50);
-            num15 += ImmaterialResourceManager.CalculateResourceEffect(num11, 60, 100, 0, 50);
-            num15 -= ImmaterialResourceManager.CalculateResourceEffect(100 - num12, 60, 100, 0, 50);
-            num15 -= ImmaterialResourceManager.CalculateResourceEffect(100 - num11, 60, 100, 0, 50);
-            num15 -= ImmaterialResourceManager.CalculateResourceEffect(num21, 50, 255, 50, 100);
-            num15 -= ImmaterialResourceManager.CalculateResourceEffect(num9, 10, 100, 0, 100);
-            num15 -= ImmaterialResourceManager.CalculateResourceEffect(num10, 10, 100, 0, 100);
-            num15 -= ImmaterialResourceManager.CalculateResourceEffect(num18, 50, 100, 10, 50);
-            num15 -= ImmaterialResourceManager.CalculateResourceEffect(num19, 15, 50, 100, 200);
-            num15 = num15 * num17 / 1000;
-            num = Mathf.Clamp(num, 0, 65535);
-            num2 = Mathf.Clamp(num2, 0, 65535);
-            num3 = Mathf.Clamp(num3, 0, 65535);
-            num4 = Mathf.Clamp(num4, 0, 65535);
-            num5 = Mathf.Clamp(num5, 0, 65535);
-            num6 = Mathf.Clamp(num6, 0, 65535);
-            num7 = Mathf.Clamp(num7, 0, 65535);
-            num8 = Mathf.Clamp(num8, 0, 65535);
-            num9 = Mathf.Clamp(num9, 0, 65535);
-            num10 = Mathf.Clamp(num10, 0, 65535);
-            num11 = Mathf.Clamp(num11, 0, 65535);
-            num12 = Mathf.Clamp(num12, 0, 65535);
-            num13 = Mathf.Clamp(num13, 0, 65535);
-            num14 = Mathf.Clamp(num14, 0, 65535);
-            num15 = Mathf.Clamp(num15, 0, 65535);
-            num16 = Mathf.Clamp(num16, 0, 65535);
-            num17 = Mathf.Clamp(num17, 0, 65535);
-            num18 = Mathf.Clamp(num18, 0, 65535);
-            num19 = Mathf.Clamp(num19, 0, 65535);
-            num20 = Mathf.Clamp(num20, 0, 65535);
+            int num9 = ((Singleton<GameAreaManager>.instance.PointOutOfArea(VectorUtils.X_Y(area.center)) ? 1 : 0) | (x <= 1 || x >= 254 || z <= 1 ? 1 : (z >= 254 ? 1 : 0))) == 0 ? (num4 + ImmaterialResourceManager.CalculateResourceEffect(resourceRate1, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate3, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate2, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate4, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate5, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate6, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate7, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate8, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate12, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate10, 100, 500, 100, 200) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate17, 60, 100, 0, 50) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate16, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate17, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate16, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(num8, 50, (int)byte.MaxValue, 50, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate9, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate15, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate14, 50, 100, 10, 50) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate11, 15, 50, 100, 200) + (ImmaterialResourceManager.CalculateResourceEffect(resourceRate13, 33, 67, 300, 0) * Mathf.Max(0, 32 - num8) >> 5)) / 10 : 0;
+            int num10 = Mathf.Clamp(resourceRate1, 0, (int)ushort.MaxValue);
+            int num11 = Mathf.Clamp(resourceRate2, 0, (int)ushort.MaxValue);
+            int num12 = Mathf.Clamp(resourceRate3, 0, (int)ushort.MaxValue);
+            int num13 = Mathf.Clamp(resourceRate4, 0, (int)ushort.MaxValue);
+            int num14 = Mathf.Clamp(resourceRate5, 0, (int)ushort.MaxValue);
+            int num15 = Mathf.Clamp(resourceRate6, 0, (int)ushort.MaxValue);
+            int num16 = Mathf.Clamp(resourceRate7, 0, (int)ushort.MaxValue);
+            int num17 = Mathf.Clamp(resourceRate8, 0, (int)ushort.MaxValue);
+            int num18 = Mathf.Clamp(resourceRate9, 0, (int)ushort.MaxValue);
+            int num19 = Mathf.Clamp(resourceRate15, 0, (int)ushort.MaxValue);
+            int num20 = Mathf.Clamp(resourceRate16, 0, (int)ushort.MaxValue);
+            int num21 = Mathf.Clamp(resourceRate17, 0, (int)ushort.MaxValue);
+            int num22 = Mathf.Clamp(a, 0, (int)ushort.MaxValue);
+            int num23 = Mathf.Clamp(resourceRate10, 0, (int)ushort.MaxValue);
+            int landvalue = Mathf.Clamp(num9, 0, (int)ushort.MaxValue);
+            int num24 = Mathf.Clamp(num5, 0, (int)ushort.MaxValue);
+            int coverage = Mathf.Clamp(num6, 0, (int)ushort.MaxValue);
+            int num25 = Mathf.Clamp(resourceRate14, 0, (int)ushort.MaxValue);
+            int num26 = Mathf.Clamp(resourceRate11, 0, (int)ushort.MaxValue);
+            int num27 = Mathf.Clamp(resourceRate12, 0, (int)ushort.MaxValue);
             DistrictManager instance = Singleton<DistrictManager>.instance;
             byte district = instance.GetDistrict(x * 2, z * 2);
-            instance.m_districts.m_buffer[(int)district].AddGroundData(num15, num21, num17);
-            bool result = false;
-            if (num != (int)target[index])
+            instance.m_districts.m_buffer[(int)district].AddGroundData(landvalue, num8, coverage);
+            bool flag = false;
+            if (num10 != (int)target[index])
             {
-                target[index] = (ushort)num;
-                result = true;
+                target[index] = (ushort)num10;
+                flag = true;
             }
-            if (num2 != (int)target[index + 1])
+            if (num11 != (int)target[index + 1])
             {
-                target[index + 1] = (ushort)num2;
-                result = true;
+                target[index + 1] = (ushort)num11;
+                flag = true;
             }
-            if (num3 != (int)target[index + 2])
+            if (num12 != (int)target[index + 2])
             {
-                target[index + 2] = (ushort)num3;
-                result = true;
+                target[index + 2] = (ushort)num12;
+                flag = true;
             }
-            if (num4 != (int)target[index + 3])
+            if (num13 != (int)target[index + 3])
             {
-                target[index + 3] = (ushort)num4;
-                result = true;
+                target[index + 3] = (ushort)num13;
+                flag = true;
             }
-            if (num5 != (int)target[index + 4])
+            if (num14 != (int)target[index + 4])
             {
-                target[index + 4] = (ushort)num5;
-                result = true;
+                target[index + 4] = (ushort)num14;
+                flag = true;
             }
-            if (num6 != (int)target[index + 5])
+            if (num15 != (int)target[index + 5])
             {
-                target[index + 5] = (ushort)num6;
-                result = true;
+                target[index + 5] = (ushort)num15;
+                flag = true;
             }
-            if (num7 != (int)target[index + 6])
+            if (num16 != (int)target[index + 6])
             {
-                target[index + 6] = (ushort)num7;
-                result = true;
+                target[index + 6] = (ushort)num16;
+                flag = true;
             }
-            if (num8 != (int)target[index + 7])
+            if (num17 != (int)target[index + 7])
             {
-                target[index + 7] = (ushort)num8;
-                result = true;
+                target[index + 7] = (ushort)num17;
+                flag = true;
             }
-            if (num9 != (int)target[index + 8])
+            if (num18 != (int)target[index + 8])
             {
-                target[index + 8] = (ushort)num9;
-                result = true;
+                target[index + 8] = (ushort)num18;
+                flag = true;
             }
-            if (num10 != (int)target[index + 9])
+            if (num19 != (int)target[index + 9])
             {
-                target[index + 9] = (ushort)num10;
-                result = true;
+                target[index + 9] = (ushort)num19;
+                flag = true;
             }
-            if (num11 != (int)target[index + 10])
+            if (num20 != (int)target[index + 10])
             {
-                target[index + 10] = (ushort)num11;
-                result = true;
+                target[index + 10] = (ushort)num20;
+                flag = true;
             }
-            if (num12 != (int)target[index + 11])
+            if (num21 != (int)target[index + 11])
             {
-                target[index + 11] = (ushort)num12;
-                result = true;
+                target[index + 11] = (ushort)num21;
+                flag = true;
             }
-            if (num13 != (int)target[index + 12])
+            if (num22 != (int)target[index + 12])
             {
-                target[index + 12] = (ushort)num13;
-                result = true;
+                target[index + 12] = (ushort)num22;
+                flag = true;
             }
-            if (num14 != (int)target[index + 13])
+            if (num23 != (int)target[index + 13])
             {
-                target[index + 13] = (ushort)num14;
-                result = true;
+                target[index + 13] = (ushort)num23;
+                flag = true;
             }
-            if (num15 != (int)target[index + 14])
+            if (landvalue != (int)target[index + 14])
             {
-                target[index + 14] = (ushort)num15;
-                result = true;
+                target[index + 14] = (ushort)landvalue;
+                flag = true;
             }
-            if (num16 != (int)target[index + 15])
+            if (num24 != (int)target[index + 15])
             {
-                target[index + 15] = (ushort)num16;
-                result = true;
+                target[index + 15] = (ushort)num24;
+                flag = true;
             }
-            if (num17 != (int)target[index + 16])
+            if (coverage != (int)target[index + 16])
             {
-                target[index + 16] = (ushort)num17;
-                result = true;
+                target[index + 16] = (ushort)coverage;
+                flag = true;
             }
-            if (num18 != (int)target[index + 17])
+            if (num25 != (int)target[index + 17])
             {
-                target[index + 17] = (ushort)num18;
-                result = true;
+                target[index + 17] = (ushort)num25;
+                flag = true;
             }
-            if (num19 != (int)target[index + 18])
+            if (num26 != (int)target[index + 18])
             {
-                target[index + 18] = (ushort)num19;
-                result = true;
+                target[index + 18] = (ushort)num26;
+                flag = true;
             }
-            if (num20 != (int)target[index + 19])
+            if (num27 != (int)target[index + 19])
             {
-                target[index + 19] = (ushort)num20;
-                result = true;
+                target[index + 19] = (ushort)num27;
+                flag = true;
             }
-            return result;
+            return flag;
         }
 
+        //no changes
         private static void CalculateTotalResources(int[] buffer, int[] bufferMul, int[] target)
         {
-            int num = buffer[0];
+            int num1 = buffer[0];
             int num2 = buffer[1];
             int num3 = buffer[2];
             int num4 = buffer[3];
@@ -499,90 +487,108 @@ namespace EightyOne.ResourceManagers
             int num37 = bufferMul[17];
             int num38 = bufferMul[18];
             int num39 = bufferMul[19];
+            int num40;
+            int num41;
+            int num42;
+            int num43;
+            int num44;
+            int num45;
+            int num46;
+            int num47;
+            int num48;
+            int num49;
+            int num50;
+            int num51;
+            int num52;
+            int num53;
+            int num54;
+            int num55;
+            int num56;
+            int num57;
             if (num17 != 0)
             {
-                num = num21 / num17;
-                num2 = num22 / num17;
-                num3 = num23 / num17;
-                num4 = num24 / num17;
-                num5 = num25 / num17;
-                num6 = num26 / num17;
-                num7 = num27 / num17;
-                num8 = num28 / num17;
-                num10 = num30 / num17;
-                num11 = num31 / num17;
-                num12 = num32 / num17;
-                num13 = num33 / num17;
-                num14 = num34 / num17;
-                num15 = num35 / num17;
+                num40 = num21 / num17;
+                num41 = num22 / num17;
+                num42 = num23 / num17;
+                num43 = num24 / num17;
+                num44 = num25 / num17;
+                num45 = num26 / num17;
+                num46 = num27 / num17;
+                num47 = num28 / num17;
+                num48 = num30 / num17;
+                num49 = num31 / num17;
+                num50 = num32 / num17;
+                num51 = num33 / num17;
+                num52 = num34 / num17;
+                num53 = num35 / num17;
                 num16 = num36 / num17;
-                num9 = num29 / num17;
-                num18 = num37 / num17;
-                num19 = num38 / num17;
-                num20 = num39 / num17;
+                num54 = num29 / num17;
+                num55 = num37 / num17;
+                num56 = num38 / num17;
+                num57 = num39 / num17;
             }
             else
             {
-                num = 0;
-                num2 = 0;
-                num3 = 0;
-                num4 = 0;
-                num5 = 0;
-                num6 = 0;
-                num7 = 0;
-                num8 = 0;
-                num10 = 0;
-                num11 = 50;
-                num12 = 50;
-                num13 = 0;
-                num14 = 0;
-                num15 = 0;
-                num9 = 0;
-                num18 = 0;
-                num19 = 0;
-                num20 = 0;
+                num40 = 0;
+                num41 = 0;
+                num42 = 0;
+                num43 = 0;
+                num44 = 0;
+                num45 = 0;
+                num46 = 0;
+                num47 = 0;
+                num48 = 0;
+                num49 = 50;
+                num50 = 50;
+                num51 = 0;
+                num52 = 0;
+                num53 = 0;
+                num54 = 0;
+                num55 = 0;
+                num56 = 0;
+                num57 = 0;
             }
-            num16 += num15;
-            num = Mathf.Clamp(num, 0, 2147483647);
-            num2 = Mathf.Clamp(num2, 0, 2147483647);
-            num3 = Mathf.Clamp(num3, 0, 2147483647);
-            num4 = Mathf.Clamp(num4, 0, 2147483647);
-            num5 = Mathf.Clamp(num5, 0, 2147483647);
-            num6 = Mathf.Clamp(num6, 0, 2147483647);
-            num7 = Mathf.Clamp(num7, 0, 2147483647);
-            num8 = Mathf.Clamp(num8, 0, 2147483647);
-            num9 = Mathf.Clamp(num9, 0, 2147483647);
-            num10 = Mathf.Clamp(num10, 0, 2147483647);
-            num11 = Mathf.Clamp(num11, 0, 2147483647);
-            num12 = Mathf.Clamp(num12, 0, 2147483647);
-            num13 = Mathf.Clamp(num13, 0, 2147483647);
-            num14 = Mathf.Clamp(num14, 0, 2147483647);
-            num15 = Mathf.Clamp(num15, 0, 2147483647);
-            num16 = Mathf.Clamp(num16, 0, 2147483647);
-            num17 = Mathf.Clamp(num17, 0, 2147483647);
-            num18 = Mathf.Clamp(num18, 0, 2147483647);
-            num19 = Mathf.Clamp(num19, 0, 2147483647);
-            num20 = Mathf.Clamp(num20, 0, 2147483647);
-            target[0] = num;
-            target[2] = num3;
-            target[1] = num2;
-            target[3] = num4;
-            target[4] = num5;
-            target[5] = num6;
-            target[6] = num7;
-            target[7] = num8;
-            target[8] = num9;
-            target[9] = num10;
-            target[10] = num11;
-            target[11] = num12;
-            target[12] = num13;
-            target[13] = num14;
-            target[14] = num15;
-            target[15] = num16;
-            target[16] = num17;
-            target[17] = num18;
-            target[18] = num19;
-            target[19] = num20;
+            int num58 = num16 + num53;
+            int num59 = Mathf.Clamp(num40, 0, int.MaxValue);
+            int num60 = Mathf.Clamp(num41, 0, int.MaxValue);
+            int num61 = Mathf.Clamp(num42, 0, int.MaxValue);
+            int num62 = Mathf.Clamp(num43, 0, int.MaxValue);
+            int num63 = Mathf.Clamp(num44, 0, int.MaxValue);
+            int num64 = Mathf.Clamp(num45, 0, int.MaxValue);
+            int num65 = Mathf.Clamp(num46, 0, int.MaxValue);
+            int num66 = Mathf.Clamp(num47, 0, int.MaxValue);
+            int num67 = Mathf.Clamp(num54, 0, int.MaxValue);
+            int num68 = Mathf.Clamp(num48, 0, int.MaxValue);
+            int num69 = Mathf.Clamp(num49, 0, int.MaxValue);
+            int num70 = Mathf.Clamp(num50, 0, int.MaxValue);
+            int num71 = Mathf.Clamp(num51, 0, int.MaxValue);
+            int num72 = Mathf.Clamp(num52, 0, int.MaxValue);
+            int num73 = Mathf.Clamp(num53, 0, int.MaxValue);
+            int num74 = Mathf.Clamp(num58, 0, int.MaxValue);
+            int num75 = Mathf.Clamp(num17, 0, int.MaxValue);
+            int num76 = Mathf.Clamp(num55, 0, int.MaxValue);
+            int num77 = Mathf.Clamp(num56, 0, int.MaxValue);
+            int num78 = Mathf.Clamp(num57, 0, int.MaxValue);
+            target[0] = num59;
+            target[2] = num61;
+            target[1] = num60;
+            target[3] = num62;
+            target[4] = num63;
+            target[5] = num64;
+            target[6] = num65;
+            target[7] = num66;
+            target[8] = num67;
+            target[9] = num68;
+            target[10] = num69;
+            target[11] = num70;
+            target[12] = num71;
+            target[13] = num72;
+            target[14] = num73;
+            target[15] = num74;
+            target[16] = num75;
+            target[17] = num76;
+            target[18] = num77;
+            target[19] = num78;
         }
 
         [RedirectMethod]
@@ -622,56 +628,58 @@ namespace EightyOne.ResourceManagers
         [RedirectMethod]
         protected void SimulationStepImpl(int subStep)
         {
-            if (subStep != 0 && subStep != 1000)
+            if (subStep == 0 || subStep == 1000)
+                return;
+            int num1 = (int)Singleton<SimulationManager>.instance.m_currentFrameIndex % GRID;
+            //begin mod
+            int num2 = num1;
+            int num3 = (num1 * GRID) % GRID;
+            int num4 = (((num1 + 1) * GRID) - 1) % GRID;
+            //end mod
+            int minX = -1;
+            int maxX = -1;
+            for (int x = num3; x <= num4; ++x)
             {
-                uint currentFrameIndex = Singleton<SimulationManager>.instance.m_currentFrameIndex;
-                int num = (int)(currentFrameIndex & 511u);
-                if (num < GRID)
+                //begin mod
+                int index1 = (num2 * GRID + x) * 20;
+                if (CalculateLocalResources(x, num2, m_localTempResources, m_globalFinalResources, m_localFinalResources, index1))
+                    //end mod
                 {
-                    int num2 = num;
-
-                    int num5 = -1;
-                    int maxX = -1;
-                    for (int i = 0; i < GRID; i++)
-                    {
-                        int num6 = (num2 * GRID + i) * 20;
-                        if (CalculateLocalResources(i, num2, m_localTempResources, m_globalFinalResources, m_localFinalResources, num6))
-                        {
-                            if (num5 == -1)
-                            {
-                                num5 = i;
-                            }
-                            maxX = i;
-                        }
-                        int num7 = (int)m_localFinalResources[num6 + 16];
-                        for (int j = 0; j < 20; j++)
-                        {
-                            int num8 = (int)m_localFinalResources[num6 + j];
-                            m_totalTempResources[j] += num8;
-                            m_totalTempResourcesMul[j] += num8 * num7;
-                            m_localTempResources[num6 + j] = 0;
-                        }
-                    }
-                    if (num == GRID - 1)
-                    {
-                        CalculateTotalResources(m_totalTempResources, m_totalTempResourcesMul, m_totalFinalResources);
-                        StatisticsManager instance = Singleton<StatisticsManager>.instance;
-                        StatisticBase statisticBase = instance.Acquire<StatisticArray>(StatisticType.ImmaterialResource);
-                        for (int k = 0; k < 20; k++)
-                        {
-                            m_globalFinalResources[k] = m_globalTempResources[k];
-                            m_globalTempResources[k] = 0;
-                            m_totalTempResources[k] = 0;
-                            m_totalTempResourcesMul[k] = 0;
-                            statisticBase.Acquire<StatisticInt32>(k, 20).Set(m_totalFinalResources[k]);
-                        }
-                    }
-                    if (num5 != -1)
-                    {
-                        AreaModified(num5, num2, maxX, num2);
-                    }
+                    if (minX == -1)
+                        minX = x;
+                    maxX = x;
+                }
+                //begin mod
+                int num5 = (int)m_localFinalResources[index1 + 16];
+                for (int index2 = 0; index2 < 20; ++index2)
+                {
+                    int num6 = (int)m_localFinalResources[index1 + index2];
+                    m_totalTempResources[index2] += num6;
+                    m_totalTempResourcesMul[index2] += num6 * num5;
+                    m_localTempResources[index1 + index2] = (ushort)0;
+                }
+                //end mod
+            }
+            if (num1 == GRID - 1)
+            {
+                //begin mod
+                CalculateTotalResources(m_totalTempResources, m_totalTempResourcesMul, m_totalFinalResources);
+                //end mod
+                StatisticBase statisticBase = Singleton<StatisticsManager>.instance.Acquire<StatisticArray>(StatisticType.ImmaterialResource);
+                for (int index = 0; index < 20; ++index)
+                {
+                    //begin mod
+                    m_globalFinalResources[index] = m_globalTempResources[index];
+                    m_globalTempResources[index] = 0;
+                    m_totalTempResources[index] = 0;
+                    m_totalTempResourcesMul[index] = 0;
+                    statisticBase.Acquire<StatisticInt32>(index, 20).Set(m_totalFinalResources[index]);
+                    //end mod
                 }
             }
+            if (minX == -1)
+                return;
+            this.AreaModified(minX, num2, maxX, num2);
         }
     }
 }
