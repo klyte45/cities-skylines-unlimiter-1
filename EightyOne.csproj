@@ -48,7 +48,7 @@
     <Compile Include="Areas\FakeGameAreaTool.cs" />
     <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
-    <Compile Include="Areas\AreaManagerDataExtension.cs" />
+    <Compile Include="DataExtensions\AreaManagerDataExtension.cs" />
     <Compile Include="Redirection\IgnoreIfBuildingThemesEnabledAttribute.cs" />
     <Compile Include="Redirection\IgnoreIfOtherModEnabledAtribute.cs" />
     <Compile Include="Redirection\IgnoreIfRemoveNeedForPipesEnabledAttribute.cs" />
@@ -58,12 +58,14 @@
     <Compile Include="LoadingExtension.cs" />
     <Compile Include="Redirection\RedirectionUtil.cs" />
     <Compile Include="Redirection\Tuple.cs" />
-    <Compile Include="ResourceManagers\DistrictManagerDataExtension.cs" />
+    <Compile Include="DataExtensions\DistrictManagerDataExtension.cs" />
+    <Compile Include="DataExtensions\ElectricityManagerDataExtension.cs" />
     <Compile Include="ResourceManagers\FakeDistrictTool.cs" />
     <Compile Include="ResourceManagers\FakeElectricityManager.cs" />
     <Compile Include="ResourceManagers\FakeDistrictManager.cs" />
     <Compile Include="ResourceManagers\FakeImmaterialResourceManager.cs" />
     <Compile Include="ResourceManagers\FakeWaterManager.cs" />
+    <Compile Include="DataExtensions\WaterManagerDataExtension.cs" />
     <Compile Include="Terrain\FakeTerrainManager.cs" />
     <Compile Include="UnlockAllCheat.cs" />
     <Compile Include="Util.cs" />

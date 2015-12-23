@@ -1,9 +1,10 @@
 ﻿using System.IO;
 using System.Linq;
 using ColossalFramework.IO;
+using EightyOne.ResourceManagers;
 using ICities;
 
-namespace EightyOne.ResourceManagers
+namespace EightyOne.DataExtensions
 {
     public class DistrictManagerDataExtension : SerializableDataExtensionBase
     {
@@ -11,6 +12,10 @@ namespace EightyOne.ResourceManagers
 
         public override void OnSaveData()
         {
+            if (!Util.IsGameMode())
+            {
+                return;
+            }
             var oldGrid = DistrictManager.instance.m_districtGrid;
             int oldGridSize = 512;
             int diff = (FakeDistrictManager.GRID - oldGridSize) / 2;

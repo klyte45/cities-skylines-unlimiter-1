@@ -91,6 +91,9 @@ namespace EightyOne
         private static void RevertRedirect(bool onCreated)
         {
             var redirects = onCreated ? redirectsOnCreated : redirectsOnLoaded;
+            if(redirects == null){
+                return;
+            }
             foreach (var kvp in redirects)
             {
                 RedirectionHelper.RevertRedirect(kvp.Key, kvp.Value);

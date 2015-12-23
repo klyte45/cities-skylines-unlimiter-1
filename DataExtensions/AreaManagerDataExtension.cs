@@ -1,10 +1,10 @@
 ﻿using System.IO;
-using System.Reflection;
-using ColossalFramework.IO;
-using ICities;
 using System.Linq;
+using ColossalFramework.IO;
+using EightyOne.Areas;
+using ICities;
 
-namespace EightyOne.Areas
+namespace EightyOne.DataExtensions
 {
     public class AreaManagerDataExtension : SerializableDataExtensionBase
     {
@@ -12,6 +12,10 @@ namespace EightyOne.Areas
 
         public override void OnSaveData()
         {
+            if (!Util.IsGameMode())
+            {
+                return;
+            }
             using (var ms = new MemoryStream())
             {
                 DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new FakeGameAreaManager.Data());

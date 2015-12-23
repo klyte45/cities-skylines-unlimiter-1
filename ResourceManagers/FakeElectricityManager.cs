@@ -1,10 +1,7 @@
 ﻿using ColossalFramework;
 using ColossalFramework.IO;
-using ICities;
 using System;
 using System.Collections;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using UnityEngine;
@@ -14,7 +11,7 @@ using EightyOne.Redirection;
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(ElectricityManager))]
-    public class FakeElectricityManager : SerializableDataExtensionBase
+    public class FakeElectricityManager
     {
         public class Data : IDataContainer
         {
@@ -235,54 +232,6 @@ namespace EightyOne.ResourceManagers
             {
                 Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();
                 ElectricityManager.instance.AreaModified(0, 0, GRID, GRID);
-            }
-        }
-
-        private const string id = "fakeEM";
-
-        public override void OnSaveData()
-        {
-            var em = ElectricityManager.instance;
-            var oldGrid = (IList)typeof(ElectricityManager).GetField("m_electricityGrid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(em);
-            int diff = (GRID - ElectricityManager.ELECTRICITYGRID_RESOLUTION) / 2;
-            var fields = Util.GetFieldsFromStruct(oldGrid[0], electricityGrid[0]);
-            for (var i = 0; i < ElectricityManager.ELECTRICITYGRID_RESOLUTION; i += 1)
-            {
-                for (var j = 0; j < ElectricityManager.ELECTRICITYGRID_RESOLUTION; j += 1)
-                {
-                    var oldCellIndex = j * ElectricityManager.ELECTRICITYGRID_RESOLUTION + i;
-                    oldGrid[oldCellIndex] = Util.CopyStruct((object)oldGrid[oldCellIndex], electricityGrid[(j + diff) * GRID + (i + diff)], fields);
-                }
-            }
-
-            Util.CopyStructArrayBack(m_pulseGroups, em, "m_pulseGroups");
-            Util.CopyStructArrayBack(m_pulseUnits, em, "m_pulseUnits");
-            Util.CopyArrayBack(m_nodeGroups, em, "m_nodeGroups");
-
-            Util.SetPropertyValueBack(m_pulseGroupCount, em, "m_pulseGroupCount");
-            Util.SetPropertyValueBack(m_pulseUnitEnd % m_pulseUnits.Length, em, "m_pulseUnitEnd");
-            Util.SetPropertyValueBack(m_processedCells, em, "m_processedCells");
-            Util.SetPropertyValueBack(m_conductiveCells, em, "m_conductiveCells");
-            Util.SetPropertyValueBack(m_canContinue, em, "m_canContinue");
-
-            using (var ms = new MemoryStream())
-            {
-                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new Data());
-                var data = ms.ToArray();
-                serializableDataManager.SaveData(id, data);
-            }
-        }
-
-        public override void OnLoadData()
-        {
-            if (!serializableDataManager.EnumerateData().Contains(id))
-            {
-                return;
-            }
-            var data = serializableDataManager.LoadData(id);
-            using (var ms = new MemoryStream(data))
-            {
-                var s = DataSerializer.Deserialize<Data>(ms, DataSerializer.Mode.Memory);
             }
         }
 
