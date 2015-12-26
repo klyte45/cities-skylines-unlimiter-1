@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using ColossalFramework;
 using System.Threading;
 using ColossalFramework.Math;
@@ -11,8 +12,8 @@ namespace EightyOne.ResourceManagers
     [TargetType(typeof(ImmaterialResourceManager))]
     class FakeImmaterialResourceManager
     {
-        private const int GRID = 450;
-        private const int HALFGRID = 225;
+        public const int GRID = 450;
+        public const int HALFGRID = 225;
 
         private static ushort[] m_localFinalResources;
         private static ushort[] m_localTempResources;
@@ -52,6 +53,11 @@ namespace EightyOne.ResourceManagers
             m_totalTempResourcesMul = new int[20];
             m_modifiedX1 = new int[GRID];
             m_modifiedX2 = new int[GRID];
+            for (int index = 0; index < GRID; ++index)
+            {
+                m_modifiedX1[index] = 0;
+                m_modifiedX2[index] = GRID - 1;
+            }
             m_modified = true;
             m_resourceTexture = new Texture2D(GRID, GRID, TextureFormat.Alpha8, false, true);
             m_resourceTexture.wrapMode = TextureWrapMode.Clamp;
@@ -93,65 +99,70 @@ namespace EightyOne.ResourceManagers
         [RedirectMethod]
         private void LateUpdate()
         {
-            if (!Singleton<LoadingManager>.instance.m_loadingComplete)
-            {
+            //begin mod
+            if (!Singleton<LoadingManager>.instance.m_loadingComplete || ImmaterialResourceManager.instance.ResourceMapVisible == ImmaterialResourceManager.Resource.None || !m_modified)
                 return;
-            }
-            if (ImmaterialResourceManager.instance.ResourceMapVisible != ImmaterialResourceManager.Resource.None && m_modified)
-            {
-                m_modified = false;
-                UpdateTexture();
-            }
+            m_modified = false;
+            //end mod
+            this.UpdateTexture();
         }
 
         [RedirectMethod]
         private void UpdateTexture()
         {
-            for (int i = 0; i < GRID; i++)
+            //begin mod
+            for (int index = 0; index < GRID; ++index)
             {
-                if (m_modifiedX2[i] >= m_modifiedX1[i])
+                if (m_modifiedX2[index] >= m_modifiedX1[index])
                 {
-                    while (!Monitor.TryEnter(m_localFinalResources, SimulationManager.SYNCHRONIZE_TIMEOUT))
-                    {
-                    }
-                    int num;
+                    do
+                        ;
+                    while (!Monitor.TryEnter((object)m_localFinalResources, SimulationManager.SYNCHRONIZE_TIMEOUT));
+                    int num1;
                     int num2;
                     try
                     {
-                        num = m_modifiedX1[i];
-                        num2 = m_modifiedX2[i];
-                        m_modifiedX1[i] = 10000;
-                        m_modifiedX2[i] = -10000;
+                        num1 = m_modifiedX1[index];
+                        num2 = m_modifiedX2[index];
+                        m_modifiedX1[index] = 10000;
+                        m_modifiedX2[index] = -10000;
                     }
                     finally
                     {
-                        Monitor.Exit(m_localFinalResources);
+                        Monitor.Exit((object)m_localFinalResources);
                     }
-                    for (int j = num; j <= num2; j++)
+                    //end mod
+
+                    for (int x = num1; x <= num2; ++x)
                     {
-                        int num3 = 0;
-                        AddLocalResource(j - 1, i - 1, 5, ref num3);
-                        AddLocalResource(j, i - 1, 7, ref num3);
-                        AddLocalResource(j + 1, i - 1, 5, ref num3);
-                        AddLocalResource(j - 1, i, 7, ref num3);
-                        AddLocalResource(j, i, 14, ref num3);
-                        AddLocalResource(j + 1, i, 7, ref num3);
-                        AddLocalResource(j - 1, i + 1, 5, ref num3);
-                        AddLocalResource(j, i + 1, 7, ref num3);
-                        AddLocalResource(j + 1, i + 1, 5, ref num3);
-                        float num4 = Mathf.Clamp01(Mathf.Sqrt((float)num3 * 0.000161290329f));
+                        int amount = 0;
+                        this.AddLocalResource(x - 1, index - 1, 5, ref amount);
+                        this.AddLocalResource(x, index - 1, 7, ref amount);
+                        this.AddLocalResource(x + 1, index - 1, 5, ref amount);
+                        this.AddLocalResource(x - 1, index, 7, ref amount);
+                        this.AddLocalResource(x, index, 14, ref amount);
+                        this.AddLocalResource(x + 1, index, 7, ref amount);
+                        this.AddLocalResource(x - 1, index + 1, 5, ref amount);
+                        this.AddLocalResource(x, index + 1, 7, ref amount);
+                        this.AddLocalResource(x + 1, index + 1, 5, ref amount);
+                        float num3 = Mathf.Clamp01(Mathf.Sqrt((float)amount * 0.0001612903f));
                         Color color;
-                        color.r = num4;
-                        color.g = num4;
-                        color.b = num4;
-                        color.a = num4;
-                        m_resourceTexture.SetPixel(j, i, color);
+                        color.r = num3;
+                        color.g = num3;
+                        color.b = num3;
+                        color.a = num3;
+                        //begin mod
+                        m_resourceTexture.SetPixel(x, index, color);
+                        //end mod
                     }
                 }
             }
+            //begin mod
             m_resourceTexture.Apply();
+            //end mod
         }
 
+        [RedirectMethod]
         private void AddLocalResource(int x, int z, int multiplier, ref int amount)
         {
             x = Mathf.Clamp(x, 0, GRID - 1);
@@ -185,14 +196,16 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        //no changes
         private void AddResource(ref ushort buffer, int rate)
         {
-            buffer = (ushort)Mathf.Min((int)buffer + rate, 65535);
+            buffer = (ushort)Mathf.Min((int)buffer + rate, (int)ushort.MaxValue);
         }
 
+        //no changes
         private void AddResource(ref int buffer, int rate)
         {
-            buffer = Mathf.Min(buffer + rate, 2147483647);
+            buffer = Mathf.Min(buffer + rate, int.MaxValue);
         }
 
         [RedirectMethod]
@@ -245,10 +258,10 @@ namespace EightyOne.ResourceManagers
         public int AddResource(ImmaterialResourceManager.Resource resource, int rate)
         {
             if (rate == 0)
-            {
                 return 0;
-            }
-            AddResource(ref m_globalTempResources[(int)resource], rate);
+            //begin mod
+            this.AddResource(ref m_globalTempResources[(int)resource], rate);
+            //end mod
             return rate;
         }
 
@@ -270,6 +283,7 @@ namespace EightyOne.ResourceManagers
             return maxEffect;
         }
 
+        [RedirectMethod]
         private static bool CalculateLocalResources(int x, int z, ushort[] buffer, int[] global, ushort[] target, int index)
         {
             int resourceRate1 = (int)buffer[index] + global[0];
@@ -293,7 +307,7 @@ namespace EightyOne.ResourceManagers
             int resourceRate11 = (int)buffer[index + 18] + global[18];
             int resourceRate12 = (int)buffer[index + 19] + global[19];
             //begin mod
-            Rect area = new Rect((float)(((double)x - HALFGRID - 1.5) * 38.4000015258789), (float)(((double)z - HALFGRID - 1.5) * 38.4000015258789), 153.6f, 153.6f);
+            Rect area = new Rect((float)(((double)x - HALFGRID - 1.5) * 38.4f), (float)(((double)z - HALFGRID - 1.5) * 38.4f), 153.6f, 153.6f);
             //end mod
             float groundPollution;
             float waterProximity;
@@ -341,7 +355,9 @@ namespace EightyOne.ResourceManagers
             int num26 = Mathf.Clamp(resourceRate11, 0, (int)ushort.MaxValue);
             int num27 = Mathf.Clamp(resourceRate12, 0, (int)ushort.MaxValue);
             DistrictManager instance = Singleton<DistrictManager>.instance;
-            byte district = instance.GetDistrict(x * 2, z * 2);
+            //begin mod
+            byte district = instance.GetDistrict(x * FakeDistrictManager.GRID / GRID, z * FakeDistrictManager.GRID / GRID);
+            //end mod
             instance.m_districts.m_buffer[(int)district].AddGroundData(landvalue, num8, coverage);
             bool flag = false;
             if (num10 != (int)target[index])
@@ -632,37 +648,45 @@ namespace EightyOne.ResourceManagers
         {
             if (subStep == 0 || subStep == 1000)
                 return;
-            int num1 = (int)Singleton<SimulationManager>.instance.m_currentFrameIndex % GRID;
+            //all managers refresh at that frequency. We must not change that value!
+            int num1 = (int)Singleton<SimulationManager>.instance.m_currentFrameIndex & (int)byte.MaxValue;
             //begin mod
-            int num2 = num1;
-            int num3 = (num1 * GRID) % GRID;
-            int num4 = (((num1 + 1) * GRID) - 1) % GRID;
-            //end mod
+            int num2 = num1 * 2; //two lines at single time. 256*2 = 512 > 450
             int minX = -1;
             int maxX = -1;
-            for (int x = num3; x <= num4; ++x)
+            int minZ = -1;
+            int maxZ = -1;
+
+            for (int z = num2; z <= num2 + 1; z++)
             {
-                //begin mod
-                int index1 = (num2 * GRID + x) * 20;
-                if (CalculateLocalResources(x, num2, m_localTempResources, m_globalFinalResources, m_localFinalResources, index1))
-                    //end mod
+                if (z > GRID - 1)
                 {
-                    if (minX == -1)
-                        minX = x;
-                    maxX = x;
+                    continue;
                 }
-                //begin mod
-                int num5 = (int)m_localFinalResources[index1 + 16];
-                for (int index2 = 0; index2 < 20; ++index2)
+                int num3 = 0;
+                int num4 = GRID - 1;
+                for (int x = num3; x <= num4; ++x)
                 {
-                    int num6 = (int)m_localFinalResources[index1 + index2];
-                    m_totalTempResources[index2] += num6;
-                    m_totalTempResourcesMul[index2] += num6 * num5;
-                    m_localTempResources[index1 + index2] = (ushort)0;
+                    int index1 = (z * GRID + x) * 20;
+                    if (CalculateLocalResources(x, z, m_localTempResources, m_globalFinalResources, m_localFinalResources, index1))
+                    {
+                        minX = minX == -1 ? x : Math.Min(minX, x);
+                        maxX = Math.Max(maxX, x);
+                        minZ = minZ == -1 ? z : Math.Min(minZ, z);
+                        maxZ = Math.Max(maxZ, z);
+                    }
+                    int num5 = (int)m_localFinalResources[index1 + 16];
+                    for (int index2 = 0; index2 < 20; ++index2)
+                    {
+                        int num6 = (int)m_localFinalResources[index1 + index2];
+                        m_totalTempResources[index2] += num6;
+                        m_totalTempResourcesMul[index2] += num6 * num5;
+                        m_localTempResources[index1 + index2] = (ushort)0;
+                    }
                 }
-                //end mod
             }
-            if (num1 == GRID - 1)
+            //end mod
+            if (num1 == byte.MaxValue) //all managers refresh at that frequency. We must not change that value!
             {
                 //begin mod
                 CalculateTotalResources(m_totalTempResources, m_totalTempResourcesMul, m_totalFinalResources);
@@ -681,7 +705,9 @@ namespace EightyOne.ResourceManagers
             }
             if (minX == -1)
                 return;
-            this.AreaModified(minX, num2, maxX, num2);
+            //begin mod
+            this.AreaModified(minX, minZ, maxX, maxZ);
+            //end mod
         }
     }
 }
