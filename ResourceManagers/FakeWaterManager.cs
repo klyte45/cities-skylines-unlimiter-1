@@ -686,25 +686,24 @@ namespace EightyOne.ResourceManagers
                         var num3 = position2.x * mult + makePositive;
                         var num4 = position2.z * mult + makePositive;
 
-                        float shrink = 9f / 5f;
                         var min = 0f;
                         var max = 1.0f;
-                        color.r = (float)Mathf.Clamp((shrink * (j * offset + halfOffset - num) + 128) / 255, 0, 1);
+                        color.r = (float)Mathf.Clamp((j * offset + halfOffset - num + 128) / 255, 0, 1);
                         if (color.r > max || color.r < min)
                         {
                             color.r = 0;
                         }
-                        color.g = (float)Mathf.Clamp((shrink * (i * offset + halfOffset - num2) + 128) / 255, 0, 1);
+                        color.g = (float)Mathf.Clamp((i * offset + halfOffset - num2 + 128) / 255, 0, 1);
                         if (color.g > max || color.g < min)
                         {
                             color.g = 0;
                         }
-                        color.b = (float)Mathf.Clamp((shrink * (j * offset + halfOffset - num3) + 128) / 255, 0, 1);
+                        color.b = (float)Mathf.Clamp((j * offset + halfOffset - num3 + 128) / 255, 0, 1);
                         if (color.b > max || color.b < min)
                         {
                             color.b = 0;
                         }
-                        color.a = (float)Mathf.Clamp((shrink * (i * offset + halfOffset - num4) + 128) / 255, 0, 1);
+                        color.a = (float)Mathf.Clamp((i * offset + halfOffset - num4 + 128) / 255, 0, 1);
                         if (color.a > max || color.a < min)
                         {
                             color.a = 0;
