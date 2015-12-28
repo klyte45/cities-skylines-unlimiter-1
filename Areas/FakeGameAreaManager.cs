@@ -61,13 +61,13 @@ namespace EightyOne.Areas
             SimulationManager.instance.AddAction(() =>
             {
                 FakeNetManager.DontUpdateNodeFlags = true;
-                UnityEngine.Debug.Log($"81 Tiles - DontUpdateNodeFlags enabled");
+                Debug.Log($"81 Tiles - DontUpdateNodeFlags enabled");
             });
             SimulationManager.instance.AddAction(FakeGameAreaManagerInit.UpdateData);
             SimulationManager.instance.AddAction(() =>
             {
                 FakeNetManager.DontUpdateNodeFlags = false;
-                UnityEngine.Debug.Log($"81 Tiles - DontUpdateNodeFlags disabled");
+                Debug.Log($"81 Tiles - DontUpdateNodeFlags disabled");
             });
         }
 

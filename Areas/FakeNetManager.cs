@@ -68,11 +68,11 @@ namespace EightyOne.Areas
             return 0;
         }
 
-        public static bool DontUpdateNodeFlags = false;
+                public static bool DontUpdateNodeFlags = false;
         [RedirectMethod]
         public void UpdateNodeFlags(ushort node)
         {
-            UnityEngine.Debug.Log($"81 Tiles - in UpdateNodeFlags with DontUpdateNodeFlags={DontUpdateNodeFlags}");
+            //Debug.Log($"81 Tiles - in UpdateNodeFlags with DontUpdateNodeFlags={DontUpdateNodeFlags}");
             if (!DontUpdateNodeFlags)
             {
                 if (NetManager.instance.m_nodes.m_buffer[(int)node].m_flags == NetNode.Flags.None)
