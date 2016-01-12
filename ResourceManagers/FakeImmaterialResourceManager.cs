@@ -65,6 +65,24 @@ namespace EightyOne.ResourceManagers
             ImmaterialResourceManager.instance.AreaModified(0, 0, GRID, GRID);
         }
 
+        [RedirectReverse]
+        private static void CalculateTotalResources(int[] buffer, int[] bufferMul, int[] target)
+        {
+            UnityEngine.Debug.Log($"{buffer}+{bufferMul}+{target}");
+        }
+
+        [RedirectReverse]
+        private static void AddResource(ImmaterialResourceManager manager, ref ushort buffer, int rate)
+        {
+            UnityEngine.Debug.Log($"{manager}-{buffer}-{rate}");
+        }
+
+        [RedirectReverse]
+        private static void AddResource(ImmaterialResourceManager manager, ref int buffer, int rate)
+        {
+            UnityEngine.Debug.Log($"{manager}-{buffer}-{rate}");
+        }
+
         public static void OnDestroy()
         {
             if (m_resourceTexture != null)
@@ -196,18 +214,6 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        //no changes
-        private void AddResource(ref ushort buffer, int rate)
-        {
-            buffer = (ushort)Mathf.Min((int)buffer + rate, (int)ushort.MaxValue);
-        }
-
-        //no changes
-        private void AddResource(ref int buffer, int rate)
-        {
-            buffer = Mathf.Min(buffer + rate, int.MaxValue);
-        }
-
         [RedirectMethod]
         public int AddResource(ImmaterialResourceManager.Resource resource, int rate, Vector3 position, float radius)
         {
@@ -247,7 +253,7 @@ namespace EightyOne.ResourceManagers
                             num10 = Mathf.RoundToInt((float)num10 * num11);
                         }
                         int num12 = (int)((i * GRID + j) * 20 + resource);
-                        AddResource(ref m_localTempResources[num12], num10);
+                        AddResource(ImmaterialResourceManager.instance, ref m_localTempResources[num12], num10);
                     }
                 }
             }
@@ -260,7 +266,7 @@ namespace EightyOne.ResourceManagers
             if (rate == 0)
                 return 0;
             //begin mod
-            this.AddResource(ref m_globalTempResources[(int)resource], rate);
+            AddResource(ImmaterialResourceManager.instance, ref m_globalTempResources[(int)resource], rate);
             //end mod
             return rate;
         }
@@ -461,152 +467,6 @@ namespace EightyOne.ResourceManagers
                 flag = true;
             }
             return flag;
-        }
-
-        //no changes
-        private static void CalculateTotalResources(int[] buffer, int[] bufferMul, int[] target)
-        {
-            int num1 = buffer[0];
-            int num2 = buffer[1];
-            int num3 = buffer[2];
-            int num4 = buffer[3];
-            int num5 = buffer[4];
-            int num6 = buffer[5];
-            int num7 = buffer[6];
-            int num8 = buffer[7];
-            int num9 = buffer[8];
-            int num10 = buffer[9];
-            int num11 = buffer[10];
-            int num12 = buffer[11];
-            int num13 = buffer[12];
-            int num14 = buffer[13];
-            int num15 = buffer[14];
-            int num16 = buffer[15];
-            int num17 = buffer[16];
-            int num18 = buffer[17];
-            int num19 = buffer[18];
-            int num20 = buffer[19];
-            int num21 = bufferMul[0];
-            int num22 = bufferMul[1];
-            int num23 = bufferMul[2];
-            int num24 = bufferMul[3];
-            int num25 = bufferMul[4];
-            int num26 = bufferMul[5];
-            int num27 = bufferMul[6];
-            int num28 = bufferMul[7];
-            int num29 = bufferMul[8];
-            int num30 = bufferMul[9];
-            int num31 = bufferMul[10];
-            int num32 = bufferMul[11];
-            int num33 = bufferMul[12];
-            int num34 = bufferMul[13];
-            int num35 = bufferMul[14];
-            int num36 = bufferMul[15];
-            int num37 = bufferMul[17];
-            int num38 = bufferMul[18];
-            int num39 = bufferMul[19];
-            int num40;
-            int num41;
-            int num42;
-            int num43;
-            int num44;
-            int num45;
-            int num46;
-            int num47;
-            int num48;
-            int num49;
-            int num50;
-            int num51;
-            int num52;
-            int num53;
-            int num54;
-            int num55;
-            int num56;
-            int num57;
-            if (num17 != 0)
-            {
-                num40 = num21 / num17;
-                num41 = num22 / num17;
-                num42 = num23 / num17;
-                num43 = num24 / num17;
-                num44 = num25 / num17;
-                num45 = num26 / num17;
-                num46 = num27 / num17;
-                num47 = num28 / num17;
-                num48 = num30 / num17;
-                num49 = num31 / num17;
-                num50 = num32 / num17;
-                num51 = num33 / num17;
-                num52 = num34 / num17;
-                num53 = num35 / num17;
-                num16 = num36 / num17;
-                num54 = num29 / num17;
-                num55 = num37 / num17;
-                num56 = num38 / num17;
-                num57 = num39 / num17;
-            }
-            else
-            {
-                num40 = 0;
-                num41 = 0;
-                num42 = 0;
-                num43 = 0;
-                num44 = 0;
-                num45 = 0;
-                num46 = 0;
-                num47 = 0;
-                num48 = 0;
-                num49 = 50;
-                num50 = 50;
-                num51 = 0;
-                num52 = 0;
-                num53 = 0;
-                num54 = 0;
-                num55 = 0;
-                num56 = 0;
-                num57 = 0;
-            }
-            int num58 = num16 + num53;
-            int num59 = Mathf.Clamp(num40, 0, int.MaxValue);
-            int num60 = Mathf.Clamp(num41, 0, int.MaxValue);
-            int num61 = Mathf.Clamp(num42, 0, int.MaxValue);
-            int num62 = Mathf.Clamp(num43, 0, int.MaxValue);
-            int num63 = Mathf.Clamp(num44, 0, int.MaxValue);
-            int num64 = Mathf.Clamp(num45, 0, int.MaxValue);
-            int num65 = Mathf.Clamp(num46, 0, int.MaxValue);
-            int num66 = Mathf.Clamp(num47, 0, int.MaxValue);
-            int num67 = Mathf.Clamp(num54, 0, int.MaxValue);
-            int num68 = Mathf.Clamp(num48, 0, int.MaxValue);
-            int num69 = Mathf.Clamp(num49, 0, int.MaxValue);
-            int num70 = Mathf.Clamp(num50, 0, int.MaxValue);
-            int num71 = Mathf.Clamp(num51, 0, int.MaxValue);
-            int num72 = Mathf.Clamp(num52, 0, int.MaxValue);
-            int num73 = Mathf.Clamp(num53, 0, int.MaxValue);
-            int num74 = Mathf.Clamp(num58, 0, int.MaxValue);
-            int num75 = Mathf.Clamp(num17, 0, int.MaxValue);
-            int num76 = Mathf.Clamp(num55, 0, int.MaxValue);
-            int num77 = Mathf.Clamp(num56, 0, int.MaxValue);
-            int num78 = Mathf.Clamp(num57, 0, int.MaxValue);
-            target[0] = num59;
-            target[2] = num61;
-            target[1] = num60;
-            target[3] = num62;
-            target[4] = num63;
-            target[5] = num64;
-            target[6] = num65;
-            target[7] = num66;
-            target[8] = num67;
-            target[9] = num68;
-            target[10] = num69;
-            target[11] = num70;
-            target[12] = num71;
-            target[13] = num72;
-            target[14] = num73;
-            target[15] = num74;
-            target[16] = num75;
-            target[17] = num76;
-            target[18] = num77;
-            target[19] = num78;
         }
 
         [RedirectMethod]

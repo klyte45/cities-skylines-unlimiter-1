@@ -8,9 +8,11 @@ namespace EightyOne.Areas
     internal class FakeNetManager
     {
         private static int[] m_tileNodesCount;
+        public static bool DontUpdateNodeFlags;
 
         private static void Init()
         {
+            DontUpdateNodeFlags = false;
             m_tileNodesCount = new int[20 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
             var nodes = NetManager.instance.m_nodes.m_buffer;
             for (int n = 1; n < nodes.Length; n++)
@@ -68,21 +70,19 @@ namespace EightyOne.Areas
             return 0;
         }
 
-                public static bool DontUpdateNodeFlags = false;
         [RedirectMethod]
         public void UpdateNodeFlags(ushort node)
         {
-            //Debug.Log($"81 Tiles - in UpdateNodeFlags with DontUpdateNodeFlags={DontUpdateNodeFlags}");
-            if (!DontUpdateNodeFlags)
+            if (DontUpdateNodeFlags)
             {
-                if (NetManager.instance.m_nodes.m_buffer[(int)node].m_flags == NetNode.Flags.None)
-                    return;
-                NetInfo info = NetManager.instance.m_nodes.m_buffer[(int)node].Info;
-                if (info == null)
-                    return;
-                info.m_netAI.UpdateNodeFlags(node, ref NetManager.instance.m_nodes.m_buffer[(int)node]);
-
+                return;
             }
+            if (NetManager.instance.m_nodes.m_buffer[(int)node].m_flags == NetNode.Flags.None)
+                return;
+            NetInfo info = NetManager.instance.m_nodes.m_buffer[(int)node].Info;
+            if (info == null)
+                return;
+            info.m_netAI.UpdateNodeFlags(node, ref NetManager.instance.m_nodes.m_buffer[(int)node]);
         }
     }
 }

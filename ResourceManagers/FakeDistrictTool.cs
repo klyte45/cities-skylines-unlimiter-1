@@ -19,6 +19,19 @@ namespace EightyOne.ResourceManagers
             m_mousePosition = typeof(DistrictTool).GetField("m_mousePosition", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
+        [RedirectReverse]
+        private static int GetAlpha(DistrictTool tool, ref DistrictManager.Cell cell, byte district)
+        {
+            UnityEngine.Debug.Log($"{tool}-{cell}-{district}");
+            return 0;
+        }
+
+        [RedirectReverse]
+        private static void Normalize(DistrictTool tool, ref DistrictManager.Cell cell, int ignoreIndex)
+        {
+            UnityEngine.Debug.Log($"{tool}-{cell}-{ignoreIndex}");
+        }
+
         [RedirectMethod]
         private void ApplyBrush(byte district)
         {
@@ -214,13 +227,13 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private static bool ForceDistrictAlpha(int x, int z, byte district, int min, int max)
+        private bool ForceDistrictAlpha(int x, int z, byte district, int min, int max)
         {
             //begin mod
             DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
             DistrictManager.Cell cell = districtGrid[z * FakeDistrictManager.GRID + x];
             //end mod
-            int num2 = Mathf.Clamp(GetAlpha(ref cell, district), min, max);
+            int num2 = Mathf.Clamp(GetAlpha(this, ref cell, district), min, max);
             DistrictManager.Cell cell2 = default(DistrictManager.Cell);
             cell2.m_district1 = district;
             cell2.m_district2 = 0;
@@ -235,7 +248,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private static bool SetDistrictAlpha(int x, int z, byte district, int min, int max)
+        private bool SetDistrictAlpha(int x, int z, byte district, int min, int max)
         {
             //begin mod         
             DistrictManager.Cell cell = FakeDistrictManager.districtGrid[z * FakeDistrictManager.GRID + x];
@@ -246,7 +259,7 @@ namespace EightyOne.ResourceManagers
                 if (num2 != (int)cell.m_alpha1)
                 {
                     cell.m_alpha1 = (byte)num2;
-                    Normalize(ref cell, 1);
+                    Normalize(this, ref cell, 1);
                     Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                     return true;
                 }
@@ -257,7 +270,7 @@ namespace EightyOne.ResourceManagers
                 if (num3 != (int)cell.m_alpha2)
                 {
                     cell.m_alpha2 = (byte)num3;
-                    Normalize(ref cell, 2);
+                    Normalize(this, ref cell, 2);
                     Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                     return true;
                 }
@@ -268,7 +281,7 @@ namespace EightyOne.ResourceManagers
                 if (num4 != (int)cell.m_alpha3)
                 {
                     cell.m_alpha3 = (byte)num4;
-                    Normalize(ref cell, 3);
+                    Normalize(this, ref cell, 3);
                     Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                     return true;
                 }
@@ -279,7 +292,7 @@ namespace EightyOne.ResourceManagers
                 if (num5 != (int)cell.m_alpha4)
                 {
                     cell.m_alpha4 = (byte)num5;
-                    Normalize(ref cell, 4);
+                    Normalize(this, ref cell, 4);
                     Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                     return true;
                 }
@@ -314,7 +327,7 @@ namespace EightyOne.ResourceManagers
                     {
                         cell.m_district1 = district;
                         cell.m_alpha1 = (byte)min;
-                        Normalize(ref cell, 1);
+                        Normalize(this, ref cell, 1);
                         Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                         return true;
                     }
@@ -322,7 +335,7 @@ namespace EightyOne.ResourceManagers
                     {
                         cell.m_district2 = district;
                         cell.m_alpha2 = (byte)min;
-                        Normalize(ref cell, 2);
+                        Normalize(this, ref cell, 2);
                         Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                         return true;
                     }
@@ -330,7 +343,7 @@ namespace EightyOne.ResourceManagers
                     {
                         cell.m_district3 = district;
                         cell.m_alpha3 = (byte)min;
-                        Normalize(ref cell, 3);
+                        Normalize(this, ref cell, 3);
                         Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                         return true;
                     }
@@ -338,7 +351,7 @@ namespace EightyOne.ResourceManagers
                     {
                         cell.m_district4 = district;
                         cell.m_alpha4 = (byte)min;
-                        Normalize(ref cell, 4);
+                        Normalize(this, ref cell, 4);
                         Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
                         return true;
                     }
@@ -347,69 +360,8 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
-        //no changes
-        private static void Normalize(ref DistrictManager.Cell cell, int ignoreIndex)
-        {
-            int num = 0;
-            if (ignoreIndex != 1)
-            {
-                num += (int)cell.m_alpha1;
-            }
-            if (ignoreIndex != 2)
-            {
-                num += (int)cell.m_alpha2;
-            }
-            if (ignoreIndex != 3)
-            {
-                num += (int)cell.m_alpha3;
-            }
-            if (ignoreIndex != 4)
-            {
-                num += (int)cell.m_alpha4;
-            }
-            if (num != 0)
-            {
-                int num2 = 255;
-                if (ignoreIndex == 1)
-                {
-                    num2 -= (int)cell.m_alpha1;
-                }
-                if (ignoreIndex == 2)
-                {
-                    num2 -= (int)cell.m_alpha2;
-                }
-                if (ignoreIndex == 3)
-                {
-                    num2 -= (int)cell.m_alpha3;
-                }
-                if (ignoreIndex == 4)
-                {
-                    num2 -= (int)cell.m_alpha4;
-                }
-                if (num > num2)
-                {
-                    if (ignoreIndex != 1)
-                    {
-                        cell.m_alpha1 = (byte)((int)cell.m_alpha1 * num2 / num);
-                    }
-                    if (ignoreIndex != 2)
-                    {
-                        cell.m_alpha2 = (byte)((int)cell.m_alpha2 * num2 / num);
-                    }
-                    if (ignoreIndex != 3)
-                    {
-                        cell.m_alpha3 = (byte)((int)cell.m_alpha3 * num2 / num);
-                    }
-                    if (ignoreIndex != 4)
-                    {
-                        cell.m_alpha4 = (byte)((int)cell.m_alpha4 * num2 / num);
-                    }
-                }
-            }
-        }
-
         [RedirectMethod]
-        private static void CheckNeighbourCells(int x, int z, byte district, out int min, out int max)
+        private void CheckNeighbourCells(int x, int z, byte district, out int min, out int max)
         {
             min = 255;
             max = 0;
@@ -422,18 +374,18 @@ namespace EightyOne.ResourceManagers
                 if (x > 0)
                 {
                     DistrictManager.Cell cell = districtGrid[(z - 1) * num + x - 1];
-                    int alpha = GetAlpha(ref cell, district);
+                    int alpha = GetAlpha(this, ref cell, district);
                     min = Mathf.Min(min, alpha);
                     max = Mathf.Max(max, alpha);
                 }
                 DistrictManager.Cell cell2 = districtGrid[(z - 1) * num + x];
-                int alpha2 = GetAlpha(ref cell2, district);
+                int alpha2 = GetAlpha(this, ref cell2, district);
                 min = Mathf.Min(min, alpha2);
                 max = Mathf.Max(max, alpha2);
                 if (x < num - 1)
                 {
                     DistrictManager.Cell cell3 = districtGrid[(z - 1) * num + x + 1];
-                    int alpha3 = GetAlpha(ref cell3, district);
+                    int alpha3 = GetAlpha(this, ref cell3, district);
                     min = Mathf.Min(min, alpha3);
                     max = Mathf.Max(max, alpha3);
                 }
@@ -441,14 +393,14 @@ namespace EightyOne.ResourceManagers
             if (x > 0)
             {
                 DistrictManager.Cell cell4 = districtGrid[z * num + x - 1];
-                int alpha4 = GetAlpha(ref cell4, district);
+                int alpha4 = GetAlpha(this, ref cell4, district);
                 min = Mathf.Min(min, alpha4);
                 max = Mathf.Max(max, alpha4);
             }
             if (x < num - 1)
             {
                 DistrictManager.Cell cell5 = districtGrid[z * num + x + 1];
-                int alpha5 = GetAlpha(ref cell5, district);
+                int alpha5 = GetAlpha(this, ref cell5, district);
                 min = Mathf.Min(min, alpha5);
                 max = Mathf.Max(max, alpha5);
             }
@@ -457,44 +409,22 @@ namespace EightyOne.ResourceManagers
                 if (x > 0)
                 {
                     DistrictManager.Cell cell6 = districtGrid[(z + 1) * num + x - 1];
-                    int alpha6 = GetAlpha(ref cell6, district);
+                    int alpha6 = GetAlpha(this, ref cell6, district);
                     min = Mathf.Min(min, alpha6);
                     max = Mathf.Max(max, alpha6);
                 }
                 DistrictManager.Cell cell7 = districtGrid[(z + 1) * num + x];
-                int alpha7 = GetAlpha(ref cell7, district);
+                int alpha7 = GetAlpha(this, ref cell7, district);
                 min = Mathf.Min(min, alpha7);
                 max = Mathf.Max(max, alpha7);
                 if (x < num - 1)
                 {
                     DistrictManager.Cell cell8 = districtGrid[(z + 1) * num + x + 1];
-                    int alpha8 = GetAlpha(ref cell8, district);
+                    int alpha8 = GetAlpha(this, ref cell8, district);
                     min = Mathf.Min(min, alpha8);
                     max = Mathf.Max(max, alpha8);
                 }
             }
-        }
-
-        //no changes
-        private static int GetAlpha(ref DistrictManager.Cell cell, byte district)
-        {
-            if (cell.m_district1 == district)
-            {
-                return (int)cell.m_alpha1;
-            }
-            if (cell.m_district2 == district)
-            {
-                return (int)cell.m_alpha2;
-            }
-            if (cell.m_district3 == district)
-            {
-                return (int)cell.m_alpha3;
-            }
-            if (cell.m_district4 == district)
-            {
-                return (int)cell.m_alpha4;
-            }
-            return 0;
         }
     }
 }

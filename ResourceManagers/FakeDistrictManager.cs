@@ -12,6 +12,7 @@ namespace EightyOne.ResourceManagers
     [TargetType(typeof(DistrictManager))]
     public class FakeDistrictManager : DistrictManager
     {
+
         public new class Data : IDataContainer
         {
             public void AfterDeserialize(DataSerializer s)
@@ -155,9 +156,6 @@ namespace EightyOne.ResourceManagers
 
         private static TempDistrictData[] m_tempData;
 
-        private static MethodInfo ReleaseDistrictImplementationMethod = typeof(DistrictManager).GetMethod("ReleaseDistrictImplementation",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-
         private struct TempDistrictData
         {
             public int m_averageX;
@@ -249,6 +247,36 @@ namespace EightyOne.ResourceManagers
             });
         }
 
+        [RedirectReverse]
+        private static void AddDistrictColor1(DistrictManager manager, byte district, byte alpha, ref Color32 color1)
+        {
+            UnityEngine.Debug.Log($"{manager}+{district}+{alpha}+{color1}");
+        }
+
+        [RedirectReverse]
+        private static void AddDistrictColor2(DistrictManager manager, byte district, DistrictPolicies.Policies policy, byte alpha, bool inArea, ref Color32 color2)
+        {
+            UnityEngine.Debug.Log($"{manager}-{district}-{policy}-{alpha}-{inArea}-{color2}");
+        }
+
+        [RedirectReverse]
+        private static void SetBitAlphas(DistrictManager manager, DistrictManager.Cell cell, int alpha, ref int b1, ref int b2, ref int b3, ref int b4, ref int b5, ref int b6, ref int b7)
+        {
+            UnityEngine.Debug.Log($"{manager}-{cell}-{alpha}-{b1}-{b2}-{b3}-{b4}-{b5}-{b6}-{b7}");
+        }
+
+        [RedirectReverse]
+        private static void Exchange(DistrictManager manager, ref byte alpha1, ref byte alpha2, ref byte district1, ref byte district2)
+        {
+            UnityEngine.Debug.Log($"{manager}-{alpha1}-{alpha2}-{district1}-{district2}");
+        }
+
+        [RedirectReverse]
+        private static void EraseDistrict(DistrictManager manager, byte district, ref District data, uint amount)
+        {
+            UnityEngine.Debug.Log($"{manager}-{district}-{data}-{amount}");
+        }
+
         [RedirectMethod]
         public void set_HighlightPolicy(DistrictPolicies.Policies value)
         {
@@ -280,8 +308,8 @@ namespace EightyOne.ResourceManagers
             areaMaterial.SetVector(ID_DistrictMapping, vector);
             Color32 c = new Color32(128, 128, 128, 128);
             Color32 c2 = new Color32(128, 128, 128, 128);
-            AddDistrictColor1((byte)Mathf.Max(0, this.HighlightDistrict), 255, ref c);
-            AddDistrictColor2((byte)Mathf.Max(0, this.HighlightDistrict), DistrictPolicies.Policies.None, 255, true, ref c2);
+            AddDistrictColor1(this, (byte)Mathf.Max(0, this.HighlightDistrict), 255, ref c);
+            AddDistrictColor2(this, (byte)Mathf.Max(0, this.HighlightDistrict), DistrictPolicies.Policies.None, 255, true, ref c2);
             areaMaterial.SetColor(ID_Highlight1, c);
             areaMaterial.SetColor(ID_Highlight2, c2);
             if (this.HighlightPolicy != DistrictPolicies.Policies.None)
@@ -477,10 +505,10 @@ namespace EightyOne.ResourceManagers
                             DistrictManager.Cell cell = districtGrid[num7];
                             //end mod
                             Color32 color = new Color32(128, 128, 128, 128);
-                            AddDistrictColor1(cell.m_district1, cell.m_alpha1, ref color);
-                            AddDistrictColor1(cell.m_district2, cell.m_alpha2, ref color);
-                            AddDistrictColor1(cell.m_district3, cell.m_alpha3, ref color);
-                            AddDistrictColor1(cell.m_district4, cell.m_alpha4, ref color);
+                            AddDistrictColor1(this, cell.m_district1, cell.m_alpha1, ref color);
+                            AddDistrictColor1(this, cell.m_district2, cell.m_alpha2, ref color);
+                            AddDistrictColor1(this, cell.m_district3, cell.m_alpha3, ref color);
+                            AddDistrictColor1(this, cell.m_district4, cell.m_alpha4, ref color);
                             colorBuffer[num7] = color;
                         }
                     }
@@ -505,10 +533,10 @@ namespace EightyOne.ResourceManagers
                             inArea = (areaGrid[num10 * FakeGameAreaManager.GRID + num9] != 0);
                         //end mod
                         Color32 color2 = new Color32(128, 128, 128, 128);
-                        AddDistrictColor2(cell2.m_district1, this.HighlightPolicy, cell2.m_alpha1, inArea, ref color2);
-                        AddDistrictColor2(cell2.m_district2, this.HighlightPolicy, cell2.m_alpha2, inArea, ref color2);
-                        AddDistrictColor2(cell2.m_district3, this.HighlightPolicy, cell2.m_alpha3, inArea, ref color2);
-                        AddDistrictColor2(cell2.m_district4, this.HighlightPolicy, cell2.m_alpha4, inArea, ref color2);
+                        AddDistrictColor2(this, cell2.m_district1, this.HighlightPolicy, cell2.m_alpha1, inArea, ref color2);
+                        AddDistrictColor2(this, cell2.m_district2, this.HighlightPolicy, cell2.m_alpha2, inArea, ref color2);
+                        AddDistrictColor2(this, cell2.m_district3, this.HighlightPolicy, cell2.m_alpha3, inArea, ref color2);
+                        AddDistrictColor2(this, cell2.m_district4, this.HighlightPolicy, cell2.m_alpha4, inArea, ref color2);
                         //begin mod
                         colorBuffer[num8] = color2;
                         //end mod
@@ -538,10 +566,10 @@ namespace EightyOne.ResourceManagers
                         if (fullUpdate)
                         {
                             Color32 c = new Color32(128, 128, 128, 128);
-                            AddDistrictColor1(cell3.m_district1, cell3.m_alpha1, ref c);
-                            AddDistrictColor1(cell3.m_district2, cell3.m_alpha2, ref c);
-                            AddDistrictColor1(cell3.m_district3, cell3.m_alpha3, ref c);
-                            AddDistrictColor1(cell3.m_district4, cell3.m_alpha4, ref c);
+                            AddDistrictColor1(this, cell3.m_district1, cell3.m_alpha1, ref c);
+                            AddDistrictColor1(this, cell3.m_district2, cell3.m_alpha2, ref c);
+                            AddDistrictColor1(this, cell3.m_district3, cell3.m_alpha3, ref c);
+                            AddDistrictColor1(this, cell3.m_district4, cell3.m_alpha4, ref c);
                             districtTexture1.SetPixel(n, m, c);
                         }
                         bool inArea2 = false;
@@ -552,10 +580,10 @@ namespace EightyOne.ResourceManagers
                             inArea2 = (areaGrid[num13 * FakeGameAreaManager.GRID + num12] != 0);
                         //end mod
                         Color32 c2 = new Color32(128, 128, 128, 128);
-                        AddDistrictColor2(cell3.m_district1, this.HighlightPolicy, cell3.m_alpha1, inArea2, ref c2);
-                        AddDistrictColor2(cell3.m_district2, this.HighlightPolicy, cell3.m_alpha2, inArea2, ref c2);
-                        AddDistrictColor2(cell3.m_district3, this.HighlightPolicy, cell3.m_alpha3, inArea2, ref c2);
-                        AddDistrictColor2(cell3.m_district4, this.HighlightPolicy, cell3.m_alpha4, inArea2, ref c2);
+                        AddDistrictColor2(this, cell3.m_district1, this.HighlightPolicy, cell3.m_alpha1, inArea2, ref c2);
+                        AddDistrictColor2(this, cell3.m_district2, this.HighlightPolicy, cell3.m_alpha2, inArea2, ref c2);
+                        AddDistrictColor2(this, cell3.m_district3, this.HighlightPolicy, cell3.m_alpha3, inArea2, ref c2);
+                        AddDistrictColor2(this, cell3.m_district4, this.HighlightPolicy, cell3.m_alpha4, inArea2, ref c2);
                         //begin mod
                         districtTexture2.SetPixel(n, m, c2);
                         //end mod
@@ -567,35 +595,6 @@ namespace EightyOne.ResourceManagers
                 districtTexture2.Apply();
                 //end mod
             }
-        }
-
-        //no changes
-        private void AddDistrictColor1(byte district, byte alpha, ref Color32 color1)
-        {
-            color1.r = ((int)district & 1) == 0 ? (byte)Mathf.Min((int)color1.r, (int)byte.MaxValue - (int)alpha) : (byte)Mathf.Max((int)color1.r, (int)alpha);
-            color1.g = ((int)district & 2) == 0 ? (byte)Mathf.Min((int)color1.g, (int)byte.MaxValue - (int)alpha) : (byte)Mathf.Max((int)color1.g, (int)alpha);
-            color1.b = ((int)district & 4) == 0 ? (byte)Mathf.Min((int)color1.b, (int)byte.MaxValue - (int)alpha) : (byte)Mathf.Max((int)color1.b, (int)alpha);
-            if (((int)district & 8) != 0)
-                color1.a = (byte)Mathf.Max((int)color1.a, (int)alpha);
-            else
-                color1.a = (byte)Mathf.Min((int)color1.a, (int)byte.MaxValue - (int)alpha);
-        }
-
-        //no changes
-        private void AddDistrictColor2(byte district, DistrictPolicies.Policies policy, byte alpha, bool inArea, ref Color32 color2)
-        {
-            color2.r = ((int)district & 16) == 0 ? (byte)Mathf.Min((int)color2.r, (int)byte.MaxValue - (int)alpha) : (byte)Mathf.Max((int)color2.r, (int)alpha);
-            color2.g = ((int)district & 32) == 0 ? (byte)Mathf.Min((int)color2.g, (int)byte.MaxValue - (int)alpha) : (byte)Mathf.Max((int)color2.g, (int)alpha);
-            color2.b = ((int)district & 64) == 0 ? (byte)Mathf.Min((int)color2.b, (int)byte.MaxValue - (int)alpha) : (byte)Mathf.Max((int)color2.b, (int)alpha);
-            if (policy != DistrictPolicies.Policies.None)
-            {
-                if (this.m_districts.m_buffer[(int)district].IsPolicySet(policy) && (inArea || (int)district != 0))
-                    color2.a = (byte)Mathf.Max((int)color2.a, (int)alpha);
-                else
-                    color2.a = (byte)Mathf.Min((int)color2.a, (int)byte.MaxValue - (int)alpha);
-            }
-            else
-                color2.a = (byte)Mathf.Min((int)color2.a, (int)byte.MaxValue - (int)alpha);
         }
 
         [RedirectMethod]
@@ -818,10 +817,10 @@ namespace EightyOne.ResourceManagers
             int num12 = 0;
             int num13 = 0;
             //begin mod
-            SetBitAlphas(districtGrid[num4 * GRID + num3], (255 - (num & 255)) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
-            SetBitAlphas(districtGrid[num4 * GRID + num5], (num & 255) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
-            SetBitAlphas(districtGrid[num6 * GRID + num3], (255 - (num & 255)) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
-            SetBitAlphas(districtGrid[num6 * GRID + num5], (num & 255) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            SetBitAlphas(this, districtGrid[num4 * GRID + num3], (255 - (num & 255)) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            SetBitAlphas(this, districtGrid[num4 * GRID + num5], (num & 255) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            SetBitAlphas(this, districtGrid[num6 * GRID + num3], (255 - (num & 255)) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            SetBitAlphas(this, districtGrid[num6 * GRID + num5], (num & 255) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
             //end mod
             byte b = 0;
             if (num7 > 0)
@@ -855,53 +854,15 @@ namespace EightyOne.ResourceManagers
             return b;
         }
 
-        //no changes
-        private void SetBitAlphas(DistrictManager.Cell cell, int alpha, ref int b1, ref int b2, ref int b3, ref int b4, ref int b5, ref int b6, ref int b7)
-        {
-            int b1_1 = 0;
-            int b2_1 = 0;
-            int b3_1 = 0;
-            int b4_1 = 0;
-            int b5_1 = 0;
-            int b6_1 = 0;
-            int b7_1 = 0;
-            this.SetBitAlphas((int)cell.m_district1, (int)cell.m_alpha1, ref b1_1, ref b2_1, ref b3_1, ref b4_1, ref b5_1, ref b6_1, ref b7_1);
-            this.SetBitAlphas((int)cell.m_district2, (int)cell.m_alpha2, ref b1_1, ref b2_1, ref b3_1, ref b4_1, ref b5_1, ref b6_1, ref b7_1);
-            this.SetBitAlphas((int)cell.m_district3, (int)cell.m_alpha3, ref b1_1, ref b2_1, ref b3_1, ref b4_1, ref b5_1, ref b6_1, ref b7_1);
-            this.SetBitAlphas((int)cell.m_district4, (int)cell.m_alpha4, ref b1_1, ref b2_1, ref b3_1, ref b4_1, ref b5_1, ref b6_1, ref b7_1);
-            b1 = b1 + b1_1 * alpha;
-            b2 = b2 + b2_1 * alpha;
-            b3 = b3 + b3_1 * alpha;
-            b4 = b4 + b4_1 * alpha;
-            b5 = b5 + b5_1 * alpha;
-            b6 = b6 + b6_1 * alpha;
-            b7 = b7 + b7_1 * alpha;
-        }
-
-        //no changes
-        private void SetBitAlphas(int district, int alpha, ref int b1, ref int b2, ref int b3, ref int b4, ref int b5, ref int b6, ref int b7)
-        {
-            b1 = (district & 1) == 0 ? Mathf.Min(b1, 128 - alpha) : Mathf.Max(b1, alpha - 128);
-            b2 = (district & 2) == 0 ? Mathf.Min(b2, 128 - alpha) : Mathf.Max(b2, alpha - 128);
-            b3 = (district & 4) == 0 ? Mathf.Min(b3, 128 - alpha) : Mathf.Max(b3, alpha - 128);
-            b4 = (district & 8) == 0 ? Mathf.Min(b4, 128 - alpha) : Mathf.Max(b4, alpha - 128);
-            b5 = (district & 16) == 0 ? Mathf.Min(b5, 128 - alpha) : Mathf.Max(b5, alpha - 128);
-            b6 = (district & 32) == 0 ? Mathf.Min(b6, 128 - alpha) : Mathf.Max(b6, alpha - 128);
-            if ((district & 64) != 0)
-                b7 = Mathf.Max(b7, alpha - 128);
-            else
-                b7 = Mathf.Min(b7, 128 - alpha);
-        }
-
         [RedirectMethod]
         public void ModifyCell(int x, int z, DistrictManager.Cell cell)
         {
             if ((int)cell.m_alpha2 > (int)cell.m_alpha1)
-                this.Exchange(ref cell.m_alpha1, ref cell.m_alpha2, ref cell.m_district1, ref cell.m_district2);
+                Exchange(this, ref cell.m_alpha1, ref cell.m_alpha2, ref cell.m_district1, ref cell.m_district2);
             if ((int)cell.m_alpha3 > (int)cell.m_alpha1)
-                this.Exchange(ref cell.m_alpha1, ref cell.m_alpha3, ref cell.m_district1, ref cell.m_district3);
+                Exchange(this, ref cell.m_alpha1, ref cell.m_alpha3, ref cell.m_district1, ref cell.m_district3);
             if ((int)cell.m_alpha4 > (int)cell.m_alpha1)
-                this.Exchange(ref cell.m_alpha1, ref cell.m_alpha4, ref cell.m_district1, ref cell.m_district4);
+                Exchange(this, ref cell.m_alpha1, ref cell.m_alpha4, ref cell.m_district1, ref cell.m_district4);
             //begin mod
             int index = z * GRID + x;
             DistrictManager.Cell cell1 = districtGrid[index];
@@ -911,47 +872,12 @@ namespace EightyOne.ResourceManagers
             this.m_districts.m_buffer[(int)cell.m_district2].m_totalAlpha += (uint)cell.m_alpha2;
             this.m_districts.m_buffer[(int)cell.m_district3].m_totalAlpha += (uint)cell.m_alpha3;
             this.m_districts.m_buffer[(int)cell.m_district4].m_totalAlpha += (uint)cell.m_alpha4;
-            this.EraseDistrict(cell1.m_district1, ref this.m_districts.m_buffer[(int)cell1.m_district1], (uint)cell1.m_alpha1);
-            this.EraseDistrict(cell1.m_district2, ref this.m_districts.m_buffer[(int)cell1.m_district2], (uint)cell1.m_alpha2);
-            this.EraseDistrict(cell1.m_district3, ref this.m_districts.m_buffer[(int)cell1.m_district3], (uint)cell1.m_alpha3);
-            this.EraseDistrict(cell1.m_district4, ref this.m_districts.m_buffer[(int)cell1.m_district4], (uint)cell1.m_alpha4);
+            EraseDistrict(this, cell1.m_district1, ref this.m_districts.m_buffer[(int)cell1.m_district1], (uint)cell1.m_alpha1);
+            EraseDistrict(this, cell1.m_district2, ref this.m_districts.m_buffer[(int)cell1.m_district2], (uint)cell1.m_alpha2);
+            EraseDistrict(this, cell1.m_district3, ref this.m_districts.m_buffer[(int)cell1.m_district3], (uint)cell1.m_alpha3);
+            EraseDistrict(this, cell1.m_district4, ref this.m_districts.m_buffer[(int)cell1.m_district4], (uint)cell1.m_alpha4);
         }
 
-        //no changes
-        private void Exchange(ref byte alpha1, ref byte alpha2, ref byte district1, ref byte district2)
-        {
-            byte num1 = alpha2;
-            byte num2 = district2;
-            alpha2 = alpha1;
-            district2 = district1;
-            alpha1 = num1;
-            district1 = num2;
-        }
 
-        //no changes
-        private void EraseDistrict(byte district, ref District data, uint amount)
-        {
-            if (amount >= data.m_totalAlpha)
-            {
-                if ((int)district == 0)
-                    data.m_totalAlpha = 0U;
-                else
-                    this.ReleaseDistrictImplementation(district, ref this.m_districts.m_buffer[(int)district]);
-            }
-            else
-                data.m_totalAlpha -= amount;
-        }
-
-        //this is called with reflection to prevent conflict with BuildingThemes
-        private void ReleaseDistrictImplementation(byte district, ref District data)
-        {
-            var args = new object[]
-            {
-                district,
-                data
-            };
-            ReleaseDistrictImplementationMethod.Invoke(this, args);
-            data = (District)args[1];
-        }
     }
 }

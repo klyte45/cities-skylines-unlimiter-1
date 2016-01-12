@@ -13,7 +13,6 @@ namespace EightyOne.Areas
     [TargetType(typeof(GameAreaManager))]
     public class FakeGameAreaManager : GameAreaManager
     {
-
         public const int GRID = 9;
         public const float HALFGRID = 4.5f;
 
@@ -119,10 +118,17 @@ namespace EightyOne.Areas
         public new int GetArea(int x, int z)
         {
             //begin mod
+            if (m_areaGrid.Length  == 25) //for rendering, when area grid is not yet initialized
+            {
+                if (x >= 0 && z >= 0 && (x < 5 && z < 5))
+                    return this.m_areaGrid[z * 5 + x];
+                int num = 2;
+                return x < -num || z < -num || (x >= 5 + num || z >= 5 + num) ? -2 : -1;
+            }
             if (x >= 0 && z >= 0 && (x < GRID && z < GRID))
                 return this.m_areaGrid[z * GRID + x];
-            int num = 0;
-            return x < -num || z < -num || (x >= GRID + num || z >= GRID + num) ? -2 : -1;
+            int num1 = 0;
+            return x < -num1 || z < -num1 || (x >= GRID + num1 || z >= GRID + num1) ? -2 : -1;
             //end mod
         }
 

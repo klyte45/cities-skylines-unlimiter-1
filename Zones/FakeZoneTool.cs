@@ -18,6 +18,26 @@ namespace EightyOne.Zones
             m_fillPositions = new FastList<FillPos>();
         }
 
+        [RedirectReverse]
+        private static void UsedZone(ZoneTool z, ItemClass.Zone zone)
+        {
+            UnityEngine.Debug.Log($"{z}-{zone}");
+        }
+
+        [RedirectReverse]
+        private static bool ApplyZoning(ZoneTool z, ushort blockIndex, ref ZoneBlock data, Quad2 quad2)
+        {
+            UnityEngine.Debug.Log($"{z}-{blockIndex}-{data}-{quad2}");
+            return false;
+        }
+
+        [RedirectReverse]
+        private static bool ApplyFillBuffer(ZoneTool z, Vector3 position, Vector3 direction, float angle, ushort blockIndex, ref ZoneBlock block)
+        {
+            UnityEngine.Debug.Log($"{z}-{position}-{direction}-{angle}-{blockIndex}-{block}");
+            return false;
+        }
+
         [RedirectMethod]
         private static void ApplyBrush(ZoneTool z)
         {
@@ -96,39 +116,12 @@ namespace EightyOne.Zones
                     }
                 }
             }
-            if (flag)
-            {
-                data.RefreshZoning(blockIndex);
-                if (m_zoning)
-                {
-                    UsedZone(z.m_zone);
-                }
-            }
-        }
-
-        private static void UsedZone(ItemClass.Zone zone)
-        {
-            if (zone != ItemClass.Zone.None)
-            {
-                ZoneManager instance = Singleton<ZoneManager>.instance;
-                instance.m_zonesNotUsed.Disable();
-                instance.m_zoneNotUsed[(int)zone].Disable();
-                switch (zone)
-                {
-                    case ItemClass.Zone.ResidentialLow:
-                    case ItemClass.Zone.ResidentialHigh:
-                        instance.m_zoneDemandResidential.Deactivate();
-                        break;
-                    case ItemClass.Zone.CommercialLow:
-                    case ItemClass.Zone.CommercialHigh:
-                        instance.m_zoneDemandCommercial.Deactivate();
-                        break;
-                    case ItemClass.Zone.Industrial:
-                    case ItemClass.Zone.Office:
-                        instance.m_zoneDemandWorkplace.Deactivate();
-                        break;
-                }
-            }
+            if (!flag)
+                return;
+            data.RefreshZoning(blockIndex);
+            if (!m_zoning)
+                return;
+            UsedZone(z, z.m_zone);
         }
 
         [RedirectMethod]
@@ -176,7 +169,7 @@ namespace EightyOne.Zones
 
             bool m_zoning = (bool)z.GetType().GetField("m_validPosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
             if (m_zoning)
-                z.GetType().GetMethod("UsedZone", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, new object[] { z.m_zone });
+                UsedZone(z, z.m_zone);
             EffectInfo effect = instance1.m_properties.m_fillEffect;
             if (effect == null)
                 return;
@@ -243,29 +236,13 @@ namespace EightyOne.Zones
                 return;
             bool m_zoning = (bool)z.GetType().GetField("m_validPosition", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(z);
             if (m_zoning)
-                z.GetType().GetMethod("UsedZone", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(z, new object[] { z.m_zone });
+                UsedZone(z, z.m_zone);
             EffectInfo effect = instance1.m_properties.m_fillEffect;
             if (effect == null)
                 return;
             InstanceID instance2 = new InstanceID();
             EffectInfo.SpawnArea spawnArea = new EffectInfo.SpawnArea((Vector3)((vector2_1 + vector2_2) * 0.5f), Vector3.up, 1f);
             Singleton<EffectManager>.instance.DispatchEffect(effect, instance2, spawnArea, Vector3.zero, 0.0f, 1f, Singleton<AudioManager>.instance.DefaultGroup);
-        }
-
-        public static bool ApplyZoning(ZoneTool z, ushort blockIndex, ref ZoneBlock zoneBlock, Quad2 quad2)
-        {
-            var parameters = new object[] { blockIndex, zoneBlock, quad2 };
-            bool b = (bool)z.GetType().GetMethod("ApplyZoning", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(ushort), typeof(ZoneBlock).MakeByRefType(), typeof(Quad2) }, null).Invoke(z, parameters);
-            zoneBlock = (ZoneBlock)parameters[1];
-            return b;
-        }
-
-        private static bool ApplyFillBuffer(ZoneTool z, Vector3 position, Vector3 direction, float angle, ushort blockIndex, ref ZoneBlock zoneBlock)
-        {
-            var parameters = new object[] { position, direction, angle, blockIndex, zoneBlock };
-            bool b = (bool)z.GetType().GetMethod("ApplyFillBuffer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(Vector3), typeof(Vector3), typeof(float), typeof(ushort), typeof(ZoneBlock).MakeByRefType() }, null).Invoke(z, parameters);
-            zoneBlock = (ZoneBlock)parameters[4];
-            return b;
         }
 
         private static void CalculateFillBuffer(ZoneTool zt, Vector3 position, Vector3 direction, float angle, ushort blockIndex, ref ZoneBlock block, ItemClass.Zone requiredZone, bool occupied1, bool occupied2)

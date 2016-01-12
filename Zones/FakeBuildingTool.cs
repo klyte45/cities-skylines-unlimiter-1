@@ -10,12 +10,6 @@ namespace EightyOne.Zones
     [TargetType(typeof(BuildingTool))]
     internal class FakeBuildingTool : BuildingTool
     {
-
-        private static MethodInfo CheckSpaceMethod;
-        private static MethodInfo GetElevationMethod;
-        private static MethodInfo GetPrefabInfoMethod;
-        private static MethodInfo FindClosestZoneMethod;
-
         private static FieldInfo mouseRayValidField;
         private static FieldInfo mouseAngleField;
         private static FieldInfo mouseRayField;
@@ -29,12 +23,6 @@ namespace EightyOne.Zones
 
         private static void Init(BuildingTool b)
         {
-            CheckSpaceMethod = GetMethod("CheckSpace", BindingFlags.NonPublic | BindingFlags.Instance);
-            GetElevationMethod = GetMethod("GetElevation", BindingFlags.NonPublic | BindingFlags.Instance);
-            GetPrefabInfoMethod = GetMethod("GetPrefabInfo", BindingFlags.NonPublic | BindingFlags.Instance);
-            FindClosestZoneMethod = GetMethod("FindClosestZone", BindingFlags.NonPublic | BindingFlags.Instance);
-
-
             mouseRayValidField = b.GetType().GetField("m_mouseRayValid", BindingFlags.NonPublic | BindingFlags.Instance);
             mouseAngleField = b.GetType().GetField("m_mouseAngle", BindingFlags.NonPublic | BindingFlags.Instance);
             mouseRayField = b.GetType().GetField("m_mouseRay", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -47,17 +35,36 @@ namespace EightyOne.Zones
             cachedAngleField = b.GetType().GetField("m_cachedAngle", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        private static MethodInfo GetMethod(string methodName, BindingFlags bindingAttr)
+        [RedirectReverse]
+        private static ToolBase.ToolErrors CheckSpace(BuildingTool b, BuildingInfo info, int relocating, Vector3 pos,
+            float minY, float maxY, float angle, int width, int length, bool test, ulong[] collidingSegmentBuffer,
+            ulong[] collidingBuildingBuffer)
         {
-            var method = typeof(BuildingTool).GetMethod(methodName, bindingAttr);
-            if (method == null)
-            {
-                throw new Exception(string.Format("Couldn't find method {0}", methodName));
-            }
-            return method;
+            UnityEngine.Debug.Log(
+                $"{b}-{info}-{relocating}-{pos}-{minY}-{maxY}-{angle}-{width}-{length}-{test}-{collidingSegmentBuffer}-{collidingBuildingBuffer}");
+            return ToolBase.ToolErrors.None;
         }
 
+        [RedirectReverse]
+        private static float GetElevation(BuildingTool b, BuildingInfo info)
+        {
+            UnityEngine.Debug.Log($"{b}-{info}");
+            return 0.0f;
+        }
 
+        [RedirectReverse]
+        private static void GetPrefabInfo(BuildingTool b, out BuildingInfo info, out int relocating)
+        {
+            info = null;
+            relocating = 0;
+            UnityEngine.Debug.Log($"{b}-{info}-{relocating}");
+        }
+
+        [RedirectReverse]
+        private static void FindClosestZone(BuildingTool b, BuildingInfo info, ushort block, Vector3 refPos, ref float minD, ref float min2, ref Vector3 minPos, ref float minAngle)
+        {
+            UnityEngine.Debug.Log($"{b}-{info}-{block}-{refPos}-{minD}-{min2}-{minPos}-{minAngle}");
+        }
 
         [RedirectMethod]
         public override void SimulationStep()
@@ -322,36 +329,6 @@ namespace EightyOne.Zones
             {
                 this.m_toolController.EndColliding();
             }
-        }
-
-        private static ToolBase.ToolErrors CheckSpace(BuildingTool b, BuildingInfo info, int relocating, Vector3 pos, float minY, float maxY, float angle, int width, int length, bool test, ulong[] collidingSegmentBuffer, ulong[] collidingBuildingBuffer)
-        {
-            var args = new object[] { info, relocating, pos, minY, maxY, angle, width, length, test, collidingSegmentBuffer, collidingBuildingBuffer };
-            return (ToolBase.ToolErrors)CheckSpaceMethod.Invoke(b, args);
-        }
-
-        private static float GetElevation(BuildingTool b, BuildingInfo info)
-        {
-            var args = new object[] { info };
-            return (float)GetElevationMethod.Invoke(b, args);
-        }
-
-        private static void GetPrefabInfo(BuildingTool b, out BuildingInfo info, out int relocating)
-        {
-            var args = new object[] { null, null };
-            GetPrefabInfoMethod.Invoke(b, args);
-            info = (BuildingInfo)args[0];
-            relocating = (int)args[1];
-        }
-
-        private static void FindClosestZone(BuildingTool b, BuildingInfo info, ushort block, Vector3 refPos, ref float minD, ref float min2, ref Vector3 minPos, ref float minAngle)
-        {
-            var args = new object[] { info, block, refPos, minD, min2, minPos, minAngle };
-            FindClosestZoneMethod.Invoke(b, args);
-            minD = (float)args[3];
-            min2 = (float)args[4];
-            minPos = (Vector3)args[5];
-            minAngle = (float)args[6];
         }
     }
 }

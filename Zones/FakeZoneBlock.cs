@@ -1,8 +1,6 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using UnityEngine;
-using System;
-using System.Reflection;
 using EightyOne.Redirection;
 
 namespace EightyOne.Zones
@@ -11,9 +9,25 @@ namespace EightyOne.Zones
     [TargetType(typeof(ZoneBlock))]
     internal struct FakeZoneBlock
     {
-        private static readonly MethodInfo _CheckBlock = typeof(ZoneBlock).GetMethod("CheckBlock", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly MethodInfo _IsGoodPlace = typeof(ZoneBlock).GetMethod("IsGoodPlace", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly MethodInfo _CalculateImplementation2 = typeof(ZoneBlock).GetMethod("CalculateImplementation2", BindingFlags.NonPublic | BindingFlags.Instance);
+        [RedirectReverse]
+        private static void CheckBlock(ref ZoneBlock zoneBlock, ref ZoneBlock other, int[] xBuffer, ItemClass.Zone zone, Vector2 startPos, Vector2 xDir,
+            Vector2 zDir, Quad2 quad)
+        {
+            UnityEngine.Debug.Log($"{zoneBlock}-{other}-{xBuffer}-{zone}-{startPos}-{xDir}-{zDir}-{quad}");
+        }
+
+        [RedirectReverse]
+        private static bool IsGoodPlace(ref ZoneBlock zoneBlock, Vector2 position)
+        {
+            UnityEngine.Debug.Log($"{zoneBlock}-{position}");
+            return false;
+        }
+
+        [RedirectReverse]
+        private static void CalculateImplementation2(ref ZoneBlock zoneBlock, ushort blockID, ref ZoneBlock other, ref ulong valid, ref ulong shared, float minX, float minZ, float maxX, float maxZ)
+        {
+            UnityEngine.Debug.Log($"{zoneBlock}-{blockID}-{other}-{valid}-{shared}-{minX}-{minZ}-{maxX}-{maxZ}");
+        }
 
         [RedirectMethod]
         public static void CalculateBlock2(ref ZoneBlock block, ushort blockID)
@@ -36,7 +50,9 @@ namespace EightyOne.Zones
             ulong shared = 0UL;
             ZoneManager instance = Singleton<ZoneManager>.instance;
             for (int index = 0; index < instance.m_cachedBlocks.m_size; ++index)
+                //begin mod
                 CalculateImplementation2(ref block, blockID, ref instance.m_cachedBlocks.m_buffer[index], ref valid, ref shared, minX, minZ, maxX, maxZ);
+                //end mod
             //begin mod
             int num1 = Mathf.Max((int)(((double)minX - 46.0) / 64f + FakeZoneManager.HALFGRID), 0);
             int num2 = Mathf.Max((int)(((double)minZ - 46.0) / 64f + FakeZoneManager.HALFGRID), 0);
@@ -55,7 +71,9 @@ namespace EightyOne.Zones
                     {
                         Vector3 vector3 = instance.m_blocks.m_buffer[(int)num5].m_position;
                         if ((double)Mathf.Max(Mathf.Max(minX - 46f - vector3.x, minZ - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)maxX - 46.0), (float)((double)vector3.z - (double)maxZ - 46.0))) < 0.0 && (int)num5 != (int)blockID)
+                            //begin mod
                             CalculateImplementation2(ref block, blockID, ref instance.m_blocks.m_buffer[(int)num5], ref valid, ref shared, minX, minZ, maxX, maxZ);
+                            //end mod
                         num5 = instance.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= ZoneManager.MAX_BLOCK_COUNT)
                         {
@@ -74,21 +92,6 @@ namespace EightyOne.Zones
             block.m_valid = valid;
             block.m_shared = shared;
         }
-
-
-        private static void CalculateImplementation2(ref ZoneBlock block, ushort blockID, ref ZoneBlock other, ref ulong valid, ref ulong shared,
-            float minX, float minZ, float maxX, float maxZ)
-        {
-            var args = new object[]
-            {
-                blockID, other, valid, shared, minX, minZ, maxX, maxZ
-            };
-            _CalculateImplementation2.Invoke(block, args);
-            other = (ZoneBlock)args[1];
-            valid = (ulong)args[2];
-            shared = (ulong)args[3];
-        }
-
 
         [RedirectMethod]
         [IgnoreIfBuildingThemesEnabled]
@@ -163,7 +166,9 @@ namespace EightyOne.Zones
                     {
                         Vector3 vector3 = instance1.m_blocks.m_buffer[(int)num7].m_position;
                         if ((double)Mathf.Max(Mathf.Max(vector2_3.x - 46f - vector3.x, vector2_3.y - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)vector2_4.x - 46.0), (float)((double)vector3.z - (double)vector2_4.y - 46.0))) < 0.0)
-                            _CheckBlock.Invoke(block, new object[] { instance1.m_blocks.m_buffer[(int)num7], xBuffer, zone, vector2_2, xDir, zDir, quad });
+                            //begin mod
+                            CheckBlock(ref block, ref instance1.m_blocks.m_buffer[(int)num7], xBuffer, zone, vector2_2, xDir, zDir, quad );
+                            //end mod
                         num7 = instance1.m_blocks.m_buffer[(int)num7].m_nextGridBlock;
                         if (++num8 >= 49152)
                         {
@@ -196,7 +201,9 @@ namespace EightyOne.Zones
             int num9 = xBuffer[6] & (int)ushort.MaxValue;
             if (num9 == 0)
                 return;
-            bool flag3 = (bool)_IsGoodPlace.Invoke(block, new object[] { vector2_2 });
+            //begin mod
+            bool flag3 = IsGoodPlace(ref block, vector2_2);
+            //end mod
             if (Singleton<SimulationManager>.instance.m_randomizer.Int32(100U) >= num2)
             {
                 if (!flag3)

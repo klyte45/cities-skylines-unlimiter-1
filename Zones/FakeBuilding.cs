@@ -1,6 +1,5 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
-using System.Reflection;
 using UnityEngine;
 using EightyOne.Redirection;
 
@@ -11,11 +10,12 @@ namespace EightyOne.Zones
     internal struct FakeBuilding
     {
 
-        private static readonly MethodInfo _CheckZoning = typeof(Building).GetMethod("CheckZoning", BindingFlags.NonPublic | BindingFlags.Instance,
-            null, new[] {
-                typeof(ItemClass.Zone), typeof(ItemClass.Zone), typeof(uint).MakeByRefType(), typeof(bool).MakeByRefType(), typeof(ZoneBlock).MakeByRefType()
-            }, null);
-        
+        [RedirectReverse]
+        private static void CheckZoning(ref Building building, ItemClass.Zone zone1, ItemClass.Zone zone2, ref uint validCells, ref bool secondary, ref ZoneBlock block)
+        {
+            UnityEngine.Debug.Log($"{building}-{zone1}-{zone2}-{validCells}-{secondary}-{block}");
+        }
+
         [RedirectMethod]
         public static bool CheckZoning(ref Building b, ItemClass.Zone zone1, ItemClass.Zone zone2)
         {
@@ -84,14 +84,6 @@ namespace EightyOne.Zones
             return true;
         }
 
-        private static void CheckZoning(ref Building building, ItemClass.Zone zone1, ItemClass.Zone zone2,
-            ref uint validCells, ref bool secondary, ref ZoneBlock block)
-        {
-            var args = new object[] { zone1, zone2, validCells, secondary, block };
-            _CheckZoning.Invoke(building, args);
-            validCells = (uint)args[2];
-            secondary = (bool)args[3];
-            block = (ZoneBlock)args[4];
-        }
+
     }
 }

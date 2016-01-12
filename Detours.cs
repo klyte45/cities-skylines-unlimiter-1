@@ -59,32 +59,63 @@ namespace EightyOne
                     continue;
                 }
                 var targetType = ((TargetType)customAttributes[0]).Type;
-                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
-                            .Where(method =>
-                            {
-                                var redirectAttributes = method.GetCustomAttributes(typeof(RedirectMethodAttribute), false);
-                                if (redirectAttributes.Length != 1)
-                                {
-                                    return false;
-                                }
-                                var ignoreAttributes = method.GetCustomAttributes(typeof (IgnoreIfOtherModEnabledAtribute), false);
-                                if (ignoreAttributes.Any(attribute => Util.IsModActive(((IgnoreIfOtherModEnabledAtribute) attribute).ModName)))
-                                {
-                                    UnityEngine.Debug.Log($"Method {targetType.Name}#{method.Name} won't be redirected. Some other mod will redirect it for us.");
-                                    return false;
-                                }
-                                return ((RedirectMethodAttribute)redirectAttributes[0]).OnCreated == onCreated;
-                            }))
+                RedirectMethods(type, targetType, redirects, onCreated);
+                if (onCreated)
                 {
-                    UnityEngine.Debug.Log($"81 Tiles - Redirecting {targetType.Name}#{method.Name}...");
-                    RedirectMethod(targetType, method, redirects);
+                    RedirectReverse(type, targetType, redirects);
                 }
+
             }
         }
 
-        private static void RedirectMethod(Type targetType, MethodInfo method, Dictionary<MethodInfo, RedirectCallsState> redirects)
+        private static void RedirectMethods(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated)
         {
-            var tuple = RedirectionUtil.RedirectMethod(targetType, method);
+            foreach (
+                var method in
+                    type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Where(method =>
+                        {
+                            var redirectAttributes = method.GetCustomAttributes(typeof (RedirectMethodAttribute), false);
+                            if (redirectAttributes.Length != 1)
+                            {
+                                return false;
+                            }
+                            var ignoreAttributes = method.GetCustomAttributes(typeof (IgnoreIfOtherModEnabledAtribute), false);
+                            if (
+                                ignoreAttributes.Any(
+                                    attribute => Util.IsModActive(((IgnoreIfOtherModEnabledAtribute) attribute).ModName)))
+                            {
+                                UnityEngine.Debug.Log(
+                                    $"Method {targetType.Name}#{method.Name} won't be redirected. Some other mod will redirect it for us.");
+                                return false;
+                            }
+                            return ((RedirectMethodAttribute) redirectAttributes[0]).OnCreated == onCreated;
+                        }))
+            {
+                UnityEngine.Debug.Log($"81 Tiles - Redirecting {targetType.Name}#{method.Name}...");
+                RedirectMethod(targetType, method, redirects);
+            }
+        }
+
+        private static void RedirectReverse(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects)
+        {
+            foreach (
+                var method in
+                    type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Where(method =>
+                        {
+                            var redirectAttributes = method.GetCustomAttributes(typeof(RedirectReverseAttribute), false);
+                            return redirectAttributes.Length == 1;
+                        }))
+            {
+                UnityEngine.Debug.Log($"81 Tiles - Redirecting reverse {targetType.Name}#{method.Name}...");
+                RedirectMethod(targetType, method, redirects, true);
+            }
+        }
+
+        private static void RedirectMethod(Type targetType, MethodInfo method, Dictionary<MethodInfo, RedirectCallsState> redirects, bool reverse = false)
+        {
+            var tuple = RedirectionUtil.RedirectMethod(targetType, method, reverse);
             redirects.Add(tuple.First, tuple.Second);
         }
 
