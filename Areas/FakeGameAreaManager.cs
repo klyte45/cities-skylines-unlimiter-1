@@ -58,7 +58,17 @@ namespace EightyOne.Areas
                         BindingFlags.Static | BindingFlags.Public);
                 }
             }
+            SimulationManager.instance.AddAction(() =>
+            {
+                FakeNetManager.DontUpdateNodeFlags = true;
+                Debug.Log($"81 Tiles - DontUpdateNodeFlags enabled");
+            });
             SimulationManager.instance.AddAction(FakeGameAreaManagerInit.UpdateData);
+            SimulationManager.instance.AddAction(() =>
+            {
+                FakeNetManager.DontUpdateNodeFlags = false;
+                Debug.Log($"81 Tiles - DontUpdateNodeFlags disabled");
+            });
         }
 
         [RedirectMethod]
