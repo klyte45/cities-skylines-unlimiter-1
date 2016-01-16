@@ -7,7 +7,7 @@ namespace EightyOne.Redirection
 {
     public static class RedirectionUtil
     {
-        public static Dictionary<MethodInfo, RedirectCallsState> RedirectType(Type type, bool onCreated)
+        public static Dictionary<MethodInfo, RedirectCallsState> RedirectType(Type type, bool onCreated = false)
         {
             var redirects = new Dictionary<MethodInfo, RedirectCallsState>();
 
@@ -22,7 +22,7 @@ namespace EightyOne.Redirection
             return redirects;
         }
 
-        private static void RedirectMethods(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated = false)
+        private static void RedirectMethods(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated)
         {
             foreach (
                 var method in
@@ -48,7 +48,7 @@ namespace EightyOne.Redirection
             }
         }
 
-        private static void RedirectReverse(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated = false)
+        private static void RedirectReverse(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated)
         {
             foreach (
                 var method in
