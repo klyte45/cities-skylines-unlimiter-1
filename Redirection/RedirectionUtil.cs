@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -6,7 +7,74 @@ namespace EightyOne.Redirection
 {
     public static class RedirectionUtil
     {
-        public static Tuple<MethodInfo, RedirectCallsState> RedirectMethod(Type targetType, MethodInfo detour, bool reverse)
+        public static Dictionary<MethodInfo, RedirectCallsState> RedirectType(Type type, bool onCreated)
+        {
+            var redirects = new Dictionary<MethodInfo, RedirectCallsState>();
+
+            var customAttributes = type.GetCustomAttributes(typeof(TargetTypeAttribute), false);
+            if (customAttributes.Length != 1)
+            {
+                return null;
+            }
+            var targetType = ((TargetTypeAttribute)customAttributes[0]).Type;
+            RedirectMethods(type, targetType, redirects, onCreated);
+            if (onCreated)
+            {
+                RedirectReverse(type, targetType, redirects);
+            }
+            return redirects;
+        }
+
+        private static void RedirectMethods(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated)
+        {
+            foreach (
+                var method in
+                    type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Where(method =>
+                        {
+                            var redirectAttributes = method.GetCustomAttributes(typeof(RedirectMethodAttribute), false);
+                            if (redirectAttributes.Length != 1)
+                            {
+                                return false;
+                            }
+                            var ignoreAttributes = method.GetCustomAttributes(typeof(IgnoreIfOtherModEnabledAttribute), false);
+                            if (!ignoreAttributes.Any(
+                                attribute => Util.IsModActive(((IgnoreIfOtherModEnabledAttribute) attribute).ModName)))
+                                return ((RedirectMethodAttribute) redirectAttributes[0]).OnCreated == onCreated;
+                            UnityEngine.Debug.Log(
+                                $"Method {targetType.Name}#{method.Name} won't be redirected. Some other mod will redirect it for us.");
+                            return false;
+                        }))
+            {
+                UnityEngine.Debug.Log($"Redirecting {targetType.Name}#{method.Name}...");
+                RedirectMethod(targetType, method, redirects);
+            }
+        }
+
+        private static void RedirectReverse(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects)
+        {
+            foreach (
+                var method in
+                    type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic)
+                        .Where(method =>
+                        {
+                            var redirectAttributes = method.GetCustomAttributes(typeof(RedirectReverseAttribute), false);
+                            return redirectAttributes.Length == 1;
+                        }))
+            {
+                UnityEngine.Debug.Log($"Redirecting reverse {targetType.Name}#{method.Name}...");
+                RedirectMethod(targetType, method, redirects, true);
+            }
+        }
+
+        private static void RedirectMethod(Type targetType, MethodInfo method, Dictionary<MethodInfo, RedirectCallsState> redirects, bool reverse = false)
+        {
+            var tuple = RedirectMethod(targetType, method, reverse);
+            redirects.Add(tuple.First, tuple.Second);
+        }
+
+
+        private static Tuple<MethodInfo, RedirectCallsState> RedirectMethod(Type targetType, MethodInfo detour, bool reverse)
         {
             var parameters = detour.GetParameters();
             Type[] types;
