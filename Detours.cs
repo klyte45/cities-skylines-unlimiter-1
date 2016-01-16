@@ -53,12 +53,12 @@ namespace EightyOne
             var redirects = onCreated ? redirectsOnCreated : redirectsOnLoaded;
             foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
             {
-                var customAttributes = type.GetCustomAttributes(typeof(TargetType), false);
+                var customAttributes = type.GetCustomAttributes(typeof(TargetTypeAttribute), false);
                 if (customAttributes.Length != 1)
                 {
                     continue;
                 }
-                var targetType = ((TargetType)customAttributes[0]).Type;
+                var targetType = ((TargetTypeAttribute)customAttributes[0]).Type;
                 RedirectMethods(type, targetType, redirects, onCreated);
                 if (onCreated)
                 {
@@ -80,10 +80,10 @@ namespace EightyOne
                             {
                                 return false;
                             }
-                            var ignoreAttributes = method.GetCustomAttributes(typeof (IgnoreIfOtherModEnabledAtribute), false);
+                            var ignoreAttributes = method.GetCustomAttributes(typeof (IgnoreIfOtherModEnabledAttribute), false);
                             if (
                                 ignoreAttributes.Any(
-                                    attribute => Util.IsModActive(((IgnoreIfOtherModEnabledAtribute) attribute).ModName)))
+                                    attribute => Util.IsModActive(((IgnoreIfOtherModEnabledAttribute) attribute).ModName)))
                             {
                                 UnityEngine.Debug.Log(
                                     $"Method {targetType.Name}#{method.Name} won't be redirected. Some other mod will redirect it for us.");

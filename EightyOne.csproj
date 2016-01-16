@@ -50,11 +50,11 @@
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="DataExtensions\AreaManagerDataExtension.cs" />
     <Compile Include="Redirection\IgnoreIfBuildingThemesEnabledAttribute.cs" />
-    <Compile Include="Redirection\IgnoreIfOtherModEnabledAtribute.cs" />
+    <Compile Include="Redirection\IgnoreIfOtherModEnabledAttribute.cs" />
     <Compile Include="Redirection\IgnoreIfRemoveNeedForPipesEnabledAttribute.cs" />
     <Compile Include="Redirection\RedirectMethodAttribute.cs" />
     <Compile Include="Redirection\RedirectReverseAttribute.cs" />
-    <Compile Include="Redirection\TargetType.cs" />
+    <Compile Include="Redirection\TargetTypeAttribute.cs" />
     <Compile Include="Detours.cs" />
     <Compile Include="LoadingExtension.cs" />
     <Compile Include="Redirection\RedirectionUtil.cs" />

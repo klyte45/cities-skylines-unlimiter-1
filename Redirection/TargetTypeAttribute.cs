@@ -3,9 +3,9 @@
 namespace EightyOne.Redirection
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-    public class TargetType : Attribute
+    public class TargetTypeAttribute : Attribute
     {
-        public TargetType(Type type)
+        public TargetTypeAttribute(Type type)
         {
             Type = type;
         }
