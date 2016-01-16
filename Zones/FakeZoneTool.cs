@@ -18,20 +18,20 @@ namespace EightyOne.Zones
             m_fillPositions = new FastList<FillPos>();
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void UsedZone(ZoneTool z, ItemClass.Zone zone)
         {
             UnityEngine.Debug.Log($"{z}-{zone}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static bool ApplyZoning(ZoneTool z, ushort blockIndex, ref ZoneBlock data, Quad2 quad2)
         {
             UnityEngine.Debug.Log($"{z}-{blockIndex}-{data}-{quad2}");
             return false;
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static bool ApplyFillBuffer(ZoneTool z, Vector3 position, Vector3 direction, float angle, ushort blockIndex, ref ZoneBlock block)
         {
             UnityEngine.Debug.Log($"{z}-{position}-{direction}-{angle}-{blockIndex}-{block}");

@@ -35,7 +35,7 @@ namespace EightyOne.Zones
             cachedAngleField = b.GetType().GetField("m_cachedAngle", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static ToolBase.ToolErrors CheckSpace(BuildingTool b, BuildingInfo info, int relocating, Vector3 pos,
             float minY, float maxY, float angle, int width, int length, bool test, ulong[] collidingSegmentBuffer,
             ulong[] collidingBuildingBuffer)
@@ -45,14 +45,14 @@ namespace EightyOne.Zones
             return ToolBase.ToolErrors.None;
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static float GetElevation(BuildingTool b, BuildingInfo info)
         {
             UnityEngine.Debug.Log($"{b}-{info}");
             return 0.0f;
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void GetPrefabInfo(BuildingTool b, out BuildingInfo info, out int relocating)
         {
             info = null;
@@ -60,7 +60,7 @@ namespace EightyOne.Zones
             UnityEngine.Debug.Log($"{b}-{info}-{relocating}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void FindClosestZone(BuildingTool b, BuildingInfo info, ushort block, Vector3 refPos, ref float minD, ref float min2, ref Vector3 minPos, ref float minAngle)
         {
             UnityEngine.Debug.Log($"{b}-{info}-{block}-{refPos}-{minD}-{min2}-{minPos}-{minAngle}");

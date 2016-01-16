@@ -19,14 +19,14 @@ namespace EightyOne.ResourceManagers
             m_mousePosition = typeof(DistrictTool).GetField("m_mousePosition", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static int GetAlpha(DistrictTool tool, ref DistrictManager.Cell cell, byte district)
         {
             UnityEngine.Debug.Log($"{tool}-{cell}-{district}");
             return 0;
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void Normalize(DistrictTool tool, ref DistrictManager.Cell cell, int ignoreIndex)
         {
             UnityEngine.Debug.Log($"{tool}-{cell}-{ignoreIndex}");

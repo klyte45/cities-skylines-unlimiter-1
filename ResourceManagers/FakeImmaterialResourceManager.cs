@@ -65,19 +65,19 @@ namespace EightyOne.ResourceManagers
             ImmaterialResourceManager.instance.AreaModified(0, 0, GRID, GRID);
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void CalculateTotalResources(int[] buffer, int[] bufferMul, int[] target)
         {
             UnityEngine.Debug.Log($"{buffer}+{bufferMul}+{target}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void AddResource(ImmaterialResourceManager manager, ref ushort buffer, int rate)
         {
             UnityEngine.Debug.Log($"{manager}-{buffer}-{rate}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void AddResource(ImmaterialResourceManager manager, ref int buffer, int rate)
         {
             UnityEngine.Debug.Log($"{manager}-{buffer}-{rate}");

@@ -18,14 +18,11 @@ namespace EightyOne.Redirection
             }
             var targetType = ((TargetTypeAttribute)customAttributes[0]).Type;
             RedirectMethods(type, targetType, redirects, onCreated);
-            if (onCreated)
-            {
-                RedirectReverse(type, targetType, redirects);
-            }
+            RedirectReverse(type, targetType, redirects, onCreated);
             return redirects;
         }
 
-        private static void RedirectMethods(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated)
+        private static void RedirectMethods(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated = false)
         {
             foreach (
                 var method in
@@ -51,7 +48,7 @@ namespace EightyOne.Redirection
             }
         }
 
-        private static void RedirectReverse(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects)
+        private static void RedirectReverse(Type type, Type targetType, Dictionary<MethodInfo, RedirectCallsState> redirects, bool onCreated = false)
         {
             foreach (
                 var method in
@@ -59,7 +56,11 @@ namespace EightyOne.Redirection
                         .Where(method =>
                         {
                             var redirectAttributes = method.GetCustomAttributes(typeof(RedirectReverseAttribute), false);
-                            return redirectAttributes.Length == 1;
+                            if (redirectAttributes.Length == 1)
+                            {
+                                return ((RedirectReverseAttribute)redirectAttributes[0]).OnCreated == onCreated;
+                            }
+                            return false;
                         }))
             {
                 UnityEngine.Debug.Log($"Redirecting reverse {targetType.Name}#{method.Name}...");

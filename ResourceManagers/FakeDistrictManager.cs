@@ -247,31 +247,31 @@ namespace EightyOne.ResourceManagers
             });
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void AddDistrictColor1(DistrictManager manager, byte district, byte alpha, ref Color32 color1)
         {
             UnityEngine.Debug.Log($"{manager}+{district}+{alpha}+{color1}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void AddDistrictColor2(DistrictManager manager, byte district, DistrictPolicies.Policies policy, byte alpha, bool inArea, ref Color32 color2)
         {
             UnityEngine.Debug.Log($"{manager}-{district}-{policy}-{alpha}-{inArea}-{color2}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void SetBitAlphas(DistrictManager manager, DistrictManager.Cell cell, int alpha, ref int b1, ref int b2, ref int b3, ref int b4, ref int b5, ref int b6, ref int b7)
         {
             UnityEngine.Debug.Log($"{manager}-{cell}-{alpha}-{b1}-{b2}-{b3}-{b4}-{b5}-{b6}-{b7}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void Exchange(DistrictManager manager, ref byte alpha1, ref byte alpha2, ref byte district1, ref byte district2)
         {
             UnityEngine.Debug.Log($"{manager}-{alpha1}-{alpha2}-{district1}-{district2}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void EraseDistrict(DistrictManager manager, byte district, ref District data, uint amount)
         {
             UnityEngine.Debug.Log($"{manager}-{district}-{data}-{amount}");

@@ -9,21 +9,21 @@ namespace EightyOne.Zones
     [TargetType(typeof(ZoneBlock))]
     internal struct FakeZoneBlock
     {
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void CheckBlock(ref ZoneBlock zoneBlock, ref ZoneBlock other, int[] xBuffer, ItemClass.Zone zone, Vector2 startPos, Vector2 xDir,
             Vector2 zDir, Quad2 quad)
         {
             UnityEngine.Debug.Log($"{zoneBlock}-{other}-{xBuffer}-{zone}-{startPos}-{xDir}-{zDir}-{quad}");
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static bool IsGoodPlace(ref ZoneBlock zoneBlock, Vector2 position)
         {
             UnityEngine.Debug.Log($"{zoneBlock}-{position}");
             return false;
         }
 
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void CalculateImplementation2(ref ZoneBlock zoneBlock, ushort blockID, ref ZoneBlock other, ref ulong valid, ref ulong shared, float minX, float minZ, float maxX, float maxZ)
         {
             UnityEngine.Debug.Log($"{zoneBlock}-{blockID}-{other}-{valid}-{shared}-{minX}-{minZ}-{maxX}-{maxZ}");

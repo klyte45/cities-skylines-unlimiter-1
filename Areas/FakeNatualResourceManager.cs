@@ -6,13 +6,13 @@ namespace EightyOne.Areas
     [TargetType(typeof(NaturalResourceManager))]
     class FakeNatualResourceManager
     {
-        [RedirectReverse]
+        [RedirectReverse(true)]
         private static void GetTileResourcesImpl(NaturalResourceManager manager, ref NaturalResourceManager.AreaCell cell, ref uint ore, ref uint oil, ref uint forest, ref uint fertility, ref uint water)
         {
             UnityEngine.Debug.Log($"{manager}+{cell}+{ore}+{oil}+{forest}+{fertility}+{water}");
         }
 
-        [RedirectMethod]
+        [RedirectMethod(true)]
         public void GetTileResources(int x, int z, out uint ore, out uint oil, out uint forest, out uint fertility, out uint water)
         {
             //begin mod
