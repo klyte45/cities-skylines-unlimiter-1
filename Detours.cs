@@ -94,7 +94,9 @@ namespace EightyOne
             if (target == null)
                 throw new ArgumentNullException(nameof(target));
             if (source == null)
-                throw new ArgumentNullException(nameof(source));
+            {
+                return;
+            }
             foreach (var element in source)
                 target.Add(element);
         }
