@@ -48,7 +48,7 @@ namespace EightyOne.ResourceManagers
             m_localTempResources = new ushort[GRID * GRID * 20];
             m_globalFinalResources = (int[])typeof(ImmaterialResourceManager).GetField("m_globalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_globalTempResources = (int[])typeof(ImmaterialResourceManager).GetField("m_globalTempResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
-            m_totalFinalResources = (int[])typeof (ImmaterialResourceManager).GetField("m_totalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
+            m_totalFinalResources = (int[])typeof(ImmaterialResourceManager).GetField("m_totalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_totalTempResources = (int[])typeof(ImmaterialResourceManager).GetField("m_totalTempResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_totalTempResourcesMul = (int[])typeof(ImmaterialResourceManager).GetField("m_totalTempResourcesMul", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_modifiedX1 = new int[GRID];

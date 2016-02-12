@@ -23,7 +23,6 @@ namespace EightyOne.ResourceManagers
             UnityEngine.Debug.Log($"{manager}-{nodeID}-{water}-{sewage}-{heating}");
         }
 
-
         public class Data : IDataContainer
         {
             public void Serialize(DataSerializer s)

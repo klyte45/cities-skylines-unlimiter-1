@@ -21,7 +21,6 @@ namespace EightyOne.ResourceManagers
             UnityEngine.Debug.Log($"{manager}-{nodeID}-{value}");
         }
 
-
         public class Data : IDataContainer
         {
             public void Serialize(DataSerializer s)
@@ -221,8 +220,10 @@ namespace EightyOne.ResourceManagers
                 {
                     FakeElectricityManager.m_pulseUnits[num7].m_group = (ushort)s.ReadUInt16();
                     FakeElectricityManager.m_pulseUnits[num7].m_node = (ushort)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseUnits[num7].m_x = (byte)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseUnits[num7].m_z = (byte)s.ReadUInt16();
+                    //begin mod
+                    FakeElectricityManager.m_pulseUnits[num7].m_x = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseUnits[num7].m_z = (ushort)s.ReadUInt16();
+                    //end mod
                 }
 
 
