@@ -3,6 +3,7 @@ using ColossalFramework.IO;
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Redirection;
@@ -13,6 +14,14 @@ namespace EightyOne.ResourceManagers
     [TargetType(typeof(ElectricityManager))]
     public class FakeElectricityManager
     {
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void UpdateNodeElectricity(ElectricityManager manager, int nodeID, int value)
+        {
+            UnityEngine.Debug.Log($"{manager}-{nodeID}-{value}");
+        }
+
+
         public class Data : IDataContainer
         {
             public void Serialize(DataSerializer s)
@@ -198,8 +207,10 @@ namespace EightyOne.ResourceManagers
                     FakeElectricityManager.m_pulseGroups[num5].m_curCharge = s.ReadUInt32();
                     FakeElectricityManager.m_pulseGroups[num5].m_mergeIndex = (ushort)s.ReadUInt16();
                     FakeElectricityManager.m_pulseGroups[num5].m_mergeCount = (ushort)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseGroups[num5].m_x = (byte)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseGroups[num5].m_z = (byte)s.ReadUInt16();
+                    //begin mod
+                    FakeElectricityManager.m_pulseGroups[num5].m_x = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseGroups[num5].m_z = (ushort)s.ReadUInt16();
+                    //end mod
                 }
 
                 FakeElectricityManager.m_pulseUnits = new PulseUnit[32768];
@@ -243,35 +254,28 @@ namespace EightyOne.ResourceManagers
             public byte m_conductivity;
             public bool m_tmpElectrified;
             public bool m_electrified;
-
-            public override string ToString()
-            {
-                return string.Format("{0} {1} {2} {3} {4} {5}", m_currentCharge.ToString(), m_extraCharge.ToString(), m_pulseGroup.ToString(), m_conductivity.ToString(), m_tmpElectrified.ToString(), m_electrified.ToString());
-            }
         }
+
         public struct PulseGroup
         {
             public uint m_origCharge;
             public uint m_curCharge;
             public ushort m_mergeIndex;
             public ushort m_mergeCount;
+            //begin mod
             public ushort m_x;
             public ushort m_z;
-            public override string ToString()
-            {
-                return string.Format("{0} {1} {2} {3} {4} {5}", m_origCharge.ToString(), m_curCharge.ToString(), m_mergeIndex.ToString(), m_mergeCount.ToString(), m_x.ToString(), m_z.ToString());
-            }
+            //end mod
         }
+
         public struct PulseUnit
         {
             public ushort m_group;
             public ushort m_node;
+            //begin mod
             public ushort m_x;
             public ushort m_z;
-            public override string ToString()
-            {
-                return string.Format("{0} {1} {2} {3}", m_group.ToString(), m_node.ToString(), m_x.ToString(), m_z.ToString());
-            }
+            //end mod
         }
 
         public const int GRID = 462;
@@ -294,8 +298,6 @@ namespace EightyOne.ResourceManagers
         private static int m_modifiedZ2;
 
         private static Texture2D m_electricityTexture;
-        static FieldInfo m_refreshGrid;
-
 
         public static void Init()
         {
@@ -335,7 +337,6 @@ namespace EightyOne.ResourceManagers
             m_modifiedZ1 = 0;
             m_modifiedX2 = GRID - 1;
             m_modifiedZ2 = GRID - 1;
-            m_refreshGrid = typeof(ElectricityManager).GetField("m_refreshGrid", BindingFlags.NonPublic | BindingFlags.Instance);
             m_electricityTexture = new Texture2D(GRID, GRID, TextureFormat.RGBA32, false, true);
             m_electricityTexture.filterMode = FilterMode.Point;
             m_electricityTexture.wrapMode = TextureWrapMode.Clamp;
@@ -737,39 +738,6 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        private void UpdateNodeElectricity(int nodeID, int value)
-        {
-            InfoManager.InfoMode currentMode = Singleton<InfoManager>.instance.CurrentMode;
-            NetManager instance = Singleton<NetManager>.instance;
-            bool flag = false;
-            ushort building = instance.m_nodes.m_buffer[nodeID].m_building;
-            if (building != 0)
-            {
-                BuildingManager instance2 = Singleton<BuildingManager>.instance;
-                if ((int)instance2.m_buildings.m_buffer[(int)building].m_electricityBuffer != value)
-                {
-                    instance2.m_buildings.m_buffer[(int)building].m_electricityBuffer = (ushort)value;
-                    flag = (currentMode == InfoManager.InfoMode.Electricity);
-                }
-                if (flag)
-                {
-                    instance2.UpdateBuildingColors(building);
-                }
-            }
-            if (flag)
-            {
-                instance.UpdateNodeColors((ushort)nodeID);
-                for (int i = 0; i < 8; i++)
-                {
-                    ushort segment = instance.m_nodes.m_buffer[nodeID].GetSegment(i);
-                    if (segment != 0)
-                    {
-                        instance.UpdateSegmentColors(segment);
-                    }
-                }
-            }
-        }
-
         [RedirectMethod]
         protected void SimulationStepImpl(int subStep)
         {
@@ -798,7 +766,7 @@ namespace EightyOne.ResourceManagers
                             NetInfo info = instance.m_nodes.m_buffer[i].Info;
                             if (info.m_class.m_service == ItemClass.Service.Electricity)
                             {
-                                UpdateNodeElectricity(i, (m_nodeGroups[i] == 65535) ? 0 : 1);
+                                UpdateNodeElectricity(ElectricityManager.instance, i, (m_nodeGroups[i] == 65535) ? 0 : 1);
                                 m_conductiveCells++;
                             }
                         }
@@ -1110,20 +1078,5 @@ namespace EightyOne.ResourceManagers
             }
             AreaModified(num, num2, num3, num4);
         }
-
-
-
-        [RedirectMethod]
-        public void UpdateData(SimulationManager.UpdateMode mode)
-        {
-            Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("ElectricityManager.UpdateData");
-
-            if ((bool)m_refreshGrid.GetValue(ElectricityManager.instance))
-            {
-                UpdateGrid(-100000f, -100000f, 100000f, 100000f);
-            }
-            Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndLoading();
-        }
-
     }
 }

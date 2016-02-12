@@ -46,11 +46,11 @@ namespace EightyOne.ResourceManagers
 
             m_localFinalResources = new ushort[GRID * GRID * 20];
             m_localTempResources = new ushort[GRID * GRID * 20];
-            m_globalFinalResources = new int[20];
-            m_globalTempResources = new int[20];
-            m_totalFinalResources = new int[20];
-            m_totalTempResources = new int[20];
-            m_totalTempResourcesMul = new int[20];
+            m_globalFinalResources = (int[])typeof(ImmaterialResourceManager).GetField("m_globalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
+            m_globalTempResources = (int[])typeof(ImmaterialResourceManager).GetField("m_globalTempResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
+            m_totalFinalResources = (int[])typeof (ImmaterialResourceManager).GetField("m_totalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
+            m_totalTempResources = (int[])typeof(ImmaterialResourceManager).GetField("m_totalTempResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
+            m_totalTempResourcesMul = (int[])typeof(ImmaterialResourceManager).GetField("m_totalTempResourcesMul", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_modifiedX1 = new int[GRID];
             m_modifiedX2 = new int[GRID];
             for (int index = 0; index < GRID; ++index)
@@ -73,12 +73,6 @@ namespace EightyOne.ResourceManagers
 
         [RedirectReverse(true)]
         private static void AddResource(ImmaterialResourceManager manager, ref ushort buffer, int rate)
-        {
-            UnityEngine.Debug.Log($"{manager}-{buffer}-{rate}");
-        }
-
-        [RedirectReverse(true)]
-        private static void AddResource(ImmaterialResourceManager manager, ref int buffer, int rate)
         {
             UnityEngine.Debug.Log($"{manager}-{buffer}-{rate}");
         }
@@ -258,35 +252,6 @@ namespace EightyOne.ResourceManagers
                 }
             }
             return rate;
-        }
-
-        [RedirectMethod]
-        public int AddResource(ImmaterialResourceManager.Resource resource, int rate)
-        {
-            if (rate == 0)
-                return 0;
-            //begin mod
-            AddResource(ImmaterialResourceManager.instance, ref m_globalTempResources[(int)resource], rate);
-            //end mod
-            return rate;
-        }
-
-        [RedirectMethod]
-        public static int CalculateResourceEffect(int resourceRate, int middleRate, int maxRate, int middleEffect, int maxEffect)
-        {
-            if (resourceRate <= 0)
-            {
-                return 0;
-            }
-            if (resourceRate < middleRate)
-            {
-                return middleEffect * resourceRate / middleRate;
-            }
-            if (resourceRate < maxRate)
-            {
-                return middleEffect + (maxEffect - middleEffect) * (resourceRate - middleRate) / (maxRate - middleRate);
-            }
-            return maxEffect;
         }
 
         [RedirectMethod]
@@ -495,12 +460,6 @@ namespace EightyOne.ResourceManagers
             int num2 = Mathf.Clamp((int)(position.z / 38.4f + HALFGRID), 0, GRID - 1);
             index = (num2 * GRID + num) * 20;
             resources = m_localFinalResources;
-        }
-
-        [RedirectMethod]
-        public void CheckTotalResource(ImmaterialResourceManager.Resource resource, out int total)
-        {
-            total = m_totalFinalResources[(int)resource];
         }
 
         [RedirectMethod]
