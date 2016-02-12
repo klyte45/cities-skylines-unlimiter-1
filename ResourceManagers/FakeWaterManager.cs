@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using UnityEngine;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using EightyOne.Redirection;
 
 //TODO(earalov): review this class
@@ -14,6 +15,14 @@ namespace EightyOne.ResourceManagers
     [TargetType(typeof(WaterManager))]
     public class FakeWaterManager
     {
+
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void UpdateNodeWater(WaterManager manager, int nodeID, int water, int sewage)
+        {
+            UnityEngine.Debug.Log($"{manager}-{nodeID}-{water}-{sewage}");
+        }
+
         public class Data : IDataContainer
         {
             public void Serialize(DataSerializer s)
@@ -395,8 +404,10 @@ namespace EightyOne.ResourceManagers
                 {
                     FakeWaterManager.m_waterPulseUnits[num10].m_group = (ushort)s.ReadUInt16();
                     FakeWaterManager.m_waterPulseUnits[num10].m_node = (ushort)s.ReadUInt16();
-                    FakeWaterManager.m_waterPulseUnits[num10].m_x = (byte)s.ReadUInt16();
-                    FakeWaterManager.m_waterPulseUnits[num10].m_z = (byte)s.ReadUInt16();
+                    //begin mod
+                    FakeWaterManager.m_waterPulseUnits[num10].m_x = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_waterPulseUnits[num10].m_z = (ushort)s.ReadUInt16();
+                    //end mod
                 }
                 int num11 = (int)s.ReadUInt16();
                 FakeWaterManager.m_sewagePulseUnitStart = 0;
@@ -405,8 +416,10 @@ namespace EightyOne.ResourceManagers
                 {
                     FakeWaterManager.m_sewagePulseUnits[num12].m_group = (ushort)s.ReadUInt16();
                     FakeWaterManager.m_sewagePulseUnits[num12].m_node = (ushort)s.ReadUInt16();
-                    FakeWaterManager.m_sewagePulseUnits[num12].m_x = (byte)s.ReadUInt16();
-                    FakeWaterManager.m_sewagePulseUnits[num12].m_z = (byte)s.ReadUInt16();
+                    //begin mod
+                    FakeWaterManager.m_sewagePulseUnits[num12].m_x = (ushort)s.ReadUInt16();
+                    FakeWaterManager.m_sewagePulseUnits[num12].m_z = (ushort)s.ReadUInt16();
+                    //end mod
                 }
                 int num13 = 32768;
                 EncodedArray.UShort uShort4 = EncodedArray.UShort.BeginRead(s);
@@ -1327,60 +1340,6 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private void UpdateNodeWater(int nodeID, int water, int sewage)
-        {
-            InfoManager.InfoMode currentMode = Singleton<InfoManager>.instance.CurrentMode;
-            NetManager instance = Singleton<NetManager>.instance;
-            bool flag = false;
-            ushort building = instance.m_nodes.m_buffer[nodeID].m_building;
-            if (building != 0)
-            {
-                BuildingManager instance2 = Singleton<BuildingManager>.instance;
-                if ((int)instance2.m_buildings.m_buffer[(int)building].m_waterBuffer != water)
-                {
-                    instance2.m_buildings.m_buffer[(int)building].m_waterBuffer = (ushort)water;
-                    flag = (currentMode == InfoManager.InfoMode.Water);
-                }
-                if ((int)instance2.m_buildings.m_buffer[(int)building].m_sewageBuffer != sewage)
-                {
-                    instance2.m_buildings.m_buffer[(int)building].m_sewageBuffer = (ushort)sewage;
-                    flag = (currentMode == InfoManager.InfoMode.Water);
-                }
-                if (flag)
-                {
-                    instance2.UpdateBuildingColors(building);
-                }
-            }
-            NetNode.Flags flags = instance.m_nodes.m_buffer[nodeID].m_flags;
-            NetNode.Flags flags2 = flags & ~(NetNode.Flags.Water | NetNode.Flags.Sewage);
-            if (water != 0)
-            {
-                flags2 |= NetNode.Flags.Water;
-            }
-            if (sewage != 0)
-            {
-                flags2 |= NetNode.Flags.Sewage;
-            }
-            if (flags2 != flags)
-            {
-                instance.m_nodes.m_buffer[nodeID].m_flags = flags2;
-                flag = (currentMode == InfoManager.InfoMode.Water);
-            }
-            if (flag)
-            {
-                instance.UpdateNodeColors((ushort)nodeID);
-                for (int i = 0; i < 8; i++)
-                {
-                    ushort segment = instance.m_nodes.m_buffer[nodeID].GetSegment(i);
-                    if (segment != 0)
-                    {
-                        instance.UpdateSegmentColors(segment);
-                    }
-                }
-            }
-        }
-
-        [RedirectMethod]
         protected void SimulationStepImpl(int subStep)
         {
             if (subStep != 0 && subStep != 1000)
@@ -1415,7 +1374,7 @@ namespace EightyOne.ResourceManagers
                             {
                                 int water = (node.m_waterPulseGroup == 65535) ? 0 : 1;
                                 int sewage = (node.m_sewagePulseGroup == 65535) ? 0 : 1;
-                                UpdateNodeWater(i, water, sewage);
+                                UpdateNodeWater(WaterManager.instance, i, water, sewage);
                                 m_conductiveCells += 2;
                                 node.m_waterPulseGroup = 65535;
                                 node.m_sewagePulseGroup = 65535;

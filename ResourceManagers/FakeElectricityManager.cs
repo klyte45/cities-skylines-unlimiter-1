@@ -3,6 +3,7 @@ using ColossalFramework.IO;
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine;
 using EightyOne.Redirection;
@@ -13,6 +14,13 @@ namespace EightyOne.ResourceManagers
     [TargetType(typeof(ElectricityManager))]
     public class FakeElectricityManager
     {
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void UpdateNodeElectricity(ElectricityManager manager, int nodeID, int value)
+        {
+            UnityEngine.Debug.Log($"{manager}-{nodeID}-{value}");
+        }
+
         public class Data : IDataContainer
         {
             public void Serialize(DataSerializer s)
@@ -198,8 +206,10 @@ namespace EightyOne.ResourceManagers
                     FakeElectricityManager.m_pulseGroups[num5].m_curCharge = s.ReadUInt32();
                     FakeElectricityManager.m_pulseGroups[num5].m_mergeIndex = (ushort)s.ReadUInt16();
                     FakeElectricityManager.m_pulseGroups[num5].m_mergeCount = (ushort)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseGroups[num5].m_x = (byte)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseGroups[num5].m_z = (byte)s.ReadUInt16();
+                    //begin mod
+                    FakeElectricityManager.m_pulseGroups[num5].m_x = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseGroups[num5].m_z = (ushort)s.ReadUInt16();
+                    //end mod
                 }
 
                 FakeElectricityManager.m_pulseUnits = new PulseUnit[32768];
@@ -210,8 +220,10 @@ namespace EightyOne.ResourceManagers
                 {
                     FakeElectricityManager.m_pulseUnits[num7].m_group = (ushort)s.ReadUInt16();
                     FakeElectricityManager.m_pulseUnits[num7].m_node = (ushort)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseUnits[num7].m_x = (byte)s.ReadUInt16();
-                    FakeElectricityManager.m_pulseUnits[num7].m_z = (byte)s.ReadUInt16();
+                    //begin mod
+                    FakeElectricityManager.m_pulseUnits[num7].m_x = (ushort)s.ReadUInt16();
+                    FakeElectricityManager.m_pulseUnits[num7].m_z = (ushort)s.ReadUInt16();
+                    //end mod
                 }
 
 
@@ -737,39 +749,6 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        private void UpdateNodeElectricity(int nodeID, int value)
-        {
-            InfoManager.InfoMode currentMode = Singleton<InfoManager>.instance.CurrentMode;
-            NetManager instance = Singleton<NetManager>.instance;
-            bool flag = false;
-            ushort building = instance.m_nodes.m_buffer[nodeID].m_building;
-            if (building != 0)
-            {
-                BuildingManager instance2 = Singleton<BuildingManager>.instance;
-                if ((int)instance2.m_buildings.m_buffer[(int)building].m_electricityBuffer != value)
-                {
-                    instance2.m_buildings.m_buffer[(int)building].m_electricityBuffer = (ushort)value;
-                    flag = (currentMode == InfoManager.InfoMode.Electricity);
-                }
-                if (flag)
-                {
-                    instance2.UpdateBuildingColors(building);
-                }
-            }
-            if (flag)
-            {
-                instance.UpdateNodeColors((ushort)nodeID);
-                for (int i = 0; i < 8; i++)
-                {
-                    ushort segment = instance.m_nodes.m_buffer[nodeID].GetSegment(i);
-                    if (segment != 0)
-                    {
-                        instance.UpdateSegmentColors(segment);
-                    }
-                }
-            }
-        }
-
         [RedirectMethod]
         protected void SimulationStepImpl(int subStep)
         {
@@ -798,7 +777,7 @@ namespace EightyOne.ResourceManagers
                             NetInfo info = instance.m_nodes.m_buffer[i].Info;
                             if (info.m_class.m_service == ItemClass.Service.Electricity)
                             {
-                                UpdateNodeElectricity(i, (m_nodeGroups[i] == 65535) ? 0 : 1);
+                                UpdateNodeElectricity(ElectricityManager.instance, i, (m_nodeGroups[i] == 65535) ? 0 : 1);
                                 m_conductiveCells++;
                             }
                         }
