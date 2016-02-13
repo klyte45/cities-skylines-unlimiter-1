@@ -229,13 +229,13 @@ namespace EightyOne.Areas
         public new bool ClampPoint(ref Vector3 position)
         {
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
-            if ((availability & ItemClass.Availability.MapEditor) != ItemClass.Availability.None)
+            if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
             {
                 //begin mod
                 //end mod
                 return true;
             }
-            if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
+            if ((availability & ItemClass.Availability.Editors) != ItemClass.Availability.None)
             {
                 //begin mod
                 //end mod
@@ -332,7 +332,7 @@ namespace EightyOne.Areas
             }
             else
             {
-                bool flag = (availability & ItemClass.Availability.MapEditor) != ItemClass.Availability.None;
+                bool flag = (availability & ItemClass.Availability.Editors) != ItemClass.Availability.None;
                 //begin mod
                 int area = this.GetArea(Mathf.FloorToInt((float)((double)p.x / 1920.0 + HALFGRID)), Mathf.FloorToInt((float)((double)p.z / 1920.0 + HALFGRID)));
                 //end mod
@@ -346,6 +346,7 @@ namespace EightyOne.Areas
         [RedirectMethod]
         public new bool QuadOutOfArea(Quad2 quad)
         {
+            //begin mod
             if (_isCrossingLineProhibited != null)
             {
                 if (!(bool)_isCrossingLineProhibited.Invoke(null, new object[] {}))
@@ -353,6 +354,7 @@ namespace EightyOne.Areas
                     return false;
                 }
             }
+            //end mod
 
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
             if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
@@ -362,7 +364,7 @@ namespace EightyOne.Areas
             }
             else
             {
-                bool flag = (availability & ItemClass.Availability.MapEditor) != ItemClass.Availability.None;
+                bool flag = (availability & ItemClass.Availability.Editors) != ItemClass.Availability.None;
                 Vector2 vector2_1 = quad.Min();
                 Vector2 vector2_2 = quad.Max();
                 //begin mod
