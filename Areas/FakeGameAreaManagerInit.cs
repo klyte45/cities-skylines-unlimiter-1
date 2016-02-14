@@ -42,17 +42,14 @@ namespace EightyOne.Areas
                     }
                 }
             }
-
-            TerrainManager.instance.m_detailPatchCount = 0;
-            for (int index1 = 0; index1 < TerrainManager.PATCH_RESOLUTION; ++index1)
-            {
-                for (int index2 = 0; index2 < TerrainManager.PATCH_RESOLUTION; ++index2)
-                    TerrainManager.instance.m_patches[index1 * TerrainManager.PATCH_RESOLUTION + index2].m_simDetailIndex = 0;
-            }
             for (int z2 = 0; z2 < FakeGameAreaManager.GRID; ++z2)
             {
                 for (int x2 = 0; x2 < FakeGameAreaManager.GRID; ++x2)
                 {
+                    if (z2 >= 2 && z2 <= 6 && x2 >= 2 && x2 <= 6)
+                    {
+                        continue;
+                    }
                     if (instance.GetArea(x2, z2) > 0)
                     {
                         Singleton<TerrainManager>.instance.SetDetailedPatch(x2, z2);

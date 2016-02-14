@@ -19,6 +19,10 @@ namespace EightyOne.ResourceManagers
         private static void UpdateNodeElectricity(ElectricityManager manager, int nodeID, int value)
         {
             UnityEngine.Debug.Log($"{manager}-{nodeID}-{value}");
+            UnityEngine.Debug.Log("AAAA");
+            UnityEngine.Debug.Log("BBBB");
+            UnityEngine.Debug.Log("CCCC");
+            UnityEngine.Debug.Log("DDDD");
         }
 
         public class Data : IDataContainer
@@ -767,7 +771,7 @@ namespace EightyOne.ResourceManagers
                             NetInfo info = instance.m_nodes.m_buffer[i].Info;
                             if (info.m_class.m_service == ItemClass.Service.Electricity)
                             {
-                                UpdateNodeElectricity(ElectricityManager.instance, i, (m_nodeGroups[i] == 65535) ? 0 : 1);
+                                UpdateNodeElectricity((ElectricityManager)Convert.ChangeType(this, typeof(ElectricityManager)), i, (m_nodeGroups[i] == 65535) ? 0 : 1);
                                 m_conductiveCells++;
                             }
                         }

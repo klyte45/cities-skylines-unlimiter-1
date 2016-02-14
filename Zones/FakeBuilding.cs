@@ -14,6 +14,10 @@ namespace EightyOne.Zones
         private static void CheckZoning(ref Building building, ItemClass.Zone zone1, ItemClass.Zone zone2, ref uint validCells, ref bool secondary, ref ZoneBlock block)
         {
             UnityEngine.Debug.Log($"{building}-{zone1}-{zone2}-{validCells}-{secondary}-{block}");
+            UnityEngine.Debug.Log("AAAA");
+            UnityEngine.Debug.Log("BBBB");
+            UnityEngine.Debug.Log("CCCC");
+            UnityEngine.Debug.Log("DDDD");
         }
 
         [RedirectMethod]

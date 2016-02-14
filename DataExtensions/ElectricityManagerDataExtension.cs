@@ -43,7 +43,7 @@ namespace EightyOne.DataExtensions
 
             using (var ms = new MemoryStream())
             {
-                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new FakeElectricityManager.Data());
+                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, BuildConfig.DATA_FORMAT_VERSION, new FakeElectricityManager.Data());
                 var data = ms.ToArray();
                 serializableDataManager.SaveData(id, data);
             }
