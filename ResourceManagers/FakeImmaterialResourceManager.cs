@@ -22,7 +22,7 @@ namespace EightyOne.ResourceManagers
         private static int[] m_globalTempResources;
         private static int[] m_totalFinalResources;
         private static int[] m_totalTempResources;
-        private static int[] m_totalTempResourcesMul;
+        private static long[] m_totalTempResourcesMul;
         private static int[] m_modifiedX1;
         private static int[] m_modifiedX2;
         private static bool m_modified;
@@ -50,7 +50,7 @@ namespace EightyOne.ResourceManagers
             m_globalTempResources = (int[])typeof(ImmaterialResourceManager).GetField("m_globalTempResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_totalFinalResources = (int[])typeof(ImmaterialResourceManager).GetField("m_totalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_totalTempResources = (int[])typeof(ImmaterialResourceManager).GetField("m_totalTempResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
-            m_totalTempResourcesMul = (int[])typeof(ImmaterialResourceManager).GetField("m_totalTempResourcesMul", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
+            m_totalTempResourcesMul = (long[])typeof(ImmaterialResourceManager).GetField("m_totalTempResourcesMul", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_modifiedX1 = new int[GRID];
             m_modifiedX2 = new int[GRID];
             for (int index = 0; index < GRID; ++index)
@@ -66,7 +66,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectReverse(true)]
-        private static void CalculateTotalResources(int[] buffer, int[] bufferMul, int[] target)
+        private static void CalculateTotalResources(int[] buffer, long[] bufferMul, int[] target)
         {
             UnityEngine.Debug.Log($"{buffer}+{bufferMul}+{target}");
         }
@@ -499,7 +499,7 @@ namespace EightyOne.ResourceManagers
                     {
                         int num6 = (int)m_localFinalResources[index1 + index2];
                         m_totalTempResources[index2] += num6;
-                        m_totalTempResourcesMul[index2] += num6 * num5;
+                        m_totalTempResourcesMul[index2] += (long) (num6 * num5);
                         m_localTempResources[index1 + index2] = (ushort)0;
                     }
                 }

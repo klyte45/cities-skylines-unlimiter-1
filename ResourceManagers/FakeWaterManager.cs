@@ -1928,8 +1928,10 @@ namespace EightyOne.ResourceManagers
                 {
                     s.WriteUInt16((uint)m_waterPulseUnits[index1].m_group);
                     s.WriteUInt16((uint)m_waterPulseUnits[index1].m_node);
-                    s.WriteUInt8((uint)m_waterPulseUnits[index1].m_x);
-                    s.WriteUInt8((uint)m_waterPulseUnits[index1].m_z);
+                    //begin mod
+                    s.WriteUInt16((uint)m_waterPulseUnits[index1].m_x);
+                    s.WriteUInt16((uint)m_waterPulseUnits[index1].m_z);
+                    //end mod
                     if (++index1 >= m_waterPulseUnits.Length)
                         index1 = 0;
                 }
@@ -1942,8 +1944,10 @@ namespace EightyOne.ResourceManagers
                 {
                     s.WriteUInt16((uint)m_sewagePulseUnits[index2].m_group);
                     s.WriteUInt16((uint)m_sewagePulseUnits[index2].m_node);
-                    s.WriteUInt8((uint)m_sewagePulseUnits[index2].m_x);
-                    s.WriteUInt8((uint)m_sewagePulseUnits[index2].m_z);
+                    //begin mod
+                    s.WriteUInt16((uint)m_sewagePulseUnits[index2].m_x);
+                    s.WriteUInt16((uint)m_sewagePulseUnits[index2].m_z);
+                    //end mod
                     if (++index2 >= m_sewagePulseUnits.Length)
                         index2 = 0;
                 }
@@ -1956,8 +1960,10 @@ namespace EightyOne.ResourceManagers
                 {
                     s.WriteUInt16((uint)m_heatingPulseUnits[index3].m_group);
                     s.WriteUInt16((uint)m_heatingPulseUnits[index3].m_node);
-                    s.WriteUInt8((uint)m_heatingPulseUnits[index3].m_x);
-                    s.WriteUInt8((uint)m_heatingPulseUnits[index3].m_z);
+                    //begin mod
+                    s.WriteUInt16((uint)m_heatingPulseUnits[index3].m_x);
+                    s.WriteUInt16((uint)m_heatingPulseUnits[index3].m_z);
+                    //end mod
                     if (++index3 >= m_heatingPulseUnits.Length)
                         index3 = 0;
                 }
@@ -1979,6 +1985,12 @@ namespace EightyOne.ResourceManagers
                     return;
                 }
                 m_waterGrid = new Cell[GRID * GRID];
+                m_waterPulseGroups = new PulseGroup[1024];
+                m_sewagePulseGroups = new PulseGroup[1024];
+                m_heatingPulseGroups = new PulseGroup[1024];
+                m_waterPulseUnits = new PulseUnit[32768];
+                m_sewagePulseUnits = new PulseUnit[32768];
+                m_heatingPulseUnits = new PulseUnit[32768];
                 FakeWaterManager.Cell[] cellArray = m_waterGrid;
                 //end mod
                 int length = cellArray.Length;
@@ -2146,8 +2158,8 @@ namespace EightyOne.ResourceManagers
                     m_waterPulseUnits[index].m_group = (ushort)s.ReadUInt16();
                     m_waterPulseUnits[index].m_node = (ushort)s.ReadUInt16();
                     //begin mod
-                    m_waterPulseUnits[index].m_x = (ushort)s.ReadUInt8();
-                    m_waterPulseUnits[index].m_z = (ushort)s.ReadUInt8();
+                    m_waterPulseUnits[index].m_x = (ushort)s.ReadUInt16();
+                    m_waterPulseUnits[index].m_z = (ushort)s.ReadUInt16();
                     //end mod
                 }
                 int num2 = (int)s.ReadUInt16();
@@ -2158,8 +2170,8 @@ namespace EightyOne.ResourceManagers
                     m_sewagePulseUnits[index].m_group = (ushort)s.ReadUInt16();
                     m_sewagePulseUnits[index].m_node = (ushort)s.ReadUInt16();
                     //begin mod
-                    m_sewagePulseUnits[index].m_x = (ushort)s.ReadUInt8();
-                    m_sewagePulseUnits[index].m_z = (ushort)s.ReadUInt8();
+                    m_sewagePulseUnits[index].m_x = (ushort)s.ReadUInt16();
+                    m_sewagePulseUnits[index].m_z = (ushort)s.ReadUInt16();
                     //end mod
                 }
                 if (s.version >= 227U)
@@ -2172,8 +2184,8 @@ namespace EightyOne.ResourceManagers
                         m_heatingPulseUnits[index].m_group = (ushort)s.ReadUInt16();
                         m_heatingPulseUnits[index].m_node = (ushort)s.ReadUInt16();
                         //begin mod
-                        m_heatingPulseUnits[index].m_x = (ushort)s.ReadUInt8();
-                        m_heatingPulseUnits[index].m_z = (ushort)s.ReadUInt8();
+                        m_heatingPulseUnits[index].m_x = (ushort)s.ReadUInt16();
+                        m_heatingPulseUnits[index].m_z = (ushort)s.ReadUInt16();
                         //end mod
                     }
                 }
