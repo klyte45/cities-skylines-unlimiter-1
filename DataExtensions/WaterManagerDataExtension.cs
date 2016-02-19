@@ -32,23 +32,30 @@ namespace EightyOne.DataExtensions
                 }
             }
 
-            Util.CopyStructArrayBack(FakeWaterManager.m_nodeData, wm, "m_nodeData");
             Util.CopyStructArrayBack(FakeWaterManager.m_waterPulseGroups, wm, "m_waterPulseGroups");
             Util.CopyStructArrayBack(FakeWaterManager.m_sewagePulseGroups, wm, "m_sewagePulseGroups");
+            Util.CopyStructArrayBack(FakeWaterManager.m_heatingPulseGroups, wm, "m_heatingPulseGroups");
+
             Util.CopyStructArrayBack(FakeWaterManager.m_waterPulseUnits, wm, "m_waterPulseUnits");
             Util.CopyStructArrayBack(FakeWaterManager.m_sewagePulseUnits, wm, "m_sewagePulseUnits");
+            Util.CopyStructArrayBack(FakeWaterManager.m_heatingPulseUnits, wm, "m_heatingPulseUnits");
 
             Util.SetPropertyValueBack(FakeWaterManager.m_waterPulseGroupCount, wm, "m_waterPulseGroupCount");
             Util.SetPropertyValueBack(FakeWaterManager.m_sewagePulseGroupCount, wm, "m_sewagePulseGroupCount");
+            Util.SetPropertyValueBack(FakeWaterManager.m_heatingPulseGroupCount, wm, "m_heatingPulseGroupCount");
+
             Util.SetPropertyValueBack(FakeWaterManager.m_waterPulseUnitEnd, wm, "m_waterPulseUnitEnd");
             Util.SetPropertyValueBack(FakeWaterManager.m_sewagePulseUnitEnd, wm, "m_sewagePulseUnitEnd");
+            Util.SetPropertyValueBack(FakeWaterManager.m_heatingPulseUnitEnd, wm, "m_heatingPulseUnitEnd");
+
+
             Util.SetPropertyValueBack(FakeWaterManager.m_processedCells, wm, "m_processedCells");
             Util.SetPropertyValueBack(FakeWaterManager.m_conductiveCells, wm, "m_conductiveCells");
             Util.SetPropertyValueBack(FakeWaterManager.m_canContinue, wm, "m_canContinue");
 
             using (var ms = new MemoryStream())
             {
-                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 1u, new FakeWaterManager.Data());
+                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, BuildConfig.DATA_FORMAT_VERSION, new FakeWaterManager.Data());
                 var data = ms.ToArray();
                 serializableDataManager.SaveData(id, data);
             }

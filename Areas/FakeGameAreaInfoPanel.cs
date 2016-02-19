@@ -84,6 +84,13 @@ namespace EightyOne.Areas
             m_OutPlane = m_Plane.Find<UISprite>("Outgoing");
         }
 
+        public static void OnDestroy()
+        {
+            _areaIndexField = null;
+        }
+
+
+
         [RedirectMethod]
         private void ShowInternal(int areaIndex)
         {

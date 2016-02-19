@@ -19,6 +19,10 @@ namespace EightyOne.ResourceManagers
         private static void UpdateNodeElectricity(ElectricityManager manager, int nodeID, int value)
         {
             UnityEngine.Debug.Log($"{manager}-{nodeID}-{value}");
+            UnityEngine.Debug.Log("AAAA");
+            UnityEngine.Debug.Log("BBBB");
+            UnityEngine.Debug.Log("CCCC");
+            UnityEngine.Debug.Log("DDDD");
         }
 
         public class Data : IDataContainer
@@ -255,35 +259,28 @@ namespace EightyOne.ResourceManagers
             public byte m_conductivity;
             public bool m_tmpElectrified;
             public bool m_electrified;
-
-            public override string ToString()
-            {
-                return string.Format("{0} {1} {2} {3} {4} {5}", m_currentCharge.ToString(), m_extraCharge.ToString(), m_pulseGroup.ToString(), m_conductivity.ToString(), m_tmpElectrified.ToString(), m_electrified.ToString());
-            }
         }
+
         public struct PulseGroup
         {
             public uint m_origCharge;
             public uint m_curCharge;
             public ushort m_mergeIndex;
             public ushort m_mergeCount;
+            //begin mod
             public ushort m_x;
             public ushort m_z;
-            public override string ToString()
-            {
-                return string.Format("{0} {1} {2} {3} {4} {5}", m_origCharge.ToString(), m_curCharge.ToString(), m_mergeIndex.ToString(), m_mergeCount.ToString(), m_x.ToString(), m_z.ToString());
-            }
+            //end mod
         }
+
         public struct PulseUnit
         {
             public ushort m_group;
             public ushort m_node;
+            //begin mod
             public ushort m_x;
             public ushort m_z;
-            public override string ToString()
-            {
-                return string.Format("{0} {1} {2} {3}", m_group.ToString(), m_node.ToString(), m_x.ToString(), m_z.ToString());
-            }
+            //end mod
         }
 
         public const int GRID = 462;
@@ -306,8 +303,6 @@ namespace EightyOne.ResourceManagers
         private static int m_modifiedZ2;
 
         private static Texture2D m_electricityTexture;
-        static FieldInfo m_refreshGrid;
-
 
         public static void Init()
         {
@@ -347,7 +342,6 @@ namespace EightyOne.ResourceManagers
             m_modifiedZ1 = 0;
             m_modifiedX2 = GRID - 1;
             m_modifiedZ2 = GRID - 1;
-            m_refreshGrid = typeof(ElectricityManager).GetField("m_refreshGrid", BindingFlags.NonPublic | BindingFlags.Instance);
             m_electricityTexture = new Texture2D(GRID, GRID, TextureFormat.RGBA32, false, true);
             m_electricityTexture.filterMode = FilterMode.Point;
             m_electricityTexture.wrapMode = TextureWrapMode.Clamp;
@@ -777,7 +771,7 @@ namespace EightyOne.ResourceManagers
                             NetInfo info = instance.m_nodes.m_buffer[i].Info;
                             if (info.m_class.m_service == ItemClass.Service.Electricity)
                             {
-                                UpdateNodeElectricity(ElectricityManager.instance, i, (m_nodeGroups[i] == 65535) ? 0 : 1);
+                                UpdateNodeElectricity((ElectricityManager)Convert.ChangeType(this, typeof(ElectricityManager)), i, (m_nodeGroups[i] == 65535) ? 0 : 1);
                                 m_conductiveCells++;
                             }
                         }
@@ -1089,20 +1083,5 @@ namespace EightyOne.ResourceManagers
             }
             AreaModified(num, num2, num3, num4);
         }
-
-
-
-        [RedirectMethod]
-        public void UpdateData(SimulationManager.UpdateMode mode)
-        {
-            Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.BeginLoading("ElectricityManager.UpdateData");
-
-            if ((bool)m_refreshGrid.GetValue(ElectricityManager.instance))
-            {
-                UpdateGrid(-100000f, -100000f, 100000f, 100000f);
-            }
-            Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndLoading();
-        }
-
     }
 }

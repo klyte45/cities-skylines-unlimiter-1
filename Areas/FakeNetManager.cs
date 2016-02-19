@@ -22,7 +22,7 @@ namespace EightyOne.Areas
                     NetInfo info = nodes[n].Info;
                     if (info != null)
                     {
-                        info.m_netAI.NodeLoaded((ushort)n, ref nodes[n]);
+                        info.m_netAI.NodeLoaded((ushort)n, ref nodes[n], 0);
                     }
                 }
             }

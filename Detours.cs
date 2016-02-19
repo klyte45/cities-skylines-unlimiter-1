@@ -82,6 +82,7 @@ namespace EightyOne
             FakeDistrictManager.OnDestroy();
             FakeWaterManager.OnDestroy();
             FakeElectricityManager.OnDestroy();
+            FakeGameAreaInfoPanel.OnDestroy();
         }
 
         public static void TearDown()

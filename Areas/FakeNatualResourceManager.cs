@@ -12,7 +12,7 @@ namespace EightyOne.Areas
             UnityEngine.Debug.Log($"{manager}+{cell}+{ore}+{oil}+{forest}+{fertility}+{water}");
         }
 
-        [RedirectMethod(true)]
+        [RedirectMethod]
         public void GetTileResources(int x, int z, out uint ore, out uint oil, out uint forest, out uint fertility, out uint water)
         {
             //begin mod

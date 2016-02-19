@@ -170,6 +170,8 @@ namespace EightyOne.Areas
             }
             else
             {
+                if ((availability & ItemClass.Availability.Editors) != ItemClass.Availability.None)
+                    return;
                 if (borderAlpha >= 1.0 / 1000.0 &&
                     borderMaterial != (UnityEngine.Object)null)
                 {
