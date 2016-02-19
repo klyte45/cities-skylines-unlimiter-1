@@ -93,7 +93,7 @@ namespace EightyOne.Redirection
                 null);
             var redirectCallsState =
                 reverse ? RedirectionHelper.RedirectCalls(detour, originalMethod) : RedirectionHelper.RedirectCalls(originalMethod, detour);
-            return Tuple.New(originalMethod, redirectCallsState);
+            return Tuple.New(reverse ? detour : originalMethod, redirectCallsState);
         }
     }
 }
