@@ -15,7 +15,7 @@ namespace EightyOne
 
         public void OnSettingsUI(UIHelperBase helper)
         {
-            helper.AddButton("Unlock all tiles", UnlockAllCheat.UnlockAllAreas);
+            helper.AddButton("Unlock all tiles for free", UnlockAllCheat.UnlockAllAreas);
         }
 
     }

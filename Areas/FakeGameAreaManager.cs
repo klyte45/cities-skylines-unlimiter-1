@@ -105,10 +105,10 @@ namespace EightyOne.Areas
         public new bool CanUnlock(int x, int z)
         {
             //begin mod
-            if (x < 0 || z < 0 || (x >= GRID || z >= GRID) || (this.m_areaCount >= this.MaxAreaCount || !Singleton<UnlockManager>.instance.Unlocked(this.m_areaCount) || this.m_areaGrid[z * GRID + x] != 0))
+            if (x < 0 || z < 0 || (x >= GRID || z >= GRID) || (this.m_areaCount >= this.MaxAreaCount || (!Singleton<UnlockManager>.instance.Unlocked(this.m_areaCount) && !UnlockAllCheat.CheatInProgress) || this.m_areaGrid[z * GRID + x] != 0))
                 return false;
             //end mod
-            bool result = this.IsUnlocked(x, z - 1) || this.IsUnlocked(x - 1, z) || this.IsUnlocked(x + 1, z) || this.IsUnlocked(x, z + 1);
+            bool result = this.IsUnlocked(x, z - 1) || this.IsUnlocked(x - 1, z) || this.IsUnlocked(x + 1, z) || this.IsUnlocked(x, z + 1) || UnlockAllCheat.CheatInProgress;
             //begin mod
             //end mod
             return result;
