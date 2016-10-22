@@ -6,7 +6,6 @@ namespace EightyOne
 {
     public class LoadingExtension : LoadingExtensionBase
     {
-        private const string CheatGameObject = "UnlockAllCheat";
 
         public override void OnCreated(ILoading loading)
         {
@@ -20,8 +19,6 @@ namespace EightyOne
             {
                 return;
             }
-            var cheat = new GameObject(CheatGameObject);
-            cheat.AddComponent<UnlockAllCheat>();
             Detours.Deploy();
             SimulationManager.instance.AddAction(() => Object.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 2800f);
             SimulationManager.instance.AddAction(() => Object.FindObjectOfType<FogEffect>().m_edgeFogDistance = 2800f);
@@ -31,11 +28,6 @@ namespace EightyOne
         public override void OnLevelUnloading()
         {
             Detours.Revert();
-            var cheat = GameObject.Find(CheatGameObject);
-            if (cheat != null)
-            {
-                Object.Destroy(cheat);
-            }
         }
 
         public override void OnReleased()

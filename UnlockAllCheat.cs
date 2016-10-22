@@ -7,14 +7,18 @@ using UnityEngine;
 
 namespace EightyOne
 {
-    public class UnlockAllCheat : MonoBehaviour
+    public static class UnlockAllCheat
     {
-        public void Update()
+        public static void UnlockAllAreas()
         {
-            if ((Input.GetKey(KeyCode.RightShift) || Input.GetKey(KeyCode.LeftShift)) && Input.GetKeyDown(KeyCode.U))
+            if (!GameAreaManager.exists || !SimulationManager.exists || LoadingManager.instance.m_loadedEnvironment == null)
+            {
+                return;
+            }
+            SimulationManager.instance.AddAction(() =>
             {
                 GameAreaManager.instance.StartCoroutine(UnlockAllCoroutine());
-            }
+            });
         }
 
         private static IEnumerator UnlockAllCoroutine()
@@ -24,7 +28,7 @@ namespace EightyOne
             var set = GetUnlockables();
             while (set.Length > 0)
             {
-                var counter = set.Count();
+                var counter = set.Length;
                 foreach (var keyValuePair in set)
                 {
                     SimulationManager.instance.AddAction(() =>

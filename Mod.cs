@@ -13,5 +13,10 @@ namespace EightyOne
 
         public string Name => "81 Tiles (Fixed for C:S 1.2+)";
 
+        public void OnSettingsUI(UIHelperBase helper)
+        {
+            helper.AddButton("Unlock all tiles", UnlockAllCheat.UnlockAllAreas);
+        }
+
     }
 }
