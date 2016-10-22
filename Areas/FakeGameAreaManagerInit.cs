@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using ColossalFramework;
 
 namespace EightyOne.Areas
@@ -42,6 +43,7 @@ namespace EightyOne.Areas
                     }
                 }
             }
+            EnablePreventPropsFromHiding();
             for (int z2 = 0; z2 < FakeGameAreaManager.GRID; ++z2)
             {
                 for (int x2 = 0; x2 < FakeGameAreaManager.GRID; ++x2)
@@ -60,6 +62,35 @@ namespace EightyOne.Areas
                         Singleton<ZoneManager>.instance.UpdateBlocks(minX, minZ, maxX, maxZ);
                     }
                 }
+            }
+            DisablePreventPropsFromHiding();
+
+        }
+
+        private static void EnablePreventPropsFromHiding()
+        {
+            try
+            {
+                var propAnarchyHookType = Util.FindType("PropAnarchyHook");
+                propAnarchyHookType?.GetMethod("ImUpToNoGood", BindingFlags.Public | BindingFlags.Static)?
+                    .Invoke(null, new object[] {});
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogException(e);
+            }
+        }
+
+        private static void DisablePreventPropsFromHiding()
+        {
+            try
+            {
+                var propAnarchyHookType = Util.FindType("PropAnarchyHook");
+                propAnarchyHookType?.GetMethod("MischiefManaged", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { });
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogException(e);
             }
         }
     }
