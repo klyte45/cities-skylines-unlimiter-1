@@ -285,6 +285,12 @@ namespace EightyOne.ResourceManagers
             Singleton<NaturalResourceManager>.instance.AveragePollutionAndWater(area, out groundPollution, out waterProximity);
             int num8 = (int)((double)groundPollution * 100.0);
             int resourceRate13 = (int)((double)waterProximity * 100.0);
+            if (resourceRate13 > 33 && resourceRate13 < 99)
+            {
+                area = new Rect((float)(((double)x - HALFGRID + 0.25) * 38.4000015258789), (float)(((double)z - HALFGRID + 0.25) * 38.4000015258789), 19.2f, 19.2f);
+                Singleton<NaturalResourceManager>.instance.AveragePollutionAndWater(area, out groundPollution, out waterProximity);
+                resourceRate13 = Mathf.Max(Mathf.Min(resourceRate13, (int)((double)waterProximity * 100.0)), 33);
+            }
             int resourceRate14 = num7 * 2 / (resourceRate2 + 50);
             int resourceRate15;
             int resourceRate16;

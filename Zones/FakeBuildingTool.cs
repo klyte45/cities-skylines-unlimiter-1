@@ -19,7 +19,6 @@ namespace EightyOne.Zones
         private static FieldInfo productionRateField;
         private static FieldInfo constructionCostField;
         private static FieldInfo placementErrorsField;
-        private static FieldInfo cachedAngleField;
 
         private static void Init(BuildingTool b)
         {
@@ -32,17 +31,6 @@ namespace EightyOne.Zones
             productionRateField = b.GetType().GetField("m_productionRate", BindingFlags.NonPublic | BindingFlags.Instance);
             constructionCostField = b.GetType().GetField("m_constructionCost", BindingFlags.NonPublic | BindingFlags.Instance);
             placementErrorsField = b.GetType().GetField("m_placementErrors", BindingFlags.NonPublic | BindingFlags.Instance);
-            cachedAngleField = b.GetType().GetField("m_cachedAngle", BindingFlags.NonPublic | BindingFlags.Instance);
-        }
-
-        [RedirectReverse(true)]
-        private static ToolBase.ToolErrors CheckSpace(BuildingTool b, BuildingInfo info, int relocating, Vector3 pos,
-            float minY, float maxY, float angle, int width, int length, bool test, ulong[] collidingSegmentBuffer,
-            ulong[] collidingBuildingBuffer)
-        {
-            UnityEngine.Debug.Log(
-                $"{b}-{info}-{relocating}-{pos}-{minY}-{maxY}-{angle}-{width}-{length}-{test}-{collidingSegmentBuffer}-{collidingBuildingBuffer}");
-            return ToolBase.ToolErrors.None;
         }
 
         [RedirectReverse(true)]
@@ -145,7 +133,7 @@ namespace EightyOne.Zones
                                 float maxY;
                                 float buildingY;
                                 Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                                ToolBase.ToolErrors toolErrors3 = CheckSpace(this, info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                                ToolBase.ToolErrors toolErrors3 = BuildingTool.CheckSpace(info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                                 if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
                                     toolErrors3 |= ToolBase.ToolErrors.SlopeTooSteep;
                                 if (toolErrors3 == ToolBase.ToolErrors.None)
@@ -165,7 +153,7 @@ namespace EightyOne.Zones
                                         float maxY;
                                         float buildingY;
                                         Building.SampleBuildingHeight(vector3_3, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                                        ToolBase.ToolErrors toolErrors3 = CheckSpace(this, info, relocating, vector3_3, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                                        ToolBase.ToolErrors toolErrors3 = BuildingTool.CheckSpace(info, relocating, vector3_3, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                                         if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
                                             toolErrors3 |= ToolBase.ToolErrors.SlopeTooSteep;
                                         if (toolErrors3 == ToolBase.ToolErrors.None)
@@ -191,7 +179,7 @@ namespace EightyOne.Zones
                                         float maxY;
                                         float buildingY;
                                         Building.SampleBuildingHeight(vector3_3, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                                        ToolBase.ToolErrors toolErrors3 = CheckSpace(this, info, relocating, vector3_3, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                                        ToolBase.ToolErrors toolErrors3 = BuildingTool.CheckSpace(info, relocating, vector3_3, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                                         if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
                                             toolErrors3 |= ToolBase.ToolErrors.SlopeTooSteep;
                                         if (toolErrors3 == ToolBase.ToolErrors.None)
@@ -211,7 +199,7 @@ namespace EightyOne.Zones
                                 float buildingY;
                                 Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
                                 this.m_toolController.ResetColliding();
-                                toolErrors2 = CheckSpace(this, info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                                toolErrors2 = BuildingTool.CheckSpace(info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                                 if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
                                     toolErrors2 |= ToolBase.ToolErrors.SlopeTooSteep;
                                 vector3_1.y = buildingY;
@@ -236,7 +224,7 @@ namespace EightyOne.Zones
                             float num2 = Mathf.Max(vector3_1.y, buildingY);
                             float num3 = vector3_1.y;
                             vector3_1.y = num2;
-                            toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | CheckSpace(this, info, relocating, vector3_1, minY2, num2 + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                            toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, relocating, vector3_1, minY2, num2 + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                             if ((double)num3 - (double)minY2 > 128.0)
                                 toolErrors1 |= ToolBase.ToolErrors.HeightTooHigh;
                         }
@@ -256,7 +244,7 @@ namespace EightyOne.Zones
                                 float num2 = Mathf.Max(vector3_1.y, buildingY);
                                 float num3 = vector3_1.y;
                                 vector3_1.y = num2;
-                                toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | CheckSpace(this, info, relocating, vector3_1, minY, num2 + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                                toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, relocating, vector3_1, minY, num2 + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                                 if ((double)num3 - (double)waterHeight > 128.0)
                                     toolErrors1 |= ToolBase.ToolErrors.HeightTooHigh;
                                 if ((double)num2 <= (double)waterHeight)
@@ -268,7 +256,7 @@ namespace EightyOne.Zones
                         else
                             toolErrors1 = toolErrors2 | info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1);
                     }
-                    else if (info.m_placementMode == BuildingInfo.PlacementMode.OnSurface)
+                    else if (info.m_placementMode == BuildingInfo.PlacementMode.OnSurface || info.m_placementMode == BuildingInfo.PlacementMode.OnTerrain)
                     {
                         Quaternion quaternion = Quaternion.AngleAxis(this.m_angle, Vector3.down);
                         vector3_1 -= quaternion * info.m_centerOffset;
@@ -278,7 +266,7 @@ namespace EightyOne.Zones
                         float buildingY;
                         Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
                         vector3_1.y = buildingY;
-                        toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | CheckSpace(this, info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                        toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                     }
                     else if (info.m_placementMode == BuildingInfo.PlacementMode.OnGround)
                     {
@@ -290,7 +278,7 @@ namespace EightyOne.Zones
                         float buildingY;
                         Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
                         vector3_1.y = buildingY;
-                        toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | CheckSpace(this, info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                        toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                         if ((double)maxY - (double)minY > (double)info.m_maxHeightOffset)
                             toolErrors1 |= ToolBase.ToolErrors.SlopeTooSteep;
                     }
@@ -304,7 +292,7 @@ namespace EightyOne.Zones
                         float buildingY;
                         Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
                         vector3_1.y = buildingY;
-                        toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | CheckSpace(this, info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                        toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                     }
                     else
                         toolErrors1 = ToolBase.ToolErrors.Pending | info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1);
@@ -316,7 +304,7 @@ namespace EightyOne.Zones
                         {
                             BuildingInfo buildingInfo = info.m_subBuildings[index].m_buildingInfo;
                             Vector3 position = matrix4x4.MultiplyPoint(info.m_subBuildings[index].m_position);
-                            float angle = info.m_subBuildings[index].m_angle * (float)(Math.PI / 180.0) + (float)cachedAngleField.GetValue(this);
+                            float angle = info.m_subBuildings[index].m_angle * (float)(Math.PI / 180.0) + num1;
                             Segment3 connectionSegment2 = new Segment3();
                             int productionRate2;
                             int constructionCost2;

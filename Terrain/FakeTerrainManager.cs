@@ -35,6 +35,7 @@ namespace EightyOne.Terrain
         }
 
         [RedirectMethod]
+        [IgnoreIfSurfacePainterEnabled]
         public TerrainManager.SurfaceCell GetSurfaceCell(int x, int z)
         {
             //begin mod

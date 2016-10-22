@@ -52,6 +52,7 @@
     <Compile Include="Redirection\IgnoreIfBuildingThemesEnabledAttribute.cs" />
     <Compile Include="Redirection\IgnoreIfOtherModEnabledAttribute.cs" />
     <Compile Include="Redirection\IgnoreIfRemoveNeedForPipesEnabledAttribute.cs" />
+    <Compile Include="Redirection\IgnoreIfSurfacePainterEnabledAttribute.cs" />
     <Compile Include="Redirection\RedirectMethodAttribute.cs" />
     <Compile Include="Redirection\RedirectReverseAttribute.cs" />
     <Compile Include="Redirection\TargetTypeAttribute.cs" />

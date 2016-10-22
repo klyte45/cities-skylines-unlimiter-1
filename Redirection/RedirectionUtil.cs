@@ -43,7 +43,7 @@ namespace EightyOne.Redirection
                             return false;
                         }))
             {
-                UnityEngine.Debug.Log($"Redirecting {targetType.Name}#{method.Name}...");
+                //UnityEngine.Debug.Log($"Redirecting {targetType.Name}#{method.Name}...");
                 RedirectMethod(targetType, method, redirects);
             }
         }
@@ -63,7 +63,7 @@ namespace EightyOne.Redirection
                             return false;
                         }))
             {
-                UnityEngine.Debug.Log($"Redirecting reverse {targetType.Name}#{method.Name}...");
+                //UnityEngine.Debug.Log($"Redirecting reverse {targetType.Name}#{method.Name}...");
                 RedirectMethod(targetType, method, redirects, true);
             }
         }

@@ -342,6 +342,36 @@ namespace EightyOne.Areas
             return false;
         }
 
+        [RedirectMethod]
+        public bool PointOutOfArea(Vector3 p, float radius)
+        {
+            ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
+            if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
+            {
+                //begin  mod
+                //end mod
+            }
+            else
+            {
+                bool flag = (availability & ItemClass.Availability.Editors) != ItemClass.Availability.None;
+                //begin mod
+                int num1 = Mathf.FloorToInt((float)(((double)p.x - (double)radius) / 1920.0 + HALFGRID));
+                int num2 = Mathf.FloorToInt((float)(((double)p.z - (double)radius) / 1920.0 + HALFGRID));
+                int num3 = Mathf.FloorToInt((float)(((double)p.x + (double)radius) / 1920.0 + HALFGRID));
+                int num4 = Mathf.FloorToInt((float)(((double)p.z + (double)radius) / 1920.0 + HALFGRID));
+                //end mod
+                for (int z = num2; z <= num4; ++z)
+                {
+                    for (int x = num1; x <= num3; ++x)
+                    {
+                        int area = this.GetArea(x, z);
+                        if (area == -2 || !flag && area <= 0)
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
 
         [RedirectMethod]
         public new bool QuadOutOfArea(Quad2 quad)

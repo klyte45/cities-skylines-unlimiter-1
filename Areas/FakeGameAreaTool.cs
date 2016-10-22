@@ -20,16 +20,15 @@ namespace EightyOne.Areas
         private static FieldInfo _mouseAreaIndexField = typeof(GameAreaTool).GetField("m_mouseAreaIndex", BindingFlags.Instance | BindingFlags.NonPublic);
 
         [RedirectMethod]
-        protected override void OnToolGUI()
+        protected override void OnToolGUI(Event e)
         {
             ToolController toolController = ToolsModifierControl.toolController;
             int num = (int)_mouseAreaIndexField.GetValue(this);
             if (toolController.IsInsideUI)
                 return;
-            Event current = Event.current;
-            if (current.type != EventType.MouseDown)
+            if (e.type != EventType.MouseDown)
                 return;
-            if (current.button == 0)
+            if (e.button == 0)
             {
                 if (num != -1)
                 {
@@ -57,7 +56,7 @@ namespace EightyOne.Areas
                 else
                     GameAreaInfoPanel.Hide();
             }
-            else if (current.button != 1)
+            else if (e.button != 1)
                 ;
         }
     }
