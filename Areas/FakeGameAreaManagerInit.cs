@@ -72,8 +72,9 @@ namespace EightyOne.Areas
             try
             {
                 var propAnarchyHookType = Util.FindType("PropAnarchyHook");
-                propAnarchyHookType?.GetMethod("ImUpToNoGood", BindingFlags.Public | BindingFlags.Static)?
-                    .Invoke(null, new object[] {});
+                propAnarchyHookType?
+                    .GetMethod("ImUpToNoGood", BindingFlags.Public | BindingFlags.Static)?
+                    .Invoke(null, new object[] { "81 Tiles" });
             }
             catch (Exception e)
             {
@@ -86,7 +87,9 @@ namespace EightyOne.Areas
             try
             {
                 var propAnarchyHookType = Util.FindType("PropAnarchyHook");
-                propAnarchyHookType?.GetMethod("MischiefManaged", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { });
+                propAnarchyHookType?
+                    .GetMethod("MischiefManaged", BindingFlags.Public | BindingFlags.Static)?
+                    .Invoke(null, new object[] { "81 Tiles" });
             }
             catch (Exception e)
             {
