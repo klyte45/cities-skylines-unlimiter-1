@@ -48,7 +48,7 @@ namespace EightyOne.Areas
             var newAreaPrices = new int[instance.m_maxAreaCount];
             for (var i = 0; i < instance.m_maxAreaCount; i++)
             {
-                if (i > 9)
+                if (i > 8)
                 {
                     newAreaPrices[i] = areaPrices[8] / 9 * i;
                 }
