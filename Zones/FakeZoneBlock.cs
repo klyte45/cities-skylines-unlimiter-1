@@ -1,5 +1,6 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
+using EightyOne.IgnoreAttributes;
 using UnityEngine;
 using EightyOne.Redirection;
 

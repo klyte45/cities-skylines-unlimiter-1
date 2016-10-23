@@ -1,4 +1,6 @@
-﻿namespace EightyOne.Redirection
+﻿using EightyOne.Redirection;
+
+namespace EightyOne.IgnoreAttributes
 {
     public class IgnoreIfRemoveNeedForPipesEnabledAttribute : IgnoreIfOtherModEnabledAttribute
     {

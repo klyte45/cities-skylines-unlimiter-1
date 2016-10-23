@@ -49,10 +49,10 @@
     <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="DataExtensions\AreaManagerDataExtension.cs" />
-    <Compile Include="Redirection\IgnoreIfBuildingThemesEnabledAttribute.cs" />
+    <Compile Include="IgnoreAttributes\IgnoreIfBuildingThemesEnabledAttribute.cs" />
     <Compile Include="Redirection\IgnoreIfOtherModEnabledAttribute.cs" />
-    <Compile Include="Redirection\IgnoreIfRemoveNeedForPipesEnabledAttribute.cs" />
-    <Compile Include="Redirection\IgnoreIfSurfacePainterEnabledAttribute.cs" />
+    <Compile Include="IgnoreAttributes\IgnoreIfRemoveNeedForPipesEnabledAttribute.cs" />
+    <Compile Include="IgnoreAttributes\IgnoreIfSurfacePainterEnabledAttribute.cs" />
     <Compile Include="Redirection\RedirectMethodAttribute.cs" />
     <Compile Include="Redirection\RedirectReverseAttribute.cs" />
     <Compile Include="Redirection\TargetTypeAttribute.cs" />

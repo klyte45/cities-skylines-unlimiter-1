@@ -7,6 +7,7 @@ using System.Threading;
 using UnityEngine;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using EightyOne.IgnoreAttributes;
 using EightyOne.Redirection;
 
 //TODO(earalov): review this class
