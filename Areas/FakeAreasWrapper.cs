@@ -1,7 +1,6 @@
-﻿using EightyOne.Areas;
-using EightyOne.Redirection;
+﻿using EightyOne.Redirection;
 
-namespace EightyOne.Zones
+namespace EightyOne.Areas
 {
     [TargetType(typeof(AreasWrapper))]
     public class FakeAreasWrapper
@@ -10,11 +9,8 @@ namespace EightyOne.Zones
         public void set_maxAreaCount(int value)
         {
             //begin mod
-            int num = FakeGameAreaManager.GRID * FakeGameAreaManager.GRID;
-            if (GameAreaManager.instance.m_maxAreaCount == num)
-                return;
+            GameAreaManager.instance.m_maxAreaCount = FakeGameAreaManager.GRID * FakeGameAreaManager.GRID;
             //end mod
-            GameAreaManager.instance.m_maxAreaCount = num;
         }
 
         [RedirectMethod]

@@ -43,6 +43,21 @@ namespace EightyOne.Areas
                     }
                 }
             }
+            instance.m_maxAreaCount = FakeGameAreaManager.GRID * FakeGameAreaManager.GRID;
+            var areaPrices = instance.m_properties.m_baseAreaPrices;
+            var newAreaPrices = new int[instance.m_maxAreaCount];
+            for (var i = 0; i < instance.m_maxAreaCount; i++)
+            {
+                if (i > 9)
+                {
+                    newAreaPrices[i] = areaPrices[8] / 9 * i;
+                }
+                else
+                {
+                    newAreaPrices[i] = areaPrices[i];
+                }
+            }
+            instance.m_properties.m_baseAreaPrices = newAreaPrices;
             EnablePreventPropsFromHiding();
             for (int z2 = 0; z2 < FakeGameAreaManager.GRID; ++z2)
             {

@@ -71,7 +71,7 @@
     <Compile Include="Terrain\FakeTerrainManager.cs" />
     <Compile Include="UnlockAllCheat.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="Zones\FakeAreasWrapper.cs" />
+    <Compile Include="Areas\FakeAreasWrapper.cs" />
     <Compile Include="Zones\FakeBuilding.cs" />
     <Compile Include="Zones\FakeBuildingTool.cs" />
     <Compile Include="Zones\FakeZoneBlock.cs" />
