@@ -4,10 +4,12 @@ namespace EightyOne
 {
     public class Mod : IUserMod
     {
-        public static readonly string CROSS_THE_LINE_MOD = "CrossTheLine";
-        public static readonly string BUILDING_THEMES_MOD = "Building Themes";
-        public static readonly string REMOVE_NEED_FOR_PIPES_MOD = "Remove Need For Pipes";
-        public static readonly string SURFACE_PAINTER_MOD = "Surface Painter";
+        public const string UNLOCK_ALL_TILES_FOR_FREE = "Unlock all tiles for free";
+        public const string CROSS_THE_LINE_MOD = "CrossTheLine";
+        public const string BUILDING_THEMES_MOD = "Building Themes";
+        public const string REMOVE_NEED_FOR_PIPES_MOD = "Remove Need For Pipes";
+        public const string SURFACE_PAINTER_MOD = "Surface Painter";
+        public const string ALL_TILES_START_MOD = "Unlock All Tiles at Start";
 
         public string Description => "Allows to use all 81 map tiles";
 
@@ -15,8 +17,7 @@ namespace EightyOne
 
         public void OnSettingsUI(UIHelperBase helper)
         {
-            helper.AddButton("Unlock all tiles for free", UnlockAllCheat.UnlockAllAreas);
+            helper.AddButton(UNLOCK_ALL_TILES_FOR_FREE, UnlockAllCheat.UnlockAllAreas);
         }
-
     }
 }
