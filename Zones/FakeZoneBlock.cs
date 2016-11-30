@@ -556,8 +556,7 @@ namespace EightyOne.Zones
                     }
                 }
             label_163:
-                if (info == null ||
-                    (double) Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double) vector3.y)
+                if (info == null || (double) Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double) vector3.y || Singleton<DisasterManager>.instance.IsEvacuating(vector3))
                 {
                     return;
                 }
