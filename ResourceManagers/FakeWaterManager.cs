@@ -416,6 +416,22 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
+        [RedirectMethod] //no changes. Just references m_nodeData
+        public int TryDumpSewage(ushort node, int rate, int max)
+        {
+            if ((int)node == 0)
+                return 0;
+            WaterManager.Node node1 = m_nodeData[(int)node];
+            int num1 = Mathf.Min(rate, (int)short.MaxValue);
+            int num2 = Mathf.Min(Mathf.Min(rate, max), (int)node1.m_extraSewagePressure);
+            max -= num2;
+            rate = Mathf.Max(0, Mathf.Min(Mathf.Min(rate, max), num1 - (int)node1.m_collectSewagePressure));
+            node1.m_collectSewagePressure += (ushort)rate;
+            node1.m_extraSewagePressure -= (ushort)num2;
+            m_nodeData[(int)node] = node1;
+            return num2;
+        }
+
         [RedirectMethod]
         [IgnoreIfRemoveNeedForPipesEnabled]
         public int TryFetchWater(Vector3 pos, int rate, int max, ref byte waterPollution)
@@ -518,6 +534,24 @@ namespace EightyOne.ResourceManagers
                 }
             }
             return false;
+        }
+
+        [RedirectMethod] //no changes. Just references m_nodeData
+        public int TryFetchWater(ushort node, int rate, int max, ref byte waterPollution)
+        {
+            if ((int)node == 0)
+                return 0;
+            WaterManager.Node node1 = m_nodeData[(int)node];
+            int num1 = Mathf.Min(rate, (int)short.MaxValue);
+            int num2 = Mathf.Min(Mathf.Min(rate, max), (int)node1.m_extraWaterPressure);
+            max -= num2;
+            rate = Mathf.Max(0, Mathf.Min(Mathf.Min(rate, max), num1 - (int)node1.m_collectWaterPressure));
+            node1.m_collectWaterPressure += (ushort)rate;
+            node1.m_extraWaterPressure -= (ushort)num2;
+            if (num2 != 0)
+                waterPollution = node1.m_pollution;
+            m_nodeData[(int)node] = node1;
+            return num2;
         }
 
         [RedirectMethod]
@@ -842,7 +876,9 @@ namespace EightyOne.ResourceManagers
             PulseGroup pulseGroup = m_waterPulseGroups[(int)root];
             PulseGroup pulseGroup2 = m_waterPulseGroups[(int)merged];
             pulseGroup.m_origPressure += pulseGroup2.m_origPressure;
-            m_nodeData[(int)pulseGroup.m_node].m_pollution = (byte)(m_nodeData[(int)pulseGroup.m_node].m_pollution + m_nodeData[(int)pulseGroup2.m_node].m_pollution + 1 >> 1);
+            pulseGroup.m_collectPressure += pulseGroup2.m_collectPressure;
+            if ((int)pulseGroup2.m_origPressure != 0)
+                m_nodeData[(int)pulseGroup.m_node].m_pollution = (byte)((int)m_nodeData[(int)pulseGroup.m_node].m_pollution + (int)m_nodeData[(int)pulseGroup2.m_node].m_pollution + 1 >> 1);
             if (pulseGroup2.m_mergeCount != 0)
             {
                 for (int i = 0; i < m_waterPulseGroupCount; i++)
@@ -851,6 +887,7 @@ namespace EightyOne.ResourceManagers
                     {
                         m_waterPulseGroups[i].m_mergeIndex = root;
                         pulseGroup2.m_origPressure -= m_waterPulseGroups[i].m_origPressure;
+                        pulseGroup2.m_collectPressure -= m_waterPulseGroups[i].m_collectPressure;
                     }
                 }
                 pulseGroup.m_mergeCount += pulseGroup2.m_mergeCount;
@@ -870,6 +907,7 @@ namespace EightyOne.ResourceManagers
             PulseGroup pulseGroup = m_sewagePulseGroups[(int)root];
             PulseGroup pulseGroup2 = m_sewagePulseGroups[(int)merged];
             pulseGroup.m_origPressure += pulseGroup2.m_origPressure;
+            pulseGroup.m_collectPressure += pulseGroup2.m_collectPressure;
             if (pulseGroup2.m_mergeCount != 0)
             {
                 for (int i = 0; i < m_sewagePulseGroupCount; i++)
@@ -878,6 +916,7 @@ namespace EightyOne.ResourceManagers
                     {
                         m_sewagePulseGroups[i].m_mergeIndex = root;
                         pulseGroup2.m_origPressure -= m_sewagePulseGroups[i].m_origPressure;
+                        pulseGroup2.m_collectPressure -= m_sewagePulseGroups[i].m_collectPressure;
                     }
                 }
                 pulseGroup.m_mergeCount += pulseGroup2.m_mergeCount;
@@ -1083,12 +1122,24 @@ namespace EightyOne.ResourceManagers
                 else
                 {
                     ushort rootWaterGroup = GetRootWaterGroup(wm, m_nodeData[(int)nodeIndex].m_waterPulseGroup);
-                    if (rootWaterGroup != group)
+                    if (rootWaterGroup == group)
                     {
-                        MergeWaterGroups(wm, group, rootWaterGroup);
-                        m_nodeData[(int)nodeIndex].m_waterPulseGroup = group;
-                        m_canContinue = true;
+                        return;
                     }
+                    MergeWaterGroups(wm, group, rootWaterGroup);
+                    if ((int)m_waterPulseGroups[(int)rootWaterGroup].m_origPressure == 0)
+                    {
+                        FakeWaterManager.PulseUnit pulseUnit;
+                        pulseUnit.m_group = group;
+                        pulseUnit.m_node = nodeIndex;
+                        pulseUnit.m_x = (byte)0;
+                        pulseUnit.m_z = (byte)0;
+                        m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit;
+                        if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
+                            m_waterPulseUnitEnd = 0;
+                    }
+                    m_nodeData[(int)nodeIndex].m_waterPulseGroup = group;
+                    m_canContinue = true;
                 }
             }
         }
@@ -1117,12 +1168,24 @@ namespace EightyOne.ResourceManagers
                 else
                 {
                     ushort rootSewageGroup = GetRootSewageGroup(wm, m_nodeData[(int)nodeIndex].m_sewagePulseGroup);
-                    if (rootSewageGroup != group)
+                    if (rootSewageGroup == group)
                     {
-                        MergeSewageGroups(wm, group, rootSewageGroup);
-                        m_nodeData[(int)nodeIndex].m_sewagePulseGroup = group;
-                        m_canContinue = true;
+                        return;
                     }
+                    MergeSewageGroups(wm, group, rootSewageGroup);
+                    if ((int)m_sewagePulseGroups[(int)rootSewageGroup].m_origPressure == 0)
+                    {
+                        FakeWaterManager.PulseUnit pulseUnit;
+                        pulseUnit.m_group = group;
+                        pulseUnit.m_node = nodeIndex;
+                        pulseUnit.m_x = (byte)0;
+                        pulseUnit.m_z = (byte)0;
+                        m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit;
+                        if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
+                            m_sewagePulseUnitEnd = 0;
+                    }
+                    m_nodeData[(int)nodeIndex].m_sewagePulseGroup = group;
+                    m_canContinue = true;
                 }
             }
         }
@@ -1203,49 +1266,58 @@ namespace EightyOne.ResourceManagers
                             node.m_waterPulseGroup = ushort.MaxValue;
                             node.m_sewagePulseGroup = ushort.MaxValue;
                             node.m_heatingPulseGroup = ushort.MaxValue;
-                            if ((int)node.m_curWaterPressure != 0 && m_waterPulseGroupCount < 1024)
+                            if (((int)node.m_curWaterPressure != 0 || (int)node.m_collectWaterPressure != 0) && m_waterPulseGroupCount < 1024)
                             {
-                                FakeWaterManager.PulseGroup pulseGroup = new FakeWaterManager.PulseGroup(); //VS requires new here
+                                FakeWaterManager.PulseGroup pulseGroup;
                                 pulseGroup.m_origPressure = (uint)node.m_curWaterPressure;
                                 pulseGroup.m_curPressure = (uint)node.m_curWaterPressure;
+                                pulseGroup.m_collectPressure = (uint)node.m_collectWaterPressure;
                                 pulseGroup.m_mergeCount = (ushort)0;
                                 pulseGroup.m_mergeIndex = ushort.MaxValue;
                                 pulseGroup.m_node = (ushort)nodeID;
-                                FakeWaterManager.PulseUnit pulseUnit;
-                                pulseUnit.m_group = (ushort)m_waterPulseGroupCount;
-                                pulseUnit.m_node = (ushort)nodeID;
-                                pulseUnit.m_x = (byte)0;
-                                pulseUnit.m_z = (byte)0;
                                 node.m_waterPulseGroup = (ushort)m_waterPulseGroupCount;
                                 m_waterPulseGroups[m_waterPulseGroupCount++] = pulseGroup;
-                                m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit;
-                                if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
-                                    m_waterPulseUnitEnd = 0;
+                                if ((int)pulseGroup.m_origPressure != 0)
+                                {
+                                    FakeWaterManager.PulseUnit pulseUnit;
+                                    pulseUnit.m_group = (ushort)(m_waterPulseGroupCount - 1);
+                                    pulseUnit.m_node = (ushort)nodeID;
+                                    pulseUnit.m_x = (byte)0;
+                                    pulseUnit.m_z = (byte)0;
+                                    m_waterPulseUnits[m_waterPulseUnitEnd] = pulseUnit;
+                                    if (++m_waterPulseUnitEnd == m_waterPulseUnits.Length)
+                                        m_waterPulseUnitEnd = 0;
+                                }
                             }
-                            if ((int)node.m_curSewagePressure != 0 && m_sewagePulseGroupCount < 1024)
+                            if (((int)node.m_curSewagePressure != 0 || (int)node.m_collectSewagePressure != 0) && m_sewagePulseGroupCount < 1024)
                             {
-                                FakeWaterManager.PulseGroup pulseGroup = new FakeWaterManager.PulseGroup(); //VS requires new here
+                                FakeWaterManager.PulseGroup pulseGroup;
                                 pulseGroup.m_origPressure = (uint)node.m_curSewagePressure;
                                 pulseGroup.m_curPressure = (uint)node.m_curSewagePressure;
+                                pulseGroup.m_collectPressure = (uint)node.m_collectSewagePressure;
                                 pulseGroup.m_mergeCount = (ushort)0;
                                 pulseGroup.m_mergeIndex = ushort.MaxValue;
                                 pulseGroup.m_node = (ushort)nodeID;
-                                FakeWaterManager.PulseUnit pulseUnit;
-                                pulseUnit.m_group = (ushort)m_sewagePulseGroupCount;
-                                pulseUnit.m_node = (ushort)nodeID;
-                                pulseUnit.m_x = (byte)0;
-                                pulseUnit.m_z = (byte)0;
                                 node.m_sewagePulseGroup = (ushort)m_sewagePulseGroupCount;
                                 m_sewagePulseGroups[m_sewagePulseGroupCount++] = pulseGroup;
-                                m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit;
-                                if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
-                                    m_sewagePulseUnitEnd = 0;
+                                if ((int)pulseGroup.m_origPressure != 0)
+                                {
+                                    FakeWaterManager.PulseUnit pulseUnit;
+                                    pulseUnit.m_group = (ushort)(m_sewagePulseGroupCount - 1);
+                                    pulseUnit.m_node = (ushort)nodeID;
+                                    pulseUnit.m_x = (byte)0;
+                                    pulseUnit.m_z = (byte)0;
+                                    m_sewagePulseUnits[m_sewagePulseUnitEnd] = pulseUnit;
+                                    if (++m_sewagePulseUnitEnd == m_sewagePulseUnits.Length)
+                                        m_sewagePulseUnitEnd = 0;
+                                }
                             }
                             if ((int)node.m_curHeatingPressure != 0 && m_heatingPulseGroupCount < 1024)
                             {
-                                FakeWaterManager.PulseGroup pulseGroup = new FakeWaterManager.PulseGroup(); //VS requires new here
+                                FakeWaterManager.PulseGroup pulseGroup;
                                 pulseGroup.m_origPressure = (uint)node.m_curHeatingPressure;
                                 pulseGroup.m_curPressure = (uint)node.m_curHeatingPressure;
+                                pulseGroup.m_collectPressure = 0U;
                                 pulseGroup.m_mergeCount = (ushort)0;
                                 pulseGroup.m_mergeIndex = ushort.MaxValue;
                                 pulseGroup.m_node = (ushort)nodeID;
@@ -1283,6 +1355,8 @@ namespace EightyOne.ResourceManagers
                     node.m_curWaterPressure = (ushort)0;
                     node.m_curSewagePressure = (ushort)0;
                     node.m_curHeatingPressure = (ushort)0;
+                    node.m_collectWaterPressure = (ushort)0;
+                    node.m_collectSewagePressure = (ushort)0;
                     m_nodeData[nodeID] = node;
                 }
                 //TODO(earalov): review why this works
@@ -1541,13 +1615,27 @@ namespace EightyOne.ResourceManagers
                 for (int index = 0; index < m_waterPulseGroupCount; ++index)
                 {
                     FakeWaterManager.PulseGroup pulseGroup1 = m_waterPulseGroups[index];
-                    if ((int)pulseGroup1.m_mergeIndex != (int)ushort.MaxValue)
+                    if ((int)pulseGroup1.m_mergeIndex != (int)ushort.MaxValue && (int)pulseGroup1.m_collectPressure != 0)
                     {
                         FakeWaterManager.PulseGroup pulseGroup2 = m_waterPulseGroups[(int)pulseGroup1.m_mergeIndex];
-                        pulseGroup1.m_curPressure =
-                            (uint)
-                                ((ulong)pulseGroup2.m_curPressure * (ulong)pulseGroup1.m_origPressure /
-                                 (ulong)pulseGroup2.m_origPressure);
+                        pulseGroup1.m_curPressure = (uint)((ulong)pulseGroup2.m_curPressure * (ulong)pulseGroup1.m_collectPressure / (ulong)pulseGroup2.m_collectPressure);
+                        if (pulseGroup1.m_collectPressure < pulseGroup1.m_curPressure)
+                            pulseGroup1.m_curPressure = pulseGroup1.m_collectPressure;
+                        pulseGroup2.m_curPressure -= pulseGroup1.m_curPressure;
+                        pulseGroup2.m_collectPressure -= pulseGroup1.m_collectPressure;
+                        m_waterPulseGroups[(int)pulseGroup1.m_mergeIndex] = pulseGroup2;
+                        m_waterPulseGroups[index] = pulseGroup1;
+                    }
+                }
+                for (int index = 0; index < m_waterPulseGroupCount; ++index)
+                {
+                    FakeWaterManager.PulseGroup pulseGroup1 = m_waterPulseGroups[index];
+                    if ((int)pulseGroup1.m_mergeIndex != (int)ushort.MaxValue && (int)pulseGroup1.m_collectPressure == 0)
+                    {
+                        FakeWaterManager.PulseGroup pulseGroup2 = m_waterPulseGroups[(int)pulseGroup1.m_mergeIndex];
+                        uint num4 = pulseGroup2.m_curPressure;
+                        uint num5 = pulseGroup2.m_collectPressure < num4 ? num4 - pulseGroup2.m_collectPressure : 0U;
+                        pulseGroup1.m_curPressure = (uint)((ulong)num5 * (ulong)pulseGroup1.m_origPressure / (ulong)pulseGroup2.m_origPressure);
                         pulseGroup2.m_curPressure -= pulseGroup1.m_curPressure;
                         pulseGroup2.m_origPressure -= pulseGroup1.m_origPressure;
                         m_waterPulseGroups[(int)pulseGroup1.m_mergeIndex] = pulseGroup2;
@@ -1570,13 +1658,27 @@ namespace EightyOne.ResourceManagers
                 for (int index = 0; index < m_sewagePulseGroupCount; ++index)
                 {
                     FakeWaterManager.PulseGroup pulseGroup1 = m_sewagePulseGroups[index];
-                    if ((int)pulseGroup1.m_mergeIndex != (int)ushort.MaxValue)
+                    if ((int)pulseGroup1.m_mergeIndex != (int)ushort.MaxValue && (int)pulseGroup1.m_collectPressure != 0)
                     {
                         FakeWaterManager.PulseGroup pulseGroup2 = m_sewagePulseGroups[(int)pulseGroup1.m_mergeIndex];
-                        pulseGroup1.m_curPressure =
-                            (uint)
-                                ((ulong)pulseGroup2.m_curPressure * (ulong)pulseGroup1.m_origPressure /
-                                 (ulong)pulseGroup2.m_origPressure);
+                        pulseGroup1.m_curPressure = (uint)((ulong)pulseGroup2.m_curPressure * (ulong)pulseGroup1.m_collectPressure / (ulong)pulseGroup2.m_collectPressure);
+                        if (pulseGroup1.m_collectPressure < pulseGroup1.m_curPressure)
+                            pulseGroup1.m_curPressure = pulseGroup1.m_collectPressure;
+                        pulseGroup2.m_curPressure -= pulseGroup1.m_curPressure;
+                        pulseGroup2.m_collectPressure -= pulseGroup1.m_collectPressure;
+                        m_sewagePulseGroups[(int)pulseGroup1.m_mergeIndex] = pulseGroup2;
+                        m_sewagePulseGroups[index] = pulseGroup1;
+                    }
+                }
+                for (int index = 0; index < m_sewagePulseGroupCount; ++index)
+                {
+                    FakeWaterManager.PulseGroup pulseGroup1 = m_sewagePulseGroups[index];
+                    if ((int)pulseGroup1.m_mergeIndex != (int)ushort.MaxValue && (int)pulseGroup1.m_collectPressure == 0)
+                    {
+                        FakeWaterManager.PulseGroup pulseGroup2 = m_sewagePulseGroups[(int)pulseGroup1.m_mergeIndex];
+                        uint num4 = pulseGroup2.m_curPressure;
+                        uint num5 = pulseGroup2.m_collectPressure < num4 ? num4 - pulseGroup2.m_collectPressure : 0U;
+                        pulseGroup1.m_curPressure = (uint) ((ulong)pulseGroup2.m_curPressure * (ulong)pulseGroup1.m_origPressure / (ulong)pulseGroup2.m_origPressure);
                         pulseGroup2.m_curPressure -= pulseGroup1.m_curPressure;
                         pulseGroup2.m_origPressure -= pulseGroup1.m_origPressure;
                         m_sewagePulseGroups[(int)pulseGroup1.m_mergeIndex] = pulseGroup2;
