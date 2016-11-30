@@ -3,7 +3,7 @@ using ColossalFramework;
 using ColossalFramework.Math;
 using System.Reflection;
 using ColossalFramework.IO;
-using ColossalFramework.Steamworks;
+using ColossalFramework.PlatformServices;
 using ColossalFramework.Threading;
 using UnityEngine;
 using EightyOne.Redirection;
@@ -178,10 +178,10 @@ namespace EightyOne.Areas
             try
             {
                 //begin mod
-                int x = index % GRID;
+                int x1 = index % GRID;
                 int z = index / GRID;
                 //end mod
-                if (this.CanUnlock(x, z))
+                if (this.CanUnlock(x1, z))
                 {
                     this.m_areaNotUnlocked.Deactivate();
                     CODebugBase<LogChannel>.Log(LogChannel.Core, "Unlocking new area");
@@ -192,19 +192,20 @@ namespace EightyOne.Areas
                         //end mod
                         ThreadHelper.dispatcher.Dispatch((System.Action)(() =>
                         {
-                            if (Steam.achievements["SIMulatedCity"].achieved)
+                            if (PlatformService.achievements["SIMulatedCity"].achieved)
                                 return;
-                            Steam.achievements["SIMulatedCity"].Unlock();
+                            PlatformService.achievements["SIMulatedCity"].Unlock();
                         }));
                     //begin mod
-                    float minX = (float)(((double)x - HALFGRID) * 1920.0);
-                    float maxX = (float)(((double)(x + 1) - HALFGRID) * 1920.0);
-                    float minZ = (float)(((double)z - HALFGRID) * 1920.0);
-                    float maxZ = (float)(((double)(z + 1) - HALFGRID) * 1920.0);
+                    float x2 = (float)(((double)x1 - HALFGRID) * 1920.0);
+                    float x3 = (float)(((double)(x1 + 1) - HALFGRID) * 1920.0);
+                    float y1 = (float)(((double)z - HALFGRID) * 1920.0);
+                    float y2 = (float)(((double)(z + 1) - HALFGRID) * 1920.0);
                     //end mod
-                    Singleton<ZoneManager>.instance.UpdateBlocks(minX, minZ, maxX, maxZ);
+                    Singleton<ZoneManager>.instance.UpdateBlocks(new Quad2(new Vector2(x2, y1), new Vector2(x2, y2), new Vector2(x3, y2), new Vector2(x3, y1)));
 
-                    if (Singleton<TerrainManager>.instance.SetDetailedPatch(x, z))
+
+                    if (Singleton<TerrainManager>.instance.SetDetailedPatch(x1, z))
                     {
                         Singleton<MessageManager>.instance.TryCreateMessage(this.m_properties.m_unlockMessage, Singleton<MessageManager>.instance.GetRandomResidentID());
                         //begin mod
@@ -224,6 +225,29 @@ namespace EightyOne.Areas
                 _unlockingField.SetValue(this, false);
             }
         }
+
+        [RedirectMethod]
+        public void GetAreaBounds(int x, int z, out float minX, out float minZ, out float maxX, out float maxZ)
+        {
+            UnityEngine.Debug.Log($"GetAreaBounds: x={x}, z={z}");
+            //begin mod
+            minX = (float)(((double)x - HALFGRID) * 1920.0);
+            minZ = (float)(((double)z - HALFGRID) * 1920.0);
+            maxX = (float)(((double)x - HALFGRID + 1.0) * 1920.0);
+            maxZ = (float)(((double)z - HALFGRID + 1.0) * 1920.0);
+            //end mod
+        }
+
+        [RedirectMethod]
+        public void GetTileXZ(Vector3 p, out int x, out int z)
+        {
+            UnityEngine.Debug.Log($"GetTileXZ: p={p}");
+            //begin mod
+            x = Mathf.Clamp(Mathf.FloorToInt((float)((double)p.x / 1920.0 + HALFGRID)), 0, GRID - 1);
+            z = Mathf.Clamp(Mathf.FloorToInt((float)((double)p.z / 1920.0 + HALFGRID)), 0, GRID - 1);
+            //end mod
+        }
+
 
         [RedirectMethod]
         public new bool ClampPoint(ref Vector3 position)

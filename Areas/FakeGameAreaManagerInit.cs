@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using ColossalFramework;
+using ColossalFramework.Math;
+using UnityEngine;
 
 namespace EightyOne.Areas
 {
@@ -74,7 +76,7 @@ namespace EightyOne.Areas
                         float maxX = (float)(((double)(x2 + 1) - FakeGameAreaManager.HALFGRID) * 1920.0);
                         float minZ = (float)(((double)z2 - FakeGameAreaManager.HALFGRID) * 1920.0);
                         float maxZ = (float)(((double)(z2 + 1) - FakeGameAreaManager.HALFGRID) * 1920.0);
-                        Singleton<ZoneManager>.instance.UpdateBlocks(minX, minZ, maxX, maxZ);
+                        Singleton<ZoneManager>.instance.UpdateBlocks(new Quad2(new Vector2(minX, minZ), new Vector2(minX, maxZ), new Vector2(maxX, maxZ), new Vector2(maxX, minZ)));
                     }
                 }
             }
