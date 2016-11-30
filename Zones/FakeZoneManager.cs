@@ -1,5 +1,6 @@
 ﻿using ColossalFramework;
 using System.Threading;
+using ColossalFramework.Math;
 using UnityEngine;
 using EightyOne.Redirection;
 
@@ -66,6 +67,18 @@ namespace EightyOne.Zones
                 return;
             data.m_flags |= 2U;
             this.m_cachedBlocks.Add(data);
+            int rowCount = data.RowCount;
+            float f = data.m_angle;
+            Vector2 vector2_1 = new Vector2(Mathf.Cos(f), Mathf.Sin(f)) * 8f;
+            Vector2 vector2_2 = new Vector2(vector2_1.y, -vector2_1.x);
+            Vector2 vector2_3 = VectorUtils.XZ(data.m_position);
+            this.UpdateBlocks(new Quad2()
+            {
+                a = vector2_3 - 4f * vector2_1 - 4f * vector2_2,
+                b = vector2_3 + 0.0f * vector2_1 - 4f * vector2_2,
+                c = vector2_3 + 0.0f * vector2_1 + (float)(rowCount - 4) * vector2_2,
+                d = vector2_3 - 4f * vector2_1 + (float)(rowCount - 4) * vector2_2
+            });
             data.m_flags = 0U;
             //begin mod
             int num1 = Mathf.Clamp((int)((double)data.m_position.x / 64.0 + HALFGRID), 0, GRIDSIZE - 1);
@@ -110,13 +123,15 @@ namespace EightyOne.Zones
         }
 
         [RedirectMethod]
-        public void UpdateBlocks(float minX, float minZ, float maxX, float maxZ)
+        public void UpdateBlocks(Quad2 quad)
         {
+            Vector2 vector2_1 = quad.Min();
+            Vector2 vector2_2 = quad.Max();
             //begin mod
-            int num1 = Mathf.Max((int)(((double)minX - 46.0) / 64.0 + HALFGRID), 0);
-            int num2 = Mathf.Max((int)(((double)minZ - 46.0) / 64.0 + HALFGRID), 0);
-            int num3 = Mathf.Min((int)(((double)maxX + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
-            int num4 = Mathf.Min((int)(((double)maxZ + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            int num1 = Mathf.Max((int)(((double)vector2_1.x - 46.0) / 64.0 + HALFGRID), 0);
+            int num2 = Mathf.Max((int)(((double)vector2_1.y - 46.0) / 64.0 + HALFGRID), 0);
+            int num3 = Mathf.Min((int)(((double)vector2_2.x + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
+            int num4 = Mathf.Min((int)(((double)vector2_2.y + 46.0) / 64.0 + HALFGRID), GRIDSIZE - 1);
             //end mod
             for (int index1 = num2; index1 <= num4; ++index1)
             {
@@ -128,11 +143,25 @@ namespace EightyOne.Zones
                     int num6 = 0;
                     while ((int)num5 != 0)
                     {
-                        Vector3 vector3 = this.m_blocks.m_buffer[(int)num5].m_position;
-                        if ((double)Mathf.Max(Mathf.Max(minX - 46f - vector3.x, minZ - 46f - vector3.z), Mathf.Max((float)((double)vector3.x - (double)maxX - 46.0), (float)((double)vector3.z - (double)maxZ - 46.0))) < 0.0)
+                        Vector3 v = this.m_blocks.m_buffer[(int)num5].m_position;
+                        if ((double)Mathf.Max(Mathf.Max(vector2_1.x - 46f - v.x, vector2_1.y - 46f - v.z), Mathf.Max((float)((double)v.x - (double)vector2_2.x - 46.0), (float)((double)v.z - (double)vector2_2.y - 46.0))) < 0.0 && ((int)this.m_blocks.m_buffer[(int)num5].m_flags & 3) == 1)
                         {
-                            this.m_updatedBlocks[(int)num5 >> 6] |= (ulong)(1L << (int)num5);
-                            this.m_blocksUpdated = true;
+                            int rowCount = this.m_blocks.m_buffer[(int)num5].RowCount;
+                            float f = this.m_blocks.m_buffer[(int)num5].m_angle;
+                            Vector2 vector2_3 = new Vector2(Mathf.Cos(f), Mathf.Sin(f)) * 8f;
+                            Vector2 vector2_4 = new Vector2(vector2_3.y, -vector2_3.x);
+                            Vector2 vector2_5 = VectorUtils.XZ(v);
+                            if (quad.Intersect(new Quad2()
+                            {
+                                a = vector2_5 - 4f * vector2_3 - 4f * vector2_4,
+                                b = vector2_5 + 0.0f * vector2_3 - 4f * vector2_4,
+                                c = vector2_5 + 0.0f * vector2_3 + (float)(rowCount - 4) * vector2_4,
+                                d = vector2_5 - 4f * vector2_3 + (float)(rowCount - 4) * vector2_4
+                            }))
+                            {
+                                this.m_updatedBlocks[(int)num5 >> 6] |= (ulong)(1L << (int)num5);
+                                this.m_blocksUpdated = true;
+                            }
                         }
                         num5 = this.m_blocks.m_buffer[(int)num5].m_nextGridBlock;
                         if (++num6 >= 49152)
@@ -144,6 +173,7 @@ namespace EightyOne.Zones
                 }
             }
         }
+
 
         [RedirectMethod]
         public void TerrainUpdated(TerrainArea heightArea, TerrainArea surfaceArea, TerrainArea zoneArea)
