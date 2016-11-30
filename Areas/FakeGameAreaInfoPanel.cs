@@ -231,7 +231,7 @@ namespace EightyOne.Areas
                 float tileFlatness = Singleton<TerrainManager>.instance.GetTileFlatness(x, z);
                 float num11 = tileFlatness * (num10 - num5) / num10;
                 int num12 = Singleton<GameAreaManager>.instance.CalculateTilePrice(num, num2, num3, num4, num5, !flag5, !flag3, !flag2, !flag4, tileFlatness);
-                m_BuildableArea.text = string.Format(Locale.Get("AREA_BUILDABLE"), string.Format(Locale.Get("VALUE_PERCENTAGE"), Mathf.Max(0, Mathf.Min(Mathf.FloorToInt(num11 * 100f), 100))));
+                m_BuildableArea.text = StringUtils.SafeFormat(Locale.Get("AREA_BUILDABLE"), (object)StringUtils.SafeFormat(Locale.Get("VALUE_PERCENTAGE"), (object)Mathf.Max(0, Mathf.Min(Mathf.FloorToInt(num11 * 100f), 100))));
                 m_Price.text = (num12 / 100).ToString(Settings.moneyFormat, LocaleManager.cultureInfo);
                 bool flag6 = Singleton<GameAreaManager>.instance.IsUnlocked(x, z);
                 m_Title.text = Locale.Get((!flag6) ? "AREA_NEWTILE" : "AREA_OWNEDTILE");

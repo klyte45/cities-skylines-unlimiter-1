@@ -163,7 +163,7 @@ namespace EightyOne.Areas
                 //begin mod
                 //end mod
             }
-            else if ((availability & ItemClass.Availability.MapEditor) != ItemClass.Availability.None)
+            else if ((availability & (ItemClass.Availability.MapEditor | ItemClass.Availability.ScenarioEditor)) != ItemClass.Availability.None)
             {
                 //begin mod
                 //end mod
