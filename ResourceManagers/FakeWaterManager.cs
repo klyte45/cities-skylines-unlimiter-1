@@ -53,6 +53,7 @@ namespace EightyOne.ResourceManagers
         {
             public uint m_origPressure;
             public uint m_curPressure;
+            public uint m_collectPressure;
             public ushort m_mergeIndex;
             public ushort m_mergeCount;
             public ushort m_node;
@@ -1204,7 +1205,7 @@ namespace EightyOne.ResourceManagers
                             node.m_heatingPulseGroup = ushort.MaxValue;
                             if ((int)node.m_curWaterPressure != 0 && m_waterPulseGroupCount < 1024)
                             {
-                                FakeWaterManager.PulseGroup pulseGroup;
+                                FakeWaterManager.PulseGroup pulseGroup = new FakeWaterManager.PulseGroup(); //VS requires new here
                                 pulseGroup.m_origPressure = (uint)node.m_curWaterPressure;
                                 pulseGroup.m_curPressure = (uint)node.m_curWaterPressure;
                                 pulseGroup.m_mergeCount = (ushort)0;
@@ -1223,7 +1224,7 @@ namespace EightyOne.ResourceManagers
                             }
                             if ((int)node.m_curSewagePressure != 0 && m_sewagePulseGroupCount < 1024)
                             {
-                                FakeWaterManager.PulseGroup pulseGroup;
+                                FakeWaterManager.PulseGroup pulseGroup = new FakeWaterManager.PulseGroup(); //VS requires new here
                                 pulseGroup.m_origPressure = (uint)node.m_curSewagePressure;
                                 pulseGroup.m_curPressure = (uint)node.m_curSewagePressure;
                                 pulseGroup.m_mergeCount = (ushort)0;
@@ -1242,7 +1243,7 @@ namespace EightyOne.ResourceManagers
                             }
                             if ((int)node.m_curHeatingPressure != 0 && m_heatingPulseGroupCount < 1024)
                             {
-                                FakeWaterManager.PulseGroup pulseGroup;
+                                FakeWaterManager.PulseGroup pulseGroup = new FakeWaterManager.PulseGroup(); //VS requires new here
                                 pulseGroup.m_origPressure = (uint)node.m_curHeatingPressure;
                                 pulseGroup.m_curPressure = (uint)node.m_curHeatingPressure;
                                 pulseGroup.m_mergeCount = (ushort)0;
@@ -1898,6 +1899,7 @@ namespace EightyOne.ResourceManagers
                 {
                     s.WriteUInt32(m_waterPulseGroups[index].m_origPressure);
                     s.WriteUInt32(m_waterPulseGroups[index].m_curPressure);
+                    s.WriteUInt32(m_waterPulseGroups[index].m_collectPressure);
                     s.WriteUInt16((uint)m_waterPulseGroups[index].m_mergeIndex);
                     s.WriteUInt16((uint)m_waterPulseGroups[index].m_mergeCount);
                     s.WriteUInt16((uint)m_waterPulseGroups[index].m_node);
@@ -1907,6 +1909,7 @@ namespace EightyOne.ResourceManagers
                 {
                     s.WriteUInt32(m_sewagePulseGroups[index].m_origPressure);
                     s.WriteUInt32(m_sewagePulseGroups[index].m_curPressure);
+                    s.WriteUInt32(m_sewagePulseGroups[index].m_collectPressure);
                     s.WriteUInt16((uint)m_sewagePulseGroups[index].m_mergeIndex);
                     s.WriteUInt16((uint)m_sewagePulseGroups[index].m_mergeCount);
                     s.WriteUInt16((uint)m_sewagePulseGroups[index].m_node);
@@ -2124,6 +2127,7 @@ namespace EightyOne.ResourceManagers
                 {
                     m_waterPulseGroups[index].m_origPressure = s.ReadUInt32();
                     m_waterPulseGroups[index].m_curPressure = s.ReadUInt32();
+                    m_waterPulseGroups[index].m_collectPressure = s.version < 270U ? 0U : s.ReadUInt32();
                     m_waterPulseGroups[index].m_mergeIndex = (ushort)s.ReadUInt16();
                     m_waterPulseGroups[index].m_mergeCount = (ushort)s.ReadUInt16();
                     m_waterPulseGroups[index].m_node = (ushort)s.ReadUInt16();
@@ -2133,6 +2137,7 @@ namespace EightyOne.ResourceManagers
                 {
                     m_sewagePulseGroups[index].m_origPressure = s.ReadUInt32();
                     m_sewagePulseGroups[index].m_curPressure = s.ReadUInt32();
+                    m_sewagePulseGroups[index].m_collectPressure = s.version < 306U ? 0U : s.ReadUInt32();
                     m_sewagePulseGroups[index].m_mergeIndex = (ushort)s.ReadUInt16();
                     m_sewagePulseGroups[index].m_mergeCount = (ushort)s.ReadUInt16();
                     m_sewagePulseGroups[index].m_node = (ushort)s.ReadUInt16();
@@ -2195,6 +2200,8 @@ namespace EightyOne.ResourceManagers
                     m_heatingPulseUnitStart = 0;
                     m_heatingPulseUnitEnd = 0;
                 }
+                //begin mod
+                //end mod
                 m_processedCells = s.ReadInt32();
                 m_conductiveCells = s.ReadInt32();
                 m_canContinue = s.ReadBool();
