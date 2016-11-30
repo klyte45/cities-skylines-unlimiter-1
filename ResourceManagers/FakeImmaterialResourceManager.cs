@@ -26,6 +26,11 @@ namespace EightyOne.ResourceManagers
         private static int[] m_modifiedX1;
         private static int[] m_modifiedX2;
         private static bool m_modified;
+        private static int[] m_tempCircleMinX;
+        private static int[] m_tempCircleMaxX;
+        private static float[] m_tempSectorSlopes;
+        private static float[] m_tempSectorDistances;
+
         private static FieldInfo _buildingThemesPositionField;
         private static readonly string BUILDING_THEMES_MOD_TYPE = "BuildingThemesMod";
         private static readonly string BUILDING_THEMES_POSITION_FIELD = "position";
@@ -44,8 +49,8 @@ namespace EightyOne.ResourceManagers
                 }
             }
 
-            m_localFinalResources = new ushort[GRID * GRID * 20];
-            m_localTempResources = new ushort[GRID * GRID * 20];
+            m_localFinalResources = new ushort[GRID * GRID * 24];
+            m_localTempResources = new ushort[GRID * GRID * 24];
             m_globalFinalResources = (int[])typeof(ImmaterialResourceManager).GetField("m_globalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_globalTempResources = (int[])typeof(ImmaterialResourceManager).GetField("m_globalTempResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_totalFinalResources = (int[])typeof(ImmaterialResourceManager).GetField("m_totalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
@@ -53,6 +58,12 @@ namespace EightyOne.ResourceManagers
             m_totalTempResourcesMul = (long[])typeof(ImmaterialResourceManager).GetField("m_totalTempResourcesMul", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(ImmaterialResourceManager.instance);
             m_modifiedX1 = new int[GRID];
             m_modifiedX2 = new int[GRID];
+            m_tempCircleMinX = new int[GRID];
+            m_tempCircleMaxX = new int[GRID];
+            m_tempSectorSlopes = new float[GRID];
+            m_tempSectorDistances = new float[GRID];
+
+
             for (int index = 0; index < GRID; ++index)
             {
                 m_modifiedX1[index] = 0;
@@ -179,7 +190,7 @@ namespace EightyOne.ResourceManagers
         {
             x = Mathf.Clamp(x, 0, GRID - 1);
             z = Mathf.Clamp(z, 0, GRID - 1);
-            int num = (int)((z * GRID + x) * 20 + ImmaterialResourceManager.instance.ResourceMapVisible);
+            int num = (int)((z * GRID + x) * 24 + ImmaterialResourceManager.instance.ResourceMapVisible);
             amount += (int)m_localFinalResources[num] * multiplier;
         }
 
@@ -246,12 +257,204 @@ namespace EightyOne.ResourceManagers
                             float num11 = Mathf.Clamp01((num2 - Mathf.Sqrt(num9)) / (num2 - num));
                             num10 = Mathf.RoundToInt((float)num10 * num11);
                         }
-                        int num12 = (int)((i * GRID + j) * 20 + resource);
+                        int num12 = (int)((i * GRID + j) * 24 + resource);
                         AddResource(ImmaterialResourceManager.instance, ref m_localTempResources[num12], num10);
                     }
                 }
             }
             return rate;
+        }
+
+        [RedirectMethod]
+        public int AddObstructedResource(ImmaterialResourceManager.Resource resource, int rate, Vector3 position, float radius)
+        {
+            if (rate == 0)
+                return 0;
+            ushort[] finalHeights = Singleton<TerrainManager>.instance.FinalHeights;
+            //begin mod
+            for (int index = 0; index < GRID; ++index)
+            {
+                //end mod
+                m_tempSectorSlopes[index] = -100f;
+                m_tempSectorDistances[index] = 0.0f;
+            }
+            float num1 = radius * 0.5f;
+            float num2 = Mathf.Max(38.4f, radius + 19.2f);
+            int num3 = (int)resource;
+            //begin mod
+            int num4 = Mathf.Clamp((int)((double)position.x / 38.4000015258789 + HALFGRID), 2, GRID - 3);
+            //end mod
+            int num5 = num4;
+            //begin mod
+            int num6 = Mathf.Clamp((int)((double)position.z / 38.4000015258789 + HALFGRID), 2, GRID - 3);
+            //end mod
+            int num7 = num6;
+            //begin mod
+            float num8 = position.x - (float)(((double)num4 - HALFGRID + 0.5) * 38.4000015258789);
+            float num9 = position.z - (float)(((double)num6 - HALFGRID + 0.5) * 38.4000015258789);
+            //end mod
+            if ((double)num8 > 9.60000038146973)
+                //begin mod
+                num5 = Mathf.Min(num5 + 1, GRID - 3);
+                //end mod
+            else if ((double)num8 < -9.60000038146973)
+                num4 = Mathf.Max(num4 - 1, 2);
+            if ((double)num9 > 9.60000038146973)
+                //begin mod
+                num7 = Mathf.Min(num7 + 1, GRID - 3);
+                //end mod
+            else if ((double)num9 < -9.60000038146973)
+                num6 = Mathf.Max(num6 - 1, 2);
+            int num10 = num6;
+            int num11 = num7;
+            int num12 = num10 + 1;
+            int num13 = num11 - 1;
+            int num14 = 0;
+            bool flag;
+            do
+            {
+                flag = false;
+                float num15 = (float)(38.4000015258789 * (0.75 + (double)num14++));
+                float num16 = num15 * num15;
+                for (int index1 = num10; index1 <= num11; ++index1)
+                {
+                    int index2 = index1 > num6 ? index1 : num6 - index1 + num10;
+                    //begin mod
+                    float num17 = (float)(((double)index2 - HALFGRID + 0.5) * 38.4000015258789);
+                    //end mod
+                    float y = num17 - position.z;
+                    int num18 = Mathf.Clamp(Mathf.RoundToInt((float)((double)num17 / 16.0 + 540.0)), 0, 1080);
+                    int a1 = num4;
+                    int a2 = num5;
+                    if (index2 >= num12 && index2 <= num13)
+                    {
+                        a1 = Mathf.Min(a1, m_tempCircleMinX[index2] - 1);
+                        a2 = Mathf.Max(a2, m_tempCircleMaxX[index2] + 1);
+                    }
+                    for (int index3 = a1; index3 >= 2; a1 = index3--)
+                    {
+                        //begin mod
+                        float num19 = (float)(((double)index3 - HALFGRID + 0.5) * 38.4000015258789);
+                        //end mod
+                        float x = num19 - position.x;
+                        int num20 = Mathf.Clamp(Mathf.RoundToInt((float)((double)num19 / 16.0 + 540.0)), 0, 1080);
+                        float f1 = (float)((double)y * (double)y + (double)x * (double)x);
+                        if ((a1 == index3 || (double)f1 < (double)num16) && (double)f1 < (double)num2 * (double)num2)
+                        {
+                            float b1 = Mathf.Sqrt(f1);
+                            float num21 = (float)rate;
+                            float num22 = (1f / 64f * (float)finalHeights[num18 * 1081 + num20] - position.y) / Mathf.Max(1f, b1);
+                            float num23 = Mathf.Atan2(y, x) * 40.74366f;
+                            float num24 = Mathf.Min((float)(38.4000015258789 / (double)Mathf.Max(1f, b1) * 20.3718318939209), 64f); //TODO: 64: halfgrid/2 ??
+                            int num25 = Mathf.RoundToInt(num23 - num24) & (int)byte.MaxValue;
+                            int num26 = Mathf.RoundToInt(num23 + num24) & (int)byte.MaxValue;
+                            float num27 = 0.0f;
+                            float b2 = 0.0f;
+                            int index4 = num25;
+                            while (true)
+                            {
+                                float num28 = m_tempSectorSlopes[index4];
+                                float num29 = m_tempSectorDistances[index4];
+                                float num30 = Mathf.Clamp(b1 - num29, 1f, 38.4f);
+                                num27 += (num28 - num22) * num30;
+                                b2 += num30;
+                                if ((double)num22 > (double)num28)
+                                {
+                                    m_tempSectorSlopes[index4] = num22;
+                                    m_tempSectorDistances[index4] = b1;
+                                }
+                                if (index4 != num26)
+                                    index4 = index4 + 1 & (int)byte.MaxValue;
+                                else
+                                    break;
+                            }
+                            float num31 = num27 / Mathf.Max(1f, b2);
+                            float f2 = num21 * (float)(1.5 / (double)Mathf.Max(1f, (float)((double)num31 * 20.0 + 2.625)) - 0.5);
+                            if ((double)f2 > 0.0)
+                            {
+                                if ((double)b1 > (double)num1)
+                                    f2 *= Mathf.Clamp01((float)(((double)num2 - (double)b1) / ((double)num2 - (double)num1)));
+                                //begin mod
+                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 24 + num3], Mathf.RoundToInt(f2));
+                                //end mod
+                            }
+                            flag = true;
+                        }
+                        if ((double)f1 >= (double)num16)
+                            break;
+                    }
+                    //begin mod
+                    for (int index3 = a2; index3 <= GRID - 3; a2 = index3++)
+                    {
+                        float num19 = (float)(((double)index3 - HALFGRID + 0.5) * 38.4000015258789);
+                        //end mod
+                        float x = num19 - position.x;
+                        int num20 = Mathf.Clamp(Mathf.RoundToInt((float)((double)num19 / 16.0 + 540.0)), 0, 1080);
+                        float f1 = (float)((double)y * (double)y + (double)x * (double)x);
+                        if ((a2 == index3 || (double)f1 < (double)num16) && (index3 != num4 && (double)f1 < (double)num2 * (double)num2))
+                        {
+                            float b1 = Mathf.Sqrt(f1);
+                            float num21 = (float)rate;
+                            float num22 = (1f / 64f * (float)finalHeights[num18 * 1081 + num20] - position.y) / Mathf.Max(1f, b1);
+                            float num23 = Mathf.Atan2(y, x) * 40.74366f;
+                            float num24 = Mathf.Min((float)(38.4000015258789 / (double)Mathf.Max(1f, b1) * 20.3718318939209), 64f); //TODO: 64: halfgrid/2 ??
+                            int num25 = Mathf.RoundToInt(num23 - num24) & (int)byte.MaxValue;
+                            int num26 = Mathf.RoundToInt(num23 + num24) & (int)byte.MaxValue;
+                            float num27 = 0.0f;
+                            float b2 = 0.0f;
+                            int index4 = num25;
+                            while (true)
+                            {
+                                float num28 = m_tempSectorSlopes[index4];
+                                float num29 = m_tempSectorDistances[index4];
+                                float num30 = Mathf.Clamp(b1 - num29, 1f, 38.4f);
+                                num27 += (num28 - num22) * num30;
+                                b2 += num30;
+                                if ((double)num22 > (double)num28)
+                                {
+                                    m_tempSectorSlopes[index4] = num22;
+                                    m_tempSectorDistances[index4] = b1;
+                                }
+                                if (index4 != num26)
+                                    index4 = index4 + 1 & (int)byte.MaxValue;
+                                else
+                                    break;
+                            }
+                            float num31 = num27 / Mathf.Max(1f, b2);
+                            float f2 = num21 * (float)(1.5 / (double)Mathf.Max(1f, (float)((double)num31 * 20.0 + 2.625)) - 0.5);
+                            if ((double)f2 > 0.0)
+                            {
+                                if ((double)b1 > (double)num1)
+                                    f2 *= Mathf.Clamp01((float)(((double)num2 - (double)b1) / ((double)num2 - (double)num1)));
+                                //begin mod
+                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 24 + num3], Mathf.RoundToInt(f2));
+                                //end mod
+                            }
+                            flag = true;
+                        }
+                        if ((double)f1 >= (double)num16)
+                            break;
+                    }
+                    m_tempCircleMinX[index2] = a1;
+                    m_tempCircleMaxX[index2] = a2;
+                }
+                num12 = num10;
+                num13 = num11;
+                if (num10 > 2)
+                    --num10;
+                //begin mod
+                if (num11 < GRID - 3)
+                    //end mod
+                    ++num11;
+            }
+            while (flag);
+            return rate;
+        }
+
+        [RedirectMethod] //No changes here. This method is most likely inlined. It's added here just for compilation sake
+        private void AddResource(ref ushort buffer, int rate)
+        {
+            buffer = (ushort)Mathf.Min((int)buffer + rate, (int)ushort.MaxValue);
         }
 
         [RedirectMethod]
@@ -277,134 +480,144 @@ namespace EightyOne.ResourceManagers
             int num7 = (int)buffer[index + 17] + global[17];
             int resourceRate11 = (int)buffer[index + 18] + global[18];
             int resourceRate12 = (int)buffer[index + 19] + global[19];
+            int resourceRate13 = (int)buffer[index + 20] + global[20];
+            int resourceRate14 = (int)buffer[index + 21];
+            int num8 = (int)buffer[index + 22] + global[22];
+            int resourceRate15 = (int)buffer[index + 23] + global[23];
             //begin mod
             Rect area = new Rect((float)(((double)x - HALFGRID - 1.5) * 38.4f), (float)(((double)z - HALFGRID - 1.5) * 38.4f), 153.6f, 153.6f);
             //end mod
             float groundPollution;
             float waterProximity;
             Singleton<NaturalResourceManager>.instance.AveragePollutionAndWater(area, out groundPollution, out waterProximity);
-            int num8 = (int)((double)groundPollution * 100.0);
-            int resourceRate13 = (int)((double)waterProximity * 100.0);
-            if (resourceRate13 > 33 && resourceRate13 < 99)
+            int num9 = (int)((double)groundPollution * 100.0);
+            int num10 = (int)((double)waterProximity * 100.0);
+            if (num10 > 33 && num10 < 99)
             {
+                //begin mod
                 area = new Rect((float)(((double)x - HALFGRID + 0.25) * 38.4000015258789), (float)(((double)z - HALFGRID + 0.25) * 38.4000015258789), 19.2f, 19.2f);
+                //end mod
                 Singleton<NaturalResourceManager>.instance.AveragePollutionAndWater(area, out groundPollution, out waterProximity);
-                resourceRate13 = Mathf.Max(Mathf.Min(resourceRate13, (int)((double)waterProximity * 100.0)), 33);
+                num10 = Mathf.Max(Mathf.Min(num10, (int)((double)waterProximity * 100.0)), 33);
             }
-            int resourceRate14 = num7 * 2 / (resourceRate2 + 50);
-            int resourceRate15;
-            int resourceRate16;
+            int resourceRate16 = num7 * 2 / (resourceRate2 + 50);
             int resourceRate17;
+            int resourceRate18;
+            int resourceRate19;
             if (a == 0)
             {
-                resourceRate15 = 0;
-                resourceRate16 = 50;
-                resourceRate17 = 50;
+                resourceRate17 = 0;
+                resourceRate18 = 50;
+                resourceRate19 = 50;
             }
             else
             {
-                resourceRate15 = num1 / a;
-                resourceRate16 = num2 / a;
-                resourceRate17 = num3 / a;
+                resourceRate17 = num1 / a;
+                resourceRate18 = num2 / a;
+                resourceRate19 = num3 / a;
                 num6 += Mathf.Min(a, 10) * 10;
             }
             //begin mod
-            int num9 = ((Singleton<GameAreaManager>.instance.PointOutOfArea(VectorUtils.X_Y(area.center)) ? 1 : 0) | (x <= 1 || x >= GRID - 1 || z <= 1 ? 1 : (z >= GRID - 1 ? 1 : 0))) == 0 ? (num4 + ImmaterialResourceManager.CalculateResourceEffect(resourceRate1, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate3, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate2, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate4, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate5, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate6, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate7, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate8, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate12, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate10, 100, 500, 100, 200) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate17, 60, 100, 0, 50) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate16, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate17, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate16, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(num8, 50, (int)byte.MaxValue, 50, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate9, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate15, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate14, 50, 100, 10, 50) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate11, 15, 50, 100, 200) + (ImmaterialResourceManager.CalculateResourceEffect(resourceRate13, 33, 67, 300, 0) * Mathf.Max(0, 32 - num8) >> 5)) / 10 : 0;
+            int num11 = ((Singleton<GameAreaManager>.instance.PointOutOfArea(VectorUtils.X_Y(area.center)) ? 1 : 0) | (x <= 1 || x >= GRID - 2 || z <= 1 ? 1 : (z >= GRID - 2 ? 1 : 0))) == 0 ? (num4 + ImmaterialResourceManager.CalculateResourceEffect(resourceRate1, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate3, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate2, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate4, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate5, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate6, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate7, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate8, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate12, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate10, 100, 500, 100, 200) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate19, 60, 100, 0, 50) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate18, 60, 100, 0, 50) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate13, 50, 100, 20, 25) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate15, 50, 100, 20, 25) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate14, 100, 1000, 0, 25) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate19, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate18, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(num9, 50, (int)byte.MaxValue, 50, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate9, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate17, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate16, 50, 100, 10, 50) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate11, 15, 50, 100, 200) + (ImmaterialResourceManager.CalculateResourceEffect(num10, 33, 67, 300, 0) * Mathf.Max(0, 32 - num9) >> 5)) / 10 : 0;
             //end mod
-            int num10 = Mathf.Clamp(resourceRate1, 0, (int)ushort.MaxValue);
-            int num11 = Mathf.Clamp(resourceRate2, 0, (int)ushort.MaxValue);
-            int num12 = Mathf.Clamp(resourceRate3, 0, (int)ushort.MaxValue);
-            int num13 = Mathf.Clamp(resourceRate4, 0, (int)ushort.MaxValue);
-            int num14 = Mathf.Clamp(resourceRate5, 0, (int)ushort.MaxValue);
-            int num15 = Mathf.Clamp(resourceRate6, 0, (int)ushort.MaxValue);
-            int num16 = Mathf.Clamp(resourceRate7, 0, (int)ushort.MaxValue);
-            int num17 = Mathf.Clamp(resourceRate8, 0, (int)ushort.MaxValue);
-            int num18 = Mathf.Clamp(resourceRate9, 0, (int)ushort.MaxValue);
-            int num19 = Mathf.Clamp(resourceRate15, 0, (int)ushort.MaxValue);
-            int num20 = Mathf.Clamp(resourceRate16, 0, (int)ushort.MaxValue);
+            int num12 = Mathf.Clamp(resourceRate1, 0, (int)ushort.MaxValue);
+            int num13 = Mathf.Clamp(resourceRate2, 0, (int)ushort.MaxValue);
+            int num14 = Mathf.Clamp(resourceRate3, 0, (int)ushort.MaxValue);
+            int num15 = Mathf.Clamp(resourceRate4, 0, (int)ushort.MaxValue);
+            int num16 = Mathf.Clamp(resourceRate5, 0, (int)ushort.MaxValue);
+            int num17 = Mathf.Clamp(resourceRate6, 0, (int)ushort.MaxValue);
+            int num18 = Mathf.Clamp(resourceRate7, 0, (int)ushort.MaxValue);
+            int num19 = Mathf.Clamp(resourceRate8, 0, (int)ushort.MaxValue);
+            int num20 = Mathf.Clamp(resourceRate9, 0, (int)ushort.MaxValue);
             int num21 = Mathf.Clamp(resourceRate17, 0, (int)ushort.MaxValue);
-            int num22 = Mathf.Clamp(a, 0, (int)ushort.MaxValue);
-            int num23 = Mathf.Clamp(resourceRate10, 0, (int)ushort.MaxValue);
-            int landvalue = Mathf.Clamp(num9, 0, (int)ushort.MaxValue);
-            int num24 = Mathf.Clamp(num5, 0, (int)ushort.MaxValue);
+            int num22 = Mathf.Clamp(resourceRate18, 0, (int)ushort.MaxValue);
+            int num23 = Mathf.Clamp(resourceRate19, 0, (int)ushort.MaxValue);
+            int num24 = Mathf.Clamp(a, 0, (int)ushort.MaxValue);
+            int num25 = Mathf.Clamp(resourceRate10, 0, (int)ushort.MaxValue);
+            int landvalue = Mathf.Clamp(num11, 0, (int)ushort.MaxValue);
+            int num26 = Mathf.Clamp(num5, 0, (int)ushort.MaxValue);
             int coverage = Mathf.Clamp(num6, 0, (int)ushort.MaxValue);
-            int num25 = Mathf.Clamp(resourceRate14, 0, (int)ushort.MaxValue);
-            int num26 = Mathf.Clamp(resourceRate11, 0, (int)ushort.MaxValue);
-            int num27 = Mathf.Clamp(resourceRate12, 0, (int)ushort.MaxValue);
+            int num27 = Mathf.Clamp(resourceRate16, 0, (int)ushort.MaxValue);
+            int num28 = Mathf.Clamp(resourceRate11, 0, (int)ushort.MaxValue);
+            int num29 = Mathf.Clamp(resourceRate12, 0, (int)ushort.MaxValue);
+            int num30 = Mathf.Clamp(resourceRate13, 0, (int)ushort.MaxValue);
+            int num31 = Mathf.Clamp(resourceRate14, 0, (int)ushort.MaxValue);
+            int num32 = Mathf.Clamp(num8, 0, (int)ushort.MaxValue);
+            int num33 = Mathf.Clamp(resourceRate15, 0, (int)ushort.MaxValue);
             DistrictManager instance = Singleton<DistrictManager>.instance;
             //begin mod
             byte district = instance.GetDistrict(x * FakeDistrictManager.GRID / GRID, z * FakeDistrictManager.GRID / GRID);
             //end mod
-            instance.m_districts.m_buffer[(int)district].AddGroundData(landvalue, num8, coverage);
+            instance.m_districts.m_buffer[(int)district].AddGroundData(landvalue, num9, coverage);
             bool flag = false;
-            if (num10 != (int)target[index])
+            if (num12 != (int)target[index])
             {
-                target[index] = (ushort)num10;
+                target[index] = (ushort)num12;
                 flag = true;
             }
-            if (num11 != (int)target[index + 1])
+            if (num13 != (int)target[index + 1])
             {
-                target[index + 1] = (ushort)num11;
+                target[index + 1] = (ushort)num13;
                 flag = true;
             }
-            if (num12 != (int)target[index + 2])
+            if (num14 != (int)target[index + 2])
             {
-                target[index + 2] = (ushort)num12;
+                target[index + 2] = (ushort)num14;
                 flag = true;
             }
-            if (num13 != (int)target[index + 3])
+            if (num15 != (int)target[index + 3])
             {
-                target[index + 3] = (ushort)num13;
+                target[index + 3] = (ushort)num15;
                 flag = true;
             }
-            if (num14 != (int)target[index + 4])
+            if (num16 != (int)target[index + 4])
             {
-                target[index + 4] = (ushort)num14;
+                target[index + 4] = (ushort)num16;
                 flag = true;
             }
-            if (num15 != (int)target[index + 5])
+            if (num17 != (int)target[index + 5])
             {
-                target[index + 5] = (ushort)num15;
+                target[index + 5] = (ushort)num17;
                 flag = true;
             }
-            if (num16 != (int)target[index + 6])
+            if (num18 != (int)target[index + 6])
             {
-                target[index + 6] = (ushort)num16;
+                target[index + 6] = (ushort)num18;
                 flag = true;
             }
-            if (num17 != (int)target[index + 7])
+            if (num19 != (int)target[index + 7])
             {
-                target[index + 7] = (ushort)num17;
+                target[index + 7] = (ushort)num19;
                 flag = true;
             }
-            if (num18 != (int)target[index + 8])
+            if (num20 != (int)target[index + 8])
             {
-                target[index + 8] = (ushort)num18;
+                target[index + 8] = (ushort)num20;
                 flag = true;
             }
-            if (num19 != (int)target[index + 9])
+            if (num21 != (int)target[index + 9])
             {
-                target[index + 9] = (ushort)num19;
+                target[index + 9] = (ushort)num21;
                 flag = true;
             }
-            if (num20 != (int)target[index + 10])
+            if (num22 != (int)target[index + 10])
             {
-                target[index + 10] = (ushort)num20;
+                target[index + 10] = (ushort)num22;
                 flag = true;
             }
-            if (num21 != (int)target[index + 11])
+            if (num23 != (int)target[index + 11])
             {
-                target[index + 11] = (ushort)num21;
+                target[index + 11] = (ushort)num23;
                 flag = true;
             }
-            if (num22 != (int)target[index + 12])
+            if (num24 != (int)target[index + 12])
             {
-                target[index + 12] = (ushort)num22;
+                target[index + 12] = (ushort)num24;
                 flag = true;
             }
-            if (num23 != (int)target[index + 13])
+            if (num25 != (int)target[index + 13])
             {
-                target[index + 13] = (ushort)num23;
+                target[index + 13] = (ushort)num25;
                 flag = true;
             }
             if (landvalue != (int)target[index + 14])
@@ -412,9 +625,9 @@ namespace EightyOne.ResourceManagers
                 target[index + 14] = (ushort)landvalue;
                 flag = true;
             }
-            if (num24 != (int)target[index + 15])
+            if (num26 != (int)target[index + 15])
             {
-                target[index + 15] = (ushort)num24;
+                target[index + 15] = (ushort)num26;
                 flag = true;
             }
             if (coverage != (int)target[index + 16])
@@ -422,19 +635,39 @@ namespace EightyOne.ResourceManagers
                 target[index + 16] = (ushort)coverage;
                 flag = true;
             }
-            if (num25 != (int)target[index + 17])
+            if (num27 != (int)target[index + 17])
             {
-                target[index + 17] = (ushort)num25;
+                target[index + 17] = (ushort)num27;
                 flag = true;
             }
-            if (num26 != (int)target[index + 18])
+            if (num28 != (int)target[index + 18])
             {
-                target[index + 18] = (ushort)num26;
+                target[index + 18] = (ushort)num28;
                 flag = true;
             }
-            if (num27 != (int)target[index + 19])
+            if (num29 != (int)target[index + 19])
             {
-                target[index + 19] = (ushort)num27;
+                target[index + 19] = (ushort)num29;
+                flag = true;
+            }
+            if (num30 != (int)target[index + 20])
+            {
+                target[index + 20] = (ushort)num30;
+                flag = true;
+            }
+            if (num31 != (int)target[index + 21])
+            {
+                target[index + 21] = (ushort)num31;
+                flag = true;
+            }
+            if (num32 != (int)target[index + 22])
+            {
+                target[index + 22] = (ushort)num32;
+                flag = true;
+            }
+            if (num33 != (int)target[index + 23])
+            {
+                target[index + 23] = (ushort)num33;
                 flag = true;
             }
             return flag;
@@ -445,7 +678,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int)((num2 * GRID + num) * 20 + resource);
+            int num3 = (int)((num2 * GRID + num) * 24 + resource);
             local = (int)m_localFinalResources[num3];
             total = m_totalFinalResources[(int)resource];
         }
@@ -455,7 +688,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int)((num2 * GRID + num) * 20 + resource);
+            int num3 = (int)((num2 * GRID + num) * 24 + resource);
             local = (int)m_localFinalResources[num3];
         }
 
@@ -464,7 +697,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int)(position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int)(position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            index = (num2 * GRID + num) * 20;
+            index = (num2 * GRID + num) * 24;
             resources = m_localFinalResources;
         }
 
@@ -492,7 +725,7 @@ namespace EightyOne.ResourceManagers
                 int num4 = GRID - 1;
                 for (int x = num3; x <= num4; ++x)
                 {
-                    int index1 = (z * GRID + x) * 20;
+                    int index1 = (z * GRID + x) * 24;
                     if (CalculateLocalResources(x, z, m_localTempResources, m_globalFinalResources, m_localFinalResources, index1))
                     {
                         minX = minX == -1 ? x : Math.Min(minX, x);
@@ -501,7 +734,7 @@ namespace EightyOne.ResourceManagers
                         maxZ = Math.Max(maxZ, z);
                     }
                     int num5 = (int)m_localFinalResources[index1 + 16];
-                    for (int index2 = 0; index2 < 20; ++index2)
+                    for (int index2 = 0; index2 < 24; ++index2)
                     {
                         int num6 = (int)m_localFinalResources[index1 + index2];
                         m_totalTempResources[index2] += num6;
@@ -517,14 +750,14 @@ namespace EightyOne.ResourceManagers
                 CalculateTotalResources(m_totalTempResources, m_totalTempResourcesMul, m_totalFinalResources);
                 //end mod
                 StatisticBase statisticBase = Singleton<StatisticsManager>.instance.Acquire<StatisticArray>(StatisticType.ImmaterialResource);
-                for (int index = 0; index < 20; ++index)
+                for (int index = 0; index < 24; ++index)
                 {
                     //begin mod
                     m_globalFinalResources[index] = m_globalTempResources[index];
                     m_globalTempResources[index] = 0;
                     m_totalTempResources[index] = 0;
                     m_totalTempResourcesMul[index] = 0;
-                    statisticBase.Acquire<StatisticInt32>(index, 20).Set(m_totalFinalResources[index]);
+                    statisticBase.Acquire<StatisticInt32>(index, 24).Set(m_totalFinalResources[index]);
                     //end mod
                 }
             }
