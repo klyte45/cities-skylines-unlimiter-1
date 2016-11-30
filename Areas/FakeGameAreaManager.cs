@@ -229,7 +229,6 @@ namespace EightyOne.Areas
         [RedirectMethod]
         public void GetAreaBounds(int x, int z, out float minX, out float minZ, out float maxX, out float maxZ)
         {
-            UnityEngine.Debug.Log($"GetAreaBounds: x={x}, z={z}");
             //begin mod
             minX = (float)(((double)x - HALFGRID) * 1920.0);
             minZ = (float)(((double)z - HALFGRID) * 1920.0);
@@ -241,7 +240,6 @@ namespace EightyOne.Areas
         [RedirectMethod]
         public void GetTileXZ(Vector3 p, out int x, out int z)
         {
-            UnityEngine.Debug.Log($"GetTileXZ: p={p}");
             //begin mod
             x = Mathf.Clamp(Mathf.FloorToInt((float)((double)p.x / 1920.0 + HALFGRID)), 0, GRID - 1);
             z = Mathf.Clamp(Mathf.FloorToInt((float)((double)p.z / 1920.0 + HALFGRID)), 0, GRID - 1);
