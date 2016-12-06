@@ -21,7 +21,9 @@ namespace EightyOne.Areas
             if (this.m_hazardMapVisible == 0)
                 return;
             Vector4 vec;
-            vec.z = 0.0001017253f;
+            //begin mod
+            vec.z = 1.0f / (38.4f * GRID);
+            //end mod
             vec.x = 0.5f;
             vec.y = 0.5f;
             vec.w = 0.5f;
