@@ -10,12 +10,20 @@ namespace EightyOne
         public override void OnCreated(ILoading loading)
         {
             base.OnCreated(loading);
-            Detours.SetUp();
+            if (loading == null || loading.currentMode == AppMode.Game)
+            {
+                Detours.SetUp();
+            }
         }
 
         public override void OnLevelLoaded(LoadMode mode)
         {
-            if (mode != LoadMode.NewGame && mode != LoadMode.LoadGame)
+            base.OnLevelLoaded(mode);
+            var updateMode = (SimulationManager.UpdateMode) mode;
+
+
+            if (updateMode != SimulationManager.UpdateMode.NewGameFromMap && updateMode != SimulationManager.UpdateMode.NewGameFromScenario
+                && updateMode != SimulationManager.UpdateMode.LoadGame)
             {
                 return;
             }
