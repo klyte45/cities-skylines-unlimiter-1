@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace EightyOne.Areas
 {
-    [TargetType(typeof(DisasterManager))]
+    //[TargetType(typeof(DisasterManager))]
     public class FakeDisasterManager : DisasterManager
     {
         public const int GRID = 450;
