@@ -10,44 +10,43 @@ using System.Runtime.CompilerServices;
 using EightyOne.IgnoreAttributes;
 using EightyOne.Redirection;
 
-//TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(WaterManager))]
-    public class FakeWaterManager
+    public class FakeWaterManager : WaterManager
     {
 
         [RedirectReverse]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void UpdateNodeWater(WaterManager manager, int nodeID, int water, int sewage, int heating)
+        private void UpdateNodeWater(int nodeID, int water, int sewage, int heating)
         {
             UnityEngine.Debug.Log("Failed to redirect WaterManager.UpdateNodeWater()");
         }
 
         [RedirectReverse]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void MergeHeatingGroups(WaterManager wm, ushort root, ushort merged)
+        private void MergeHeatingGroups(ushort root, ushort merged)
         {
             UnityEngine.Debug.Log("Failed to redirect WaterManager.MergeHeatingGroups()");
         }
 
         [RedirectReverse]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void MergeWaterGroups(WaterManager wm, ushort root, ushort merged)
+        private void MergeWaterGroups(ushort root, ushort merged)
         {
             UnityEngine.Debug.Log("Failed to redirect WaterManager.MergeWaterGroups()");
         }
 
         [RedirectReverse]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void MergeSewageGroups(WaterManager wm, ushort root, ushort merged)
+        private void MergeSewageGroups(ushort root, ushort merged)
         {
             UnityEngine.Debug.Log("Failed to redirect WaterManager.MergeSewageGroups()");
         }
 
         [RedirectReverse]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static ushort GetRootWaterGroup(WaterManager wm, ushort group)
+        private ushort GetRootWaterGroup(ushort group)
         {
             UnityEngine.Debug.Log("Failed to redirect WaterManager.GetRootWaterGroup()");
             return 0;
@@ -55,7 +54,7 @@ namespace EightyOne.ResourceManagers
 
         [RedirectReverse]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static ushort GetRootSewageGroup(WaterManager wm, ushort group)
+        private ushort GetRootSewageGroup(ushort group)
         {
             UnityEngine.Debug.Log("Failed to redirect WaterManager.GetRootSewageGroup()");
             return 0;
@@ -63,7 +62,7 @@ namespace EightyOne.ResourceManagers
 
         [RedirectReverse]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static ushort GetRootHeatingGroup(WaterManager wm, ushort group)
+        private ushort GetRootHeatingGroup(ushort group)
         {
             UnityEngine.Debug.Log("Failed to redirect WaterManager.GetRootHeatingGroup()");
             return 0;
@@ -90,7 +89,6 @@ namespace EightyOne.ResourceManagers
         private static int m_modifiedX2;
         private static int m_modifiedZ2;
 
-        public static WaterManager.Node[] m_nodeData;
         internal static WaterManager.Cell[] m_waterGrid;
         internal static WaterManager.PulseGroup[] m_waterPulseGroups;
         internal static WaterManager.PulseGroup[] m_sewagePulseGroups;
@@ -114,7 +112,11 @@ namespace EightyOne.ResourceManagers
         public static void Init()
         {
             var wm = Singleton<WaterManager>.instance;
-            m_nodeData = wm.m_nodeData;
+            m_waterPulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_waterPulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
+            m_sewagePulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_sewagePulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
+            m_heatingPulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_heatingPulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
+
+
             if (m_waterGrid == null)
             {
                 m_waterGrid = new WaterManager.Cell[GRID * GRID];
@@ -129,12 +131,6 @@ namespace EightyOne.ResourceManagers
                         m_waterGrid[(j + diff) * GRID + (i + diff)] = (WaterManager.Cell)Util.CopyStruct(new WaterManager.Cell(), oldGrid[j * oldGridSize + i], fields);
                     }
                 }
-
-
-                m_waterPulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_waterPulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
-                m_sewagePulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_sewagePulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
-                m_heatingPulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_heatingPulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
-
 
                 m_waterPulseUnits = new PulseUnit[32768];
                 Util.CopyStructArray(m_waterPulseUnits, wm, "m_waterPulseUnits");
@@ -423,22 +419,6 @@ namespace EightyOne.ResourceManagers
             return false;
         }
 
-        [RedirectMethod] //no changes. Just references m_nodeData
-        public int TryDumpSewage(ushort node, int rate, int max)
-        {
-            if ((int)node == 0)
-                return 0;
-            WaterManager.Node node1 = m_nodeData[(int)node];
-            int num1 = Mathf.Min(rate, (int)short.MaxValue);
-            int num2 = Mathf.Min(Mathf.Min(rate, max), (int)node1.m_extraSewagePressure);
-            max -= num2;
-            rate = Mathf.Max(0, Mathf.Min(Mathf.Min(rate, max), num1 - (int)node1.m_collectSewagePressure));
-            node1.m_collectSewagePressure += (ushort)rate;
-            node1.m_extraSewagePressure -= (ushort)num2;
-            m_nodeData[(int)node] = node1;
-            return num2;
-        }
-
         [RedirectMethod]
         [IgnoreIfRemoveNeedForPipesEnabled]
         public int TryFetchWater(Vector3 pos, int rate, int max, ref byte waterPollution)
@@ -541,24 +521,6 @@ namespace EightyOne.ResourceManagers
                 }
             }
             return false;
-        }
-
-        [RedirectMethod] //no changes. Just references m_nodeData
-        public int TryFetchWater(ushort node, int rate, int max, ref byte waterPollution)
-        {
-            if ((int)node == 0)
-                return 0;
-            WaterManager.Node node1 = m_nodeData[(int)node];
-            int num1 = Mathf.Min(rate, (int)short.MaxValue);
-            int num2 = Mathf.Min(Mathf.Min(rate, max), (int)node1.m_extraWaterPressure);
-            max -= num2;
-            rate = Mathf.Max(0, Mathf.Min(Mathf.Min(rate, max), num1 - (int)node1.m_collectWaterPressure));
-            node1.m_collectWaterPressure += (ushort)rate;
-            node1.m_extraWaterPressure -= (ushort)num2;
-            if (num2 != 0)
-                waterPollution = node1.m_pollution;
-            m_nodeData[(int)node] = node1;
-            return num2;
         }
 
         [RedirectMethod]
@@ -850,7 +812,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private static void ConductWaterToCell(WaterManager wm, ref WaterManager.Cell cell, ushort group, int x, int z)
+        private void ConductWaterToCell(ref WaterManager.Cell cell, ushort group, int x, int z)
         {
             if (cell.m_conductivity >= 96 && cell.m_waterPulseGroup == 65535)
             {
@@ -872,7 +834,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private static void ConductSewageToCell(WaterManager wm, ref WaterManager.Cell cell, ushort group, int x, int z)
+        private void ConductSewageToCell(ref WaterManager.Cell cell, ushort group, int x, int z)
         {
             if (cell.m_conductivity >= 96 && cell.m_sewagePulseGroup == 65535)
             {
@@ -894,7 +856,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private static void ConductHeatingToCell(WaterManager wm, ref WaterManager.Cell cell, ushort group, int x, int z)
+        private void ConductHeatingToCell(ref WaterManager.Cell cell, ushort group, int x, int z)
         {
             if ((int)cell.m_conductivity2 < 96 || (int)cell.m_heatingPulseGroup != (int)ushort.MaxValue)
                 return;
@@ -913,7 +875,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private static void ConductWaterToCells(WaterManager wm, ushort group, float worldX, float worldZ, float radius)
+        private void ConductWaterToCells(ushort group, float worldX, float worldZ, float radius)
         {
             //begin mod
             int num = Mathf.Max((int)((worldX - radius) / 38.25f + HALFGRID), 0);
@@ -938,14 +900,14 @@ namespace EightyOne.ResourceManagers
                         //begin mod
                         int num8 = i * GRID + j;
                         //end mod
-                        ConductWaterToCell(wm, ref m_waterGrid[num8], group, j, i);
+                        ConductWaterToCell(ref m_waterGrid[num8], group, j, i);
                     }
                 }
             }            
         }
 
         [RedirectMethod]
-        private static void ConductSewageToCells(WaterManager wm, ushort group, float worldX, float worldZ, float radius)
+        private void ConductSewageToCells(ushort group, float worldX, float worldZ, float radius)
         {
             //begin mod
             int num = Mathf.Max((int)((worldX - radius) / 38.25f + HALFGRID), 0);
@@ -970,14 +932,14 @@ namespace EightyOne.ResourceManagers
                         //begin mod
                         int num8 = i * GRID + j;
                         //end mod
-                        ConductSewageToCell(wm, ref m_waterGrid[num8], group, j, i);
+                        ConductSewageToCell(ref m_waterGrid[num8], group, j, i);
                     }
                 }
             }
         }
 
         [RedirectMethod]
-        private static void ConductHeatingToCells(WaterManager wm, ushort group, float worldX, float worldZ, float radius)
+        private void ConductHeatingToCells(ushort group, float worldX, float worldZ, float radius)
         {
             //begin mod
             int num1 = Mathf.Max((int)(((double)worldX - (double)radius) / 38.25 + HALFGRID), 0);
@@ -999,21 +961,22 @@ namespace EightyOne.ResourceManagers
                     //end mod
                     if ((double)num8 * (double)num8 + (double)num7 * (double)num7 < (double)num6)
                         //begin mod
-                        ConductHeatingToCell(wm, ref m_waterGrid[z * GRID + x], group, x, z);
+                        ConductHeatingToCell(ref m_waterGrid[z * GRID + x], group, x, z);
                     //end mod
                 }
             }
         }
 
+        //no changes. Just uses FakeWaterManager.PulseUnit instead
         [RedirectMethod]
-        private static void ConductWaterToNode(WaterManager wm, ushort nodeIndex, ref NetNode node, ushort group)
+        private void ConductWaterToNode(ushort nodeIndex, ref NetNode node, ushort group)
         {
             NetInfo info = node.Info;
             if (info.m_class.m_service == ItemClass.Service.Water)
             {
                 if (m_nodeData[(int)nodeIndex].m_waterPulseGroup == 65535)
                 {
-                    PulseUnit pulseUnit;
+                    FakeWaterManager.PulseUnit pulseUnit;
                     pulseUnit.m_group = group;
                     pulseUnit.m_node = nodeIndex;
                     pulseUnit.m_x = 0;
@@ -1028,12 +991,12 @@ namespace EightyOne.ResourceManagers
                 }
                 else
                 {
-                    ushort rootWaterGroup = GetRootWaterGroup(wm, m_nodeData[(int)nodeIndex].m_waterPulseGroup);
+                    ushort rootWaterGroup = GetRootWaterGroup(m_nodeData[(int)nodeIndex].m_waterPulseGroup);
                     if (rootWaterGroup == group)
                     {
                         return;
                     }
-                    MergeWaterGroups(wm, group, rootWaterGroup);
+                    MergeWaterGroups(group, rootWaterGroup);
                     if ((int)m_waterPulseGroups[(int)rootWaterGroup].m_origPressure == 0)
                     {
                         FakeWaterManager.PulseUnit pulseUnit;
@@ -1051,15 +1014,16 @@ namespace EightyOne.ResourceManagers
             }
         }
 
+        //no changes. Just uses FakeWaterManager.PulseUnit instead
         [RedirectMethod]
-        private static void ConductSewageToNode(WaterManager wm, ushort nodeIndex, ref NetNode node, ushort group)
+        private void ConductSewageToNode(ushort nodeIndex, ref NetNode node, ushort group)
         {
             NetInfo info = node.Info;
             if (info.m_class.m_service == ItemClass.Service.Water)
             {
                 if (m_nodeData[(int)nodeIndex].m_sewagePulseGroup == 65535)
                 {
-                    PulseUnit pulseUnit;
+                    FakeWaterManager.PulseUnit pulseUnit;
                     pulseUnit.m_group = group;
                     pulseUnit.m_node = nodeIndex;
                     pulseUnit.m_x = 0;
@@ -1074,12 +1038,12 @@ namespace EightyOne.ResourceManagers
                 }
                 else
                 {
-                    ushort rootSewageGroup = GetRootSewageGroup(wm, m_nodeData[(int)nodeIndex].m_sewagePulseGroup);
+                    ushort rootSewageGroup = GetRootSewageGroup(m_nodeData[(int)nodeIndex].m_sewagePulseGroup);
                     if (rootSewageGroup == group)
                     {
                         return;
                     }
-                    MergeSewageGroups(wm, group, rootSewageGroup);
+                    MergeSewageGroups(group, rootSewageGroup);
                     if ((int)m_sewagePulseGroups[(int)rootSewageGroup].m_origPressure == 0)
                     {
                         FakeWaterManager.PulseUnit pulseUnit;
@@ -1097,9 +1061,9 @@ namespace EightyOne.ResourceManagers
             }
         }
 
-        //no changes
+        //no changes. Just uses FakeWaterManager.PulseUnit instead
         [RedirectMethod]
-        private static void ConductHeatingToNode(WaterManager wm, ushort nodeIndex, ref NetNode node, ushort group)
+        private void ConductHeatingToNode(ushort nodeIndex, ref NetNode node, ushort group)
         {
             NetInfo info = node.Info;
             if (info.m_class.m_service != ItemClass.Service.Water || info.m_class.m_level != ItemClass.Level.Level2)
@@ -1119,17 +1083,17 @@ namespace EightyOne.ResourceManagers
             }
             else
             {
-                ushort rootHeatingGroup = GetRootHeatingGroup(wm, m_nodeData[(int)nodeIndex].m_heatingPulseGroup);
+                ushort rootHeatingGroup = GetRootHeatingGroup(m_nodeData[(int)nodeIndex].m_heatingPulseGroup);
                 if ((int)rootHeatingGroup == (int)group)
                     return;
-                MergeHeatingGroups(wm, group, rootHeatingGroup);
+                MergeHeatingGroups(group, rootHeatingGroup);
                 m_nodeData[(int)nodeIndex].m_heatingPulseGroup = group;
                 m_canContinue = true;
             }
         }
 
         [RedirectMethod]
-        protected static void SimulationStepImpl(WaterManager wm, int subStep)
+        protected void SimulationStepImpl(int subStep)
         {
             if (subStep == 0 || subStep == 1000)
                 return;
@@ -1168,7 +1132,7 @@ namespace EightyOne.ResourceManagers
                             int water = (int)node.m_waterPulseGroup == (int)ushort.MaxValue ? 0 : 1;
                             int sewage = (int)node.m_sewagePulseGroup == (int)ushort.MaxValue ? 0 : 1;
                             int heating = (int)node.m_heatingPulseGroup == (int)ushort.MaxValue ? 0 : 1;
-                            UpdateNodeWater(wm, nodeID, water, sewage, heating);
+                            UpdateNodeWater(nodeID, water, sewage, heating);
                             m_conductiveCells += 2;
                             node.m_waterPulseGroup = ushort.MaxValue;
                             node.m_sewagePulseGroup = ushort.MaxValue;
@@ -1319,7 +1283,7 @@ namespace EightyOne.ResourceManagers
                         FakeWaterManager.PulseUnit pulseUnit = m_waterPulseUnits[m_waterPulseUnitStart];
                         if (++m_waterPulseUnitStart == m_waterPulseUnits.Length)
                             m_waterPulseUnitStart = 0;
-                        pulseUnit.m_group = GetRootWaterGroup(wm, pulseUnit.m_group);
+                        pulseUnit.m_group = GetRootWaterGroup(pulseUnit.m_group);
                         uint num7 = m_waterPulseGroups[(int)pulseUnit.m_group].m_curPressure;
                         if ((int)pulseUnit.m_node == 0)
                         {
@@ -1364,7 +1328,7 @@ namespace EightyOne.ResourceManagers
                                 if ((int)netNode.m_building != 0)
                                     Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)netNode.m_building]
                                         .m_waterPollution = num8;
-                                ConductWaterToCells(wm, pulseUnit.m_group, netNode.m_position.x, netNode.m_position.z, 100f);
+                                ConductWaterToCells(pulseUnit.m_group, netNode.m_position.x, netNode.m_position.z, 100f);
                                 for (int index = 0; index < 8; ++index)
                                 {
                                     ushort segment = netNode.GetSegment(index);
@@ -1373,7 +1337,7 @@ namespace EightyOne.ResourceManagers
                                         ushort num9 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_startNode;
                                         ushort num10 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_endNode;
                                         ushort nodeIndex = (int)num9 != (int)pulseUnit.m_node ? num9 : num10;
-                                        ConductWaterToNode(wm, nodeIndex, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)nodeIndex],
+                                        ConductWaterToNode(nodeIndex, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)nodeIndex],
                                             pulseUnit.m_group);
                                     }
                                 }
@@ -1391,7 +1355,7 @@ namespace EightyOne.ResourceManagers
                         FakeWaterManager.PulseUnit pulseUnit = m_sewagePulseUnits[m_sewagePulseUnitStart];
                         if (++m_sewagePulseUnitStart == m_sewagePulseUnits.Length)
                             m_sewagePulseUnitStart = 0;
-                        pulseUnit.m_group = GetRootSewageGroup(wm, pulseUnit.m_group);
+                        pulseUnit.m_group = GetRootSewageGroup(pulseUnit.m_group);
                         uint num7 = m_sewagePulseGroups[(int)pulseUnit.m_group].m_curPressure;
                         if ((int)pulseUnit.m_node == 0)
                         {
@@ -1426,7 +1390,7 @@ namespace EightyOne.ResourceManagers
                             NetNode netNode = Singleton<NetManager>.instance.m_nodes.m_buffer[(int)pulseUnit.m_node];
                             if (netNode.m_flags != NetNode.Flags.None && netNode.m_buildIndex < (num1 & 4294967168u))
                             {
-                                ConductSewageToCells(wm, pulseUnit.m_group, netNode.m_position.x, netNode.m_position.z, 100f);
+                                ConductSewageToCells(pulseUnit.m_group, netNode.m_position.x, netNode.m_position.z, 100f);
                                 for (int index = 0; index < 8; ++index)
                                 {
                                     ushort segment = netNode.GetSegment(index);
@@ -1435,7 +1399,7 @@ namespace EightyOne.ResourceManagers
                                         ushort num8 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_startNode;
                                         ushort num9 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_endNode;
                                         ushort nodeIndex = (int)num8 != (int)pulseUnit.m_node ? num8 : num9;
-                                        ConductSewageToNode(wm, nodeIndex, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)nodeIndex],
+                                        ConductSewageToNode(nodeIndex, ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)nodeIndex],
                                             pulseUnit.m_group);
                                     }
                                 }
@@ -1453,7 +1417,7 @@ namespace EightyOne.ResourceManagers
                         FakeWaterManager.PulseUnit pulseUnit = m_heatingPulseUnits[m_heatingPulseUnitStart];
                         if (++m_heatingPulseUnitStart == m_heatingPulseUnits.Length)
                             m_heatingPulseUnitStart = 0;
-                        pulseUnit.m_group = GetRootHeatingGroup(wm, pulseUnit.m_group);
+                        pulseUnit.m_group = GetRootHeatingGroup(pulseUnit.m_group);
                         uint num7 = m_heatingPulseGroups[(int)pulseUnit.m_group].m_curPressure;
                         if ((int)pulseUnit.m_node == 0)
                         {
@@ -1488,7 +1452,7 @@ namespace EightyOne.ResourceManagers
                             NetNode netNode = Singleton<NetManager>.instance.m_nodes.m_buffer[(int)pulseUnit.m_node];
                             if (netNode.m_flags != NetNode.Flags.None && netNode.m_buildIndex < (num1 & 4294967168u))
                             {
-                                ConductHeatingToCells(wm, pulseUnit.m_group, netNode.m_position.x, netNode.m_position.z,
+                                ConductHeatingToCells(pulseUnit.m_group, netNode.m_position.x, netNode.m_position.z,
                                     100f);
                                 for (int index = 0; index < 8; ++index)
                                 {
@@ -1502,7 +1466,7 @@ namespace EightyOne.ResourceManagers
                                             ushort num8 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_startNode;
                                             ushort num9 = Singleton<NetManager>.instance.m_segments.m_buffer[(int)segment].m_endNode;
                                             ushort nodeIndex = (int)num8 != (int)pulseUnit.m_node ? num8 : num9;
-                                            ConductHeatingToNode(wm, nodeIndex,
+                                            ConductHeatingToNode(nodeIndex,
                                                 ref Singleton<NetManager>.instance.m_nodes.m_buffer[(int)nodeIndex], pulseUnit.m_group);
                                         }
                                     }

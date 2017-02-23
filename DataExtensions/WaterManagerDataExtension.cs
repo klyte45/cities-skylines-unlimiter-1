@@ -32,10 +32,6 @@ namespace EightyOne.DataExtensions
                 }
             }
 
-            Util.CopyStructArrayBack(FakeWaterManager.m_waterPulseGroups, wm, "m_waterPulseGroups");
-            Util.CopyStructArrayBack(FakeWaterManager.m_sewagePulseGroups, wm, "m_sewagePulseGroups");
-            Util.CopyStructArrayBack(FakeWaterManager.m_heatingPulseGroups, wm, "m_heatingPulseGroups");
-
             Util.CopyStructArrayBack(FakeWaterManager.m_waterPulseUnits, wm, "m_waterPulseUnits");
             Util.CopyStructArrayBack(FakeWaterManager.m_sewagePulseUnits, wm, "m_sewagePulseUnits");
             Util.CopyStructArrayBack(FakeWaterManager.m_heatingPulseUnits, wm, "m_heatingPulseUnits");
