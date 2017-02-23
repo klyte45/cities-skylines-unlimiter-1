@@ -21,11 +21,52 @@ namespace EightyOne.ResourceManagers
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void UpdateNodeWater(WaterManager manager, int nodeID, int water, int sewage, int heating)
         {
-            UnityEngine.Debug.Log($"{manager}-{nodeID}-{water}-{sewage}-{heating}");
-            UnityEngine.Debug.Log("AAAA");
-            UnityEngine.Debug.Log("BBBB");
-            UnityEngine.Debug.Log("CCCC");
-            UnityEngine.Debug.Log("DDDD");
+            UnityEngine.Debug.Log("Failed to redirect WaterManager.UpdateNodeWater()");
+        }
+
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void MergeHeatingGroups(WaterManager wm, ushort root, ushort merged)
+        {
+            UnityEngine.Debug.Log("Failed to redirect WaterManager.MergeHeatingGroups()");
+        }
+
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void MergeWaterGroups(WaterManager wm, ushort root, ushort merged)
+        {
+            UnityEngine.Debug.Log("Failed to redirect WaterManager.MergeWaterGroups()");
+        }
+
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void MergeSewageGroups(WaterManager wm, ushort root, ushort merged)
+        {
+            UnityEngine.Debug.Log("Failed to redirect WaterManager.MergeSewageGroups()");
+        }
+
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static ushort GetRootWaterGroup(WaterManager wm, ushort group)
+        {
+            UnityEngine.Debug.Log("Failed to redirect WaterManager.GetRootWaterGroup()");
+            return 0;
+        }
+
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static ushort GetRootSewageGroup(WaterManager wm, ushort group)
+        {
+            UnityEngine.Debug.Log("Failed to redirect WaterManager.GetRootSewageGroup()");
+            return 0;
+        }
+
+        [RedirectReverse]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static ushort GetRootHeatingGroup(WaterManager wm, ushort group)
+        {
+            UnityEngine.Debug.Log("Failed to redirect WaterManager.GetRootHeatingGroup()");
+            return 0;
         }
 
         internal struct PulseUnit
@@ -90,12 +131,9 @@ namespace EightyOne.ResourceManagers
                 }
 
 
-                m_waterPulseGroups = new WaterManager.PulseGroup[1024];
-                Util.CopyStructArray(m_waterPulseGroups, wm, "m_waterPulseGroups");
-                m_sewagePulseGroups = new WaterManager.PulseGroup[1024];
-                Util.CopyStructArray(m_sewagePulseGroups, wm, "m_sewagePulseGroups");
-                m_heatingPulseGroups = new WaterManager.PulseGroup[1024];
-                Util.CopyStructArray(m_heatingPulseGroups, wm, "m_heatingPulseGroups");
+                m_waterPulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_waterPulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
+                m_sewagePulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_sewagePulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
+                m_heatingPulseGroups = (WaterManager.PulseGroup[])typeof(WaterManager).GetField("m_heatingPulseGroups", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(wm);
 
 
                 m_waterPulseUnits = new PulseUnit[32768];
@@ -809,122 +847,6 @@ namespace EightyOne.ResourceManagers
             }
             heating = false;
             return false;
-        }
-
-        [RedirectMethod]
-        private static ushort GetRootWaterGroup(WaterManager wm, ushort group)
-        {
-            for (ushort mergeIndex = m_waterPulseGroups[(int)group].m_mergeIndex; mergeIndex != 65535; mergeIndex = m_waterPulseGroups[(int)group].m_mergeIndex)
-            {
-                group = mergeIndex;
-            }
-            return group;
-        }
-
-        [RedirectMethod]
-        private static ushort GetRootSewageGroup(WaterManager wm, ushort group)
-        {
-            for (ushort mergeIndex = m_sewagePulseGroups[(int)group].m_mergeIndex; mergeIndex != 65535; mergeIndex = m_sewagePulseGroups[(int)group].m_mergeIndex)
-            {
-                group = mergeIndex;
-            }
-            return group;
-        }
-
-        [RedirectMethod]
-        private static ushort GetRootHeatingGroup(WaterManager wm, ushort group)
-        {
-            for (ushort index = m_heatingPulseGroups[(int)group].m_mergeIndex; (int)index != (int)ushort.MaxValue; index = m_heatingPulseGroups[(int)group].m_mergeIndex)
-                group = index;
-            return group;
-        }
-
-        [RedirectMethod]
-        private static void MergeWaterGroups(WaterManager wm, ushort root, ushort merged)
-        {
-            WaterManager.PulseGroup pulseGroup = m_waterPulseGroups[(int)root];
-            WaterManager.PulseGroup pulseGroup2 = m_waterPulseGroups[(int)merged];
-            pulseGroup.m_origPressure += pulseGroup2.m_origPressure;
-            pulseGroup.m_collectPressure += pulseGroup2.m_collectPressure;
-            if ((int)pulseGroup2.m_origPressure != 0)
-                m_nodeData[(int)pulseGroup.m_node].m_pollution = (byte)((int)m_nodeData[(int)pulseGroup.m_node].m_pollution + (int)m_nodeData[(int)pulseGroup2.m_node].m_pollution + 1 >> 1);
-            if (pulseGroup2.m_mergeCount != 0)
-            {
-                for (int i = 0; i < m_waterPulseGroupCount; i++)
-                {
-                    if (m_waterPulseGroups[i].m_mergeIndex == merged)
-                    {
-                        m_waterPulseGroups[i].m_mergeIndex = root;
-                        pulseGroup2.m_origPressure -= m_waterPulseGroups[i].m_origPressure;
-                        pulseGroup2.m_collectPressure -= m_waterPulseGroups[i].m_collectPressure;
-                    }
-                }
-                pulseGroup.m_mergeCount += pulseGroup2.m_mergeCount;
-                pulseGroup2.m_mergeCount = 0;
-            }
-            pulseGroup.m_curPressure += pulseGroup2.m_curPressure;
-            pulseGroup2.m_curPressure = 0u;
-            pulseGroup.m_mergeCount += 1;
-            pulseGroup2.m_mergeIndex = root;
-            m_waterPulseGroups[(int)root] = pulseGroup;
-            m_waterPulseGroups[(int)merged] = pulseGroup2;
-        }
-
-        [RedirectMethod]
-        private static void MergeSewageGroups(WaterManager wm, ushort root, ushort merged)
-        {
-            WaterManager.PulseGroup pulseGroup = m_sewagePulseGroups[(int)root];
-            WaterManager.PulseGroup pulseGroup2 = m_sewagePulseGroups[(int)merged];
-            pulseGroup.m_origPressure += pulseGroup2.m_origPressure;
-            pulseGroup.m_collectPressure += pulseGroup2.m_collectPressure;
-            if (pulseGroup2.m_mergeCount != 0)
-            {
-                for (int i = 0; i < m_sewagePulseGroupCount; i++)
-                {
-                    if (m_sewagePulseGroups[i].m_mergeIndex == merged)
-                    {
-                        m_sewagePulseGroups[i].m_mergeIndex = root;
-                        pulseGroup2.m_origPressure -= m_sewagePulseGroups[i].m_origPressure;
-                        pulseGroup2.m_collectPressure -= m_sewagePulseGroups[i].m_collectPressure;
-                    }
-                }
-                pulseGroup.m_mergeCount += pulseGroup2.m_mergeCount;
-                pulseGroup2.m_mergeCount = 0;
-            }
-            pulseGroup.m_curPressure += pulseGroup2.m_curPressure;
-            pulseGroup2.m_curPressure = 0u;
-            pulseGroup.m_mergeCount += 1;
-            pulseGroup2.m_mergeIndex = root;
-            m_sewagePulseGroups[(int)root] = pulseGroup;
-            m_sewagePulseGroups[(int)merged] = pulseGroup2;
-        }
-
-        //no change
-        [RedirectMethod]
-        private static void MergeHeatingGroups(WaterManager wm, ushort root, ushort merged)
-        {
-            WaterManager.PulseGroup pulseGroup1 = m_heatingPulseGroups[(int)root];
-            WaterManager.PulseGroup pulseGroup2 = m_heatingPulseGroups[(int)merged];
-            pulseGroup1.m_origPressure += pulseGroup2.m_origPressure;
-            if ((int)pulseGroup2.m_mergeCount != 0)
-            {
-                for (int index = 0; index < m_heatingPulseGroupCount; ++index)
-                {
-                    if ((int)m_heatingPulseGroups[index].m_mergeIndex == (int)merged)
-                    {
-                        m_heatingPulseGroups[index].m_mergeIndex = root;
-                        pulseGroup2.m_origPressure -= m_heatingPulseGroups[index].m_origPressure;
-                    }
-                }
-                pulseGroup1.m_mergeCount += pulseGroup2.m_mergeCount;
-                pulseGroup2.m_mergeCount = (ushort)0;
-            }
-            pulseGroup1.m_curPressure += pulseGroup2.m_curPressure;
-            pulseGroup2.m_curPressure = 0U;
-            ++pulseGroup1.m_mergeCount;
-            pulseGroup2.m_mergeIndex = root;
-            m_heatingPulseGroups[(int)root] = pulseGroup1;
-            m_heatingPulseGroups[(int)merged] = pulseGroup2;
         }
 
         [RedirectMethod]
