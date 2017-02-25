@@ -33,7 +33,6 @@ namespace EightyOne.DataExtensions
 
             Util.CopyStructArrayBack(FakeElectricityManager.m_pulseGroups, em, "m_pulseGroups");
             Util.CopyStructArrayBack(FakeElectricityManager.m_pulseUnits, em, "m_pulseUnits");
-            Util.CopyArrayBack(FakeElectricityManager.m_nodeGroups, em, "m_nodeGroups");
 
             Util.SetPropertyValueBack(FakeElectricityManager.m_pulseGroupCount, em, "m_pulseGroupCount");
             Util.SetPropertyValueBack(FakeElectricityManager.m_pulseUnitEnd % FakeElectricityManager.m_pulseUnits.Length, em, "m_pulseUnitEnd");
