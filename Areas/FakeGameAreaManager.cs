@@ -346,6 +346,15 @@ namespace EightyOne.Areas
         [RedirectMethod]
         public new bool PointOutOfArea(Vector3 p)
         {
+            //begin mod
+            if (_isCrossingLineProhibited != null)
+            {
+                if (!(bool)_isCrossingLineProhibited.Invoke(null, new object[] { }))
+                {
+                    return false;
+                }
+            }
+            //end mod
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
             if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
             {
@@ -367,6 +376,15 @@ namespace EightyOne.Areas
         [RedirectMethod]
         public bool PointOutOfArea(Vector3 p, float radius)
         {
+            //begin mod
+            if (_isCrossingLineProhibited != null)
+            {
+                if (!(bool)_isCrossingLineProhibited.Invoke(null, new object[] { }))
+                {
+                    return false;
+                }
+            }
+            //end mod
             ItemClass.Availability availability = Singleton<ToolManager>.instance.m_properties.m_mode;
             if ((availability & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
             {

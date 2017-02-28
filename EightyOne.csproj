@@ -41,7 +41,6 @@
     <Reference Include="UnityEngine" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Areas\FakeDisasterManager.cs" />
     <Compile Include="Areas\FakeGameAreaInfoPanel.cs" />
     <Compile Include="Areas\FakeGameAreaManager.cs" />
     <Compile Include="Areas\FakeGameAreaManagerInit.cs" />
