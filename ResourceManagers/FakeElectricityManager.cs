@@ -5,6 +5,7 @@ using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using EightyOne.IgnoreAttributes;
 using UnityEngine;
 using EightyOne.Redirection;
 
@@ -437,6 +438,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPowerLinesEnabled]
         public int TryDumpElectricity(Vector3 pos, int rate, int max)
         {
             int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
@@ -467,6 +469,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPowerLinesEnabled]
         private int TryDumpElectricity(int x, int z, int rate, int max)
         {
             //beging mod
@@ -489,6 +492,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPowerLinesEnabled]
         public int TryFetchElectricity(Vector3 pos, int rate, int max)
         {
             if (max == 0)
@@ -513,6 +517,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        [IgnoreIfRemoveNeedForPowerLinesEnabled]
         public void CheckElectricity(Vector3 pos, out bool electricity)
         {
             int num = Mathf.Clamp((int)(pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
