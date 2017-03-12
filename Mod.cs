@@ -11,6 +11,7 @@ namespace EightyOne
         public const string SURFACE_PAINTER_MOD = "Surface Painter";
         public const string ALL_TILES_START_MOD = "Unlock All Tiles at Start";
         public const string REMOVE_NEED_FOR_POWER_LINES_MOD = "Remove Need For Power Lines";
+        public static string DISABLE_ZONE_CHECK_MOD = "Disable ZoneCheck";
 
         public string Description => "Allows to use all 81 map tiles";
 

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using ColossalFramework;
 using ColossalFramework.Math;
+using EightyOne.IgnoreAttributes;
 using UnityEngine;
 using EightyOne.Redirection;
 
@@ -18,6 +19,7 @@ namespace EightyOne.Zones
             UnityEngine.Debug.LogError("FakeBuilding - Failed to redirect reverse CheckZoning()");
         }
 
+        [IgnoreIfDisableZoneCheckEnabled]
         [RedirectMethod]
         public static bool CheckZoning(ref Building b, ItemClass.Zone zone1, ItemClass.Zone zone2, bool allowCollapsed)
         {

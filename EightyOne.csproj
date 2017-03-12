@@ -50,6 +50,7 @@
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="DataExtensions\AreaManagerDataExtension.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfBuildingThemesEnabledAttribute.cs" />
+    <Compile Include="IgnoreAttributes\IgnoreIfDisableZoneCheckEnabled.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfRemoveNeedForPowerLinesEnabledAttribute.cs" />
     <Compile Include="Redirection\IgnoreIfOtherModEnabledAttribute.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfRemoveNeedForPipesEnabledAttribute.cs" />
