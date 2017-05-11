@@ -1,6 +1,5 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
-using System;
 using System.Reflection;
 using UnityEngine;
 using EightyOne.Redirection;
@@ -10,63 +9,103 @@ namespace EightyOne.Zones
     [TargetType(typeof(BuildingTool))]
     internal class FakeBuildingTool : BuildingTool
     {
-        private static FieldInfo mouseRayValidField;
-        private static FieldInfo mouseAngleField;
-        private static FieldInfo mouseRayField;
-        private static FieldInfo mouseRayLengthField;
-        private static FieldInfo mousePositionField;
-        private static FieldInfo connectionSegmentField;
-        private static FieldInfo productionRateField;
-        private static FieldInfo constructionCostField;
-        private static FieldInfo placementErrorsField;
 
-        private static void Init(BuildingTool b)
+        private bool m_mouseRayValid => (bool)typeof(BuildingTool)
+            .GetField("m_mouseRayValid", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(this);
+
+        private Ray m_mouseRay => (Ray)typeof(BuildingTool)
+            .GetField("m_mouseRay", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(this);
+
+        private float m_mouseRayLength => (float)typeof(BuildingTool)
+            .GetField("m_mouseRayLength", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(this);
+
+        private float m_mouseAngle { 
+            set
+            { 
+                typeof(BuildingTool)
+                .GetField("m_mouseAngle", BindingFlags.NonPublic | BindingFlags.Instance)
+                .SetValue(this, value);
+            }
+            get
+            {
+               return (float)typeof(BuildingTool)
+                    .GetField("m_mouseAngle", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(this);
+            }
+        }
+
+        private Segment3 m_connectionSegment
         {
-            mouseRayValidField = b.GetType().GetField("m_mouseRayValid", BindingFlags.NonPublic | BindingFlags.Instance);
-            mouseAngleField = b.GetType().GetField("m_mouseAngle", BindingFlags.NonPublic | BindingFlags.Instance);
-            mouseRayField = b.GetType().GetField("m_mouseRay", BindingFlags.NonPublic | BindingFlags.Instance);
-            mouseRayLengthField = b.GetType().GetField("m_mouseRayLength", BindingFlags.NonPublic | BindingFlags.Instance);
-            mousePositionField = b.GetType().GetField("m_mousePosition", BindingFlags.NonPublic | BindingFlags.Instance);
-            connectionSegmentField = b.GetType().GetField("m_connectionSegment", BindingFlags.NonPublic | BindingFlags.Instance);
-            productionRateField = b.GetType().GetField("m_productionRate", BindingFlags.NonPublic | BindingFlags.Instance);
-            constructionCostField = b.GetType().GetField("m_constructionCost", BindingFlags.NonPublic | BindingFlags.Instance);
-            placementErrorsField = b.GetType().GetField("m_placementErrors", BindingFlags.NonPublic | BindingFlags.Instance);
+            set
+            {
+                typeof(BuildingTool)
+                    .GetField("m_connectionSegment", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(this, value);
+            }
+        }
+
+        private Vector3 m_mousePosition
+        {
+            set
+            {
+                typeof(BuildingTool).GetField("m_mousePosition", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, value);
+            }
+        }
+
+        private ToolBase.ToolErrors m_placementErrors
+        {
+            set
+            {
+                typeof(BuildingTool).GetField("m_placementErrors", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, value);
+            }
+        }
+
+        private int m_productionRate
+        {
+            set
+            {
+                typeof(BuildingTool).GetField("m_productionRate", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, value);
+            }
+        }
+
+        private int m_constructionCost
+        {
+            set
+            {
+                typeof(BuildingTool).GetField("m_constructionCost", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, value);
+            }
         }
 
         [RedirectReverse(true)]
-        private static float GetElevation(BuildingTool b, BuildingInfo info)
+        private float GetElevation(BuildingInfo info)
         {
-            UnityEngine.Debug.Log($"{b}-{info}");
+            UnityEngine.Debug.Log($"{info}");
             return 0.0f;
         }
 
         [RedirectReverse(true)]
-        private static void GetPrefabInfo(BuildingTool b, out BuildingInfo info, out int relocating)
+        private void GetPrefabInfo(out BuildingInfo info, out int relocating)
         {
             info = null;
             relocating = 0;
-            UnityEngine.Debug.Log($"{b}-{info}-{relocating}");
+            UnityEngine.Debug.Log($"{info}-{relocating}");
         }
 
         [RedirectReverse(true)]
-        private static void FindClosestZone(BuildingTool b, BuildingInfo info, ushort block, Vector3 refPos, ref float minD, ref float min2, ref Vector3 minPos, ref float minAngle)
+        private void FindClosestZone(BuildingInfo info, ushort block, Vector3 refPos, ref float minD, ref float min2, ref Vector3 minPos, ref float minAngle)
         {
-            UnityEngine.Debug.Log($"{b}-{info}-{block}-{refPos}-{minD}-{min2}-{minPos}-{minAngle}");
+            UnityEngine.Debug.Log($"{info}-{block}-{refPos}-{minD}-{min2}-{minPos}-{minAngle}");
         }
-
+        
         [RedirectMethod]
         public override void SimulationStep()
         {
-            //begin mod
-            if (mouseRayField == null)
-            {
-                Init(this);
-            }
-            //end mod
-
             BuildingInfo info;
             int relocating;
-            GetPrefabInfo(this, out info, out relocating);
+            this.GetPrefabInfo(out info, out relocating);
             if (info == null)
                 return;
             ulong[] collidingSegments;
@@ -75,14 +114,14 @@ namespace EightyOne.Zones
             try
             {
                 ToolBase.RaycastOutput output;
-                if ((bool)mouseRayValidField.GetValue(this) && ToolBase.RayCast(new ToolBase.RaycastInput((Ray)mouseRayField.GetValue(this), (float)mouseRayLengthField.GetValue(this)), out output))
+                if (m_mouseRayValid && ToolBase.RayCast(new ToolBase.RaycastInput(this.m_mouseRay, this.m_mouseRayLength), out output))
                 {
                     Vector3 vector3_1 = output.m_hitPos;
-                    float num1 = (float)mouseAngleField.GetValue(this);
+                    float num1 = this.m_mouseAngle;
                     bool flag = (Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.Game) != ItemClass.Availability.None;
                     float waterHeight = 0.0f;
                     Segment3 connectionSegment1 = new Segment3();
-                    float elevation = GetElevation(this, info);
+                    float elevation = this.GetElevation(info);
                     int productionRate1;
                     int constructionCost1;
                     ToolBase.ToolErrors toolErrors1;
@@ -107,15 +146,15 @@ namespace EightyOne.Zones
                             for (int index2 = num6; index2 <= num8; ++index2)
                             {
                                 //begin mod
-                                ushort block = instance.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
+                                ushort nextGridBlock = instance.m_zoneGrid[index1 * FakeZoneManager.GRIDSIZE + index2];
                                 //end mod
                                 int num10 = 0;
-                                while ((int)block != 0)
+                                while ((int)nextGridBlock != 0)
                                 {
-                                    Vector3 vector3_2 = instance.m_blocks.m_buffer[(int)block].m_position;
-                                    if ((double)Mathf.Max(Mathf.Max(num2 - 46f - vector3_2.x, num3 - 46f - vector3_2.z), Mathf.Max((float)((double)vector3_2.x - (double)num4 - 46.0), (float)((double)vector3_2.z - (double)num5 - 46.0))) < 0.0)
-                                        FindClosestZone(this, info, block, output.m_hitPos, ref minD, ref min2, ref vector3_1, ref num1);
-                                    block = instance.m_blocks.m_buffer[(int)block].m_nextGridBlock;
+                                    Vector3 position = instance.m_blocks.m_buffer[(int)nextGridBlock].m_position;
+                                    if ((double)Mathf.Max(Mathf.Max(num2 - 46f - position.x, num3 - 46f - position.z), Mathf.Max((float)((double)position.x - (double)num4 - 46.0), (float)((double)position.z - (double)num5 - 46.0))) < 0.0)
+                                        this.FindClosestZone(info, nextGridBlock, output.m_hitPos, ref minD, ref min2, ref vector3_1, ref num1);
+                                    nextGridBlock = instance.m_blocks.m_buffer[(int)nextGridBlock].m_nextGridBlock;
                                     if (++num10 >= 49152)
                                     {
                                         CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
@@ -209,72 +248,76 @@ namespace EightyOne.Zones
                     }
                     else if (info.m_placementMode == BuildingInfo.PlacementMode.Shoreline || info.m_placementMode == BuildingInfo.PlacementMode.ShorelineOrGround)
                     {
-                        ToolBase.ToolErrors toolErrors2 = ToolBase.ToolErrors.ShoreNotFound;
-                        Vector3 vector3_2;
-                        Vector3 vector3_3;
-                        if (BuildingTool.SnapToCanal(vector3_1, out vector3_2, out vector3_3, 40f, false))
+                        Vector3 pos;
+                        Vector3 dir;
+                        bool isQuay;
+                        bool canal = BuildingTool.SnapToCanal(vector3_1, out pos, out dir, out isQuay, 40f, false);
+                        Vector3 position;
+                        Vector3 direction;
+                        bool shorePos = Singleton<TerrainManager>.instance.GetShorePos(pos, 50f, out position, out direction, out waterHeight);
+                        if (canal)
                         {
-                            vector3_1 = vector3_2;
-                            num1 = Mathf.Atan2(vector3_3.x, -vector3_3.z);
+                            vector3_1 = pos;
+                            num1 = Mathf.Atan2(dir.x, -dir.z);
                             float minY1;
                             float maxY;
                             float buildingY;
                             Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY1, out maxY, out buildingY);
                             float minY2 = minY1 - 20f;
                             float num2 = Mathf.Max(vector3_1.y, buildingY);
-                            float num3 = vector3_1.y;
+                            float y = vector3_1.y;
                             vector3_1.y = num2;
                             toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, BuildingInfo.PlacementMode.Shoreline, relocating, vector3_1, minY2, num2 + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
-                            if ((double)num3 - (double)minY2 > 128.0)
+                            if ((double)y - (double)minY2 > 128.0)
                                 toolErrors1 |= ToolBase.ToolErrors.HeightTooHigh;
                         }
-                        else if (Singleton<TerrainManager>.instance.GetShorePos(vector3_1, 50f, out vector3_2, out vector3_3, out waterHeight))
+                        else if (shorePos)
                         {
-                            vector3_1 = vector3_2;
-                            if (Singleton<TerrainManager>.instance.GetShorePos(vector3_1, 50f, out vector3_2, out vector3_3, out waterHeight))
+                            vector3_1 = position;
+                            if (Singleton<TerrainManager>.instance.GetShorePos(vector3_1, 50f, out position, out direction, out waterHeight))
                             {
-                                vector3_2 += vector3_3.normalized * info.m_placementOffset;
-                                vector3_1 = vector3_2;
-                                num1 = Mathf.Atan2(vector3_3.x, -vector3_3.z);
+                                position += direction.normalized * info.m_placementOffset;
+                                vector3_1 = position;
+                                num1 = Mathf.Atan2(direction.x, -direction.z);
                                 float minY;
                                 float maxY;
                                 float buildingY;
                                 Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
                                 minY = Mathf.Min(waterHeight, minY);
                                 float num2 = Mathf.Max(vector3_1.y, buildingY);
-                                float num3 = vector3_1.y;
+                                float y = vector3_1.y;
                                 vector3_1.y = num2;
                                 toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, BuildingInfo.PlacementMode.Shoreline, relocating, vector3_1, minY, num2 + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
-                                if ((double)num3 - (double)waterHeight > 128.0)
+                                if ((double)y - (double)waterHeight > 128.0)
                                     toolErrors1 |= ToolBase.ToolErrors.HeightTooHigh;
                                 if ((double)num2 <= (double)waterHeight)
-                                    toolErrors1 |= ToolBase.ToolErrors.ShoreNotFound;
-                            }
-                            else if (info.m_placementMode == BuildingInfo.PlacementMode.ShorelineOrGround)
-                            {
-                                Quaternion quaternion = Quaternion.AngleAxis(this.m_angle, Vector3.down);
-                                vector3_1 -= quaternion * info.m_centerOffset;
-                                num1 = this.m_angle * ((float)System.Math.PI / 180f);
-                                float minY;
-                                float maxY;
-                                float buildingY;
-                                Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
-                                vector3_1.y = buildingY;
-                                toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, BuildingInfo.PlacementMode.OnGround, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
-                                if ((toolErrors1 & ToolBase.ToolErrors.CannotBuildOnWater) == ToolBase.ToolErrors.None && (double)maxY - (double)minY > (double)info.m_maxHeightOffset)
-                                    toolErrors1 |= ToolBase.ToolErrors.SlopeTooSteep;
+                                    toolErrors1 = toolErrors1 & ~(ToolBase.ToolErrors.HeightTooHigh | ToolBase.ToolErrors.CannotConnect | ToolBase.ToolErrors.CannotBuildOnWater) | ToolBase.ToolErrors.ShoreNotFound;
                             }
                             else
-                                toolErrors1 = toolErrors2 | info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1);
+                                toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) & ~(ToolBase.ToolErrors.HeightTooHigh | ToolBase.ToolErrors.CannotConnect | ToolBase.ToolErrors.CannotBuildOnWater) | ToolBase.ToolErrors.ShoreNotFound;
+                        }
+                        else if (info.m_placementMode == BuildingInfo.PlacementMode.ShorelineOrGround)
+                        {
+                            Quaternion quaternion = Quaternion.AngleAxis(this.m_angle, Vector3.down);
+                            vector3_1 -= quaternion * info.m_centerOffset;
+                            num1 = this.m_angle * ((float)System.Math.PI / 180f);
+                            float minY;
+                            float maxY;
+                            float buildingY;
+                            Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY, out maxY, out buildingY);
+                            vector3_1.y = buildingY;
+                            toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, BuildingInfo.PlacementMode.OnGround, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                            if ((toolErrors1 & ToolBase.ToolErrors.CannotBuildOnWater) == ToolBase.ToolErrors.None && (double)maxY - (double)minY > (double)info.m_maxHeightOffset)
+                                toolErrors1 |= ToolBase.ToolErrors.SlopeTooSteep;
                         }
                         else
-                            toolErrors1 = toolErrors2 | info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1);
+                            toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) & ~(ToolBase.ToolErrors.HeightTooHigh | ToolBase.ToolErrors.CannotConnect | ToolBase.ToolErrors.CannotBuildOnWater) | ToolBase.ToolErrors.ShoreNotFound;
                     }
                     else if (info.m_placementMode == BuildingInfo.PlacementMode.OnSurface || info.m_placementMode == BuildingInfo.PlacementMode.OnTerrain)
                     {
                         Quaternion quaternion = Quaternion.AngleAxis(this.m_angle, Vector3.down);
                         vector3_1 -= quaternion * info.m_centerOffset;
-                        num1 = this.m_angle * (float)(Math.PI / 180.0);
+                        num1 = this.m_angle * ((float)System.Math.PI / 180f);
                         float minY;
                         float maxY;
                         float buildingY;
@@ -286,7 +329,7 @@ namespace EightyOne.Zones
                     {
                         Quaternion quaternion = Quaternion.AngleAxis(this.m_angle, Vector3.down);
                         vector3_1 -= quaternion * info.m_centerOffset;
-                        num1 = this.m_angle * (float)(Math.PI / 180.0);
+                        num1 = this.m_angle * ((float)System.Math.PI / 180f);
                         float minY;
                         float maxY;
                         float buildingY;
@@ -300,7 +343,7 @@ namespace EightyOne.Zones
                     {
                         Quaternion quaternion = Quaternion.AngleAxis(this.m_angle, Vector3.down);
                         vector3_1 -= quaternion * info.m_centerOffset;
-                        num1 = this.m_angle * (float)(Math.PI / 180.0);
+                        num1 = this.m_angle * ((float)System.Math.PI / 180f);
                         float minY;
                         float maxY;
                         float buildingY;
@@ -318,7 +361,7 @@ namespace EightyOne.Zones
                         {
                             BuildingInfo buildingInfo = info.m_subBuildings[index].m_buildingInfo;
                             Vector3 position = matrix4x4.MultiplyPoint(info.m_subBuildings[index].m_position);
-                            float angle = info.m_subBuildings[index].m_angle * (float)(Math.PI / 180.0) + num1;
+                            float angle = info.m_subBuildings[index].m_angle * ((float)System.Math.PI / 180f) + num1;
                             Segment3 connectionSegment2 = new Segment3();
                             int productionRate2;
                             int constructionCost2;
@@ -330,19 +373,23 @@ namespace EightyOne.Zones
                         toolErrors1 |= ToolBase.ToolErrors.NotEnoughMoney;
                     if (!Singleton<BuildingManager>.instance.CheckLimits())
                         toolErrors1 |= ToolBase.ToolErrors.TooManyObjects;
-                    if ((Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
-                        toolErrors1 = ToolBase.ToolErrors.None;
-                    mousePositionField.SetValue(this, vector3_1);
-                    mouseAngleField.SetValue(this, num1);
-                    connectionSegmentField.SetValue(this, connectionSegment1);
-                    productionRateField.SetValue(this, productionRate1);
-                    constructionCostField.SetValue(this, constructionCost1);
-                    placementErrorsField.SetValue(this, toolErrors1);
+                    if ((Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None && (UnityEngine.Object)this.m_toolController.m_editPrefabInfo != (UnityEngine.Object)null)
+                    {
+                        BuildingInfo editPrefabInfo = this.m_toolController.m_editPrefabInfo as BuildingInfo;
+                        if ((UnityEngine.Object)editPrefabInfo != (UnityEngine.Object)null && (UnityEngine.Object)editPrefabInfo.m_buildingAI != (UnityEngine.Object)null && !(editPrefabInfo.m_buildingAI is IntersectionAI))
+                            toolErrors1 = ToolBase.ToolErrors.None;
+                    }
+                    this.m_mousePosition = vector3_1;
+                    m_mouseAngle = (Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None ? this.m_angle * ((float)System.Math.PI / 180f) : num1;
+                    m_connectionSegment = connectionSegment1;
+                    this.m_productionRate = productionRate1;
+                    this.m_constructionCost = constructionCost1;
+                    this.m_placementErrors = toolErrors1;
                 }
                 else
                 {
-                    placementErrorsField.SetValue(this, ToolBase.ToolErrors.RaycastFailed);
-                    connectionSegmentField.SetValue(this, new Segment3());
+                    this.m_placementErrors = ToolBase.ToolErrors.RaycastFailed;
+                    this.m_connectionSegment = new Segment3();
                 }
             }
             finally
