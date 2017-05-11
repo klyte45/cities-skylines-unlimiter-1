@@ -262,7 +262,9 @@ namespace EightyOne.Zones
                     if (!(index1 >= 4 ? (index1 >= 8 ? (index1 >= 12 ? ((long)space4 & 1L << (index1 - 12 << 4 | index2)) != 0L : ((long)space3 & 1L << (index1 - 8 << 4 | index2)) != 0L) : ((long)space2 & 1L << (index1 - 4 << 4 | index2)) != 0L) : ((long)space1 & 1L << (index1 << 4 | index2)) != 0L))
                     {
                         flag1 = false;
-                        if (index2 < width >> 1)
+                        //begin mod: didn't build without parathenses
+                        if (index2 < (width >> 1))
+                            //end mod
                             flag2 = true;
                         if (index2 >= width + 1 >> 1)
                             flag3 = true;
