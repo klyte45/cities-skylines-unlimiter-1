@@ -9,10 +9,6 @@ namespace EightyOne.Terrain
     [TargetType(typeof(TerrainManager))]
     public class FakeTerrainManager : TerrainManager
     {
-        public static void Init()
-        {
-        }
-
         [RedirectMethod]
         public float GetUnlockableTerrainFlatness()
         {

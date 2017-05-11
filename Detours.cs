@@ -32,7 +32,6 @@ namespace EightyOne
             FakeDistrictManager.Init();
             FakeDistrictTool.Init();
             FakeImmaterialResourceManager.Init();
-            FakeTerrainManager.Init();
             FakeZoneManager.Init();
             FakeZoneTool.Init();
             FakeElectricityManager.Init();
