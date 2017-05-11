@@ -10,7 +10,7 @@ namespace EightyOne.Terrain
     public class FakeTerrainManager : TerrainManager
     {
         [RedirectMethod]
-        public float GetUnlockableTerrainFlatness()
+        public new float GetUnlockableTerrainFlatness()
         {
             float num1 = 0.0f;
             //begin mod
@@ -24,7 +24,7 @@ namespace EightyOne.Terrain
         }
 
         [RedirectMethod]
-        public float GetTileFlatness(int x, int z)
+        public new float GetTileFlatness(int x, int z)
         {
             //begin mod
             return this.m_patches[z * 9 + x].m_flatness;
@@ -33,7 +33,7 @@ namespace EightyOne.Terrain
 
         [RedirectMethod]
         [IgnoreIfSurfacePainterEnabled]
-        public TerrainManager.SurfaceCell GetSurfaceCell(int x, int z)
+        public new TerrainManager.SurfaceCell GetSurfaceCell(int x, int z)
         {
             //begin mod
             int num1 = Mathf.Clamp(x / 480, 0, 8);
