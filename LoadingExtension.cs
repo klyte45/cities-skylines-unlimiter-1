@@ -19,11 +19,7 @@ namespace EightyOne
         public override void OnLevelLoaded(LoadMode mode)
         {
             base.OnLevelLoaded(mode);
-            var updateMode = (SimulationManager.UpdateMode) mode;
-
-
-            if (updateMode != SimulationManager.UpdateMode.NewGameFromMap && updateMode != SimulationManager.UpdateMode.NewGameFromScenario
-                && updateMode != SimulationManager.UpdateMode.LoadGame)
+            if (mode != LoadMode.NewGame && mode != LoadMode.NewGameFromScenario && mode != LoadMode.LoadGame)
             {
                 return;
             }
