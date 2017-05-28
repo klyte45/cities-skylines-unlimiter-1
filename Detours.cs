@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using EightyOne.Areas;
 using EightyOne.RedirectionFramework;
+using EightyOne.RedirectionFramework.Attributes;
 using EightyOne.ResourceManagers;
 using EightyOne.Terrain;
 using EightyOne.Zones;
@@ -50,7 +51,10 @@ namespace EightyOne
                 redirectsOnLoaded = new Dictionary<MethodInfo, RedirectCallsState>();
             }
             var redirects = onCreated ? redirectsOnCreated : redirectsOnLoaded;
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+            var types = Assembly.GetExecutingAssembly().GetTypes().
+                Where(t => t.GetCustomAttributes(typeof(TargetTypeAttribute), false).Length > 0).
+                ToArray();
+            foreach (var type in types)
             {
                 redirects.AddRange(RedirectionUtil.RedirectType(type, onCreated));
             }
