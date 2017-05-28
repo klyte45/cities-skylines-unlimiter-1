@@ -59,6 +59,7 @@ namespace EightyOne.RedirectionFramework
             var customAttributes2 = type.GetCustomAttributes(typeof(IgnoreConditionAttribute), false);
             if (customAttributes2.Any(a => ((IgnoreConditionAttribute)a).IsIgnored(type)))
             {
+                UnityEngine.Debug.Log($"(Not an error) Type detour {type.FullName} won't be deployed.");
                 return new Dictionary<MethodInfo, RedirectCallsState>();
             }
             var targetType = ((TargetTypeAttribute)customAttributes[0]).Type;
@@ -95,7 +96,13 @@ namespace EightyOne.RedirectionFramework
                 }).Where(method =>
                 {
                     var ignoreAttributes = method.GetCustomAttributes(typeof(IgnoreConditionAttribute), false);
-                    return !ignoreAttributes.Any(attribute => ((IgnoreConditionAttribute) attribute).IsIgnored(method));
+                    var isIgnored = ignoreAttributes.Any(attribute => ((IgnoreConditionAttribute) attribute).IsIgnored(method));
+                    if (isIgnored)
+                    {
+                        UnityEngine.Debug.Log(
+                            $"(Not an error) Method detour {type.FullName}#{method.Name} won't be deployed.");
+                    }
+                    return !isIgnored;
                 });
         }
 
