@@ -1,5 +1,5 @@
 ﻿using ColossalFramework;
-using EightyOne.Redirection;
+using EightyOne.RedirectionFramework.Attributes;
 
 namespace EightyOne.Areas
 {

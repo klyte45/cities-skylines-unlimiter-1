@@ -12,6 +12,7 @@ namespace EightyOne
         public const string ALL_TILES_START_MOD = "Unlock All Tiles at Start";
         public const string REMOVE_NEED_FOR_POWER_LINES_MOD = "Remove Need For Power Lines";
         public static string DISABLE_ZONE_CHECK_MOD = "Disable ZoneCheck";
+        public static string PLOP_GROWBALES_MOD = "Plop Growables";
 
         public string Description => "Allows to use all 81 map tiles";
 

@@ -8,7 +8,7 @@ using UnityEngine;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using EightyOne.IgnoreAttributes;
-using EightyOne.Redirection;
+using EightyOne.RedirectionFramework.Attributes;
 
 namespace EightyOne.ResourceManagers
 {

@@ -5,8 +5,8 @@ using System.Reflection;
 using ColossalFramework.IO;
 using ColossalFramework.PlatformServices;
 using ColossalFramework.Threading;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 namespace EightyOne.Areas
 {

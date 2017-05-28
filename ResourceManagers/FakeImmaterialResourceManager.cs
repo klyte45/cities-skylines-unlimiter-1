@@ -3,8 +3,8 @@ using System.Reflection;
 using ColossalFramework;
 using System.Threading;
 using ColossalFramework.Math;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 //TODO(earalov): review this class
 namespace EightyOne.ResourceManagers

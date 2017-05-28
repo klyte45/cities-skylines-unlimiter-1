@@ -1,8 +1,8 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using System.Reflection;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 //TODO(earalov): review this class
 namespace EightyOne.ResourceManagers

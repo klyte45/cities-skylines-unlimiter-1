@@ -6,8 +6,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using EightyOne.IgnoreAttributes;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 //TODO(earalov): review this class
 namespace EightyOne.ResourceManagers

@@ -1,8 +1,8 @@
 ﻿using ColossalFramework;
 using ColossalFramework.Math;
 using System;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 namespace EightyOne.Zones
 {

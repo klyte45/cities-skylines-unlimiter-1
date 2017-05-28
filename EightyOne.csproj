@@ -51,19 +51,27 @@
     <Compile Include="DataExtensions\AreaManagerDataExtension.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfBuildingThemesEnabledAttribute.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfDisableZoneCheckEnabled.cs" />
+    <Compile Include="IgnoreAttributes\IgnoreIfPlopGrowablesEnabledAttribute.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfRemoveNeedForPowerLinesEnabledAttribute.cs" />
-    <Compile Include="Redirection\IgnoreIfOtherModEnabledAttribute.cs" />
+    <Compile Include="IgnoreAttributes\IgnoreIfOtherModEnabledAttribute.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfRemoveNeedForPipesEnabledAttribute.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfSurfacePainterEnabledAttribute.cs" />
-    <Compile Include="Redirection\RedirectMethodAttribute.cs" />
-    <Compile Include="Redirection\RedirectReverseAttribute.cs" />
-    <Compile Include="Redirection\TargetTypeAttribute.cs" />
     <Compile Include="Detours.cs" />
     <Compile Include="LoadingExtension.cs" />
-    <Compile Include="Redirection\RedirectionUtil.cs" />
-    <Compile Include="Redirection\Tuple.cs" />
     <Compile Include="DataExtensions\DistrictManagerDataExtension.cs" />
     <Compile Include="DataExtensions\ElectricityManagerDataExtension.cs" />
+    <Compile Include="RedirectionFramework\AssemblyRedirector.cs" />
+    <Compile Include="RedirectionFramework\Attributes\IgnoreConditionAttribute.cs" />
+    <Compile Include="RedirectionFramework\Attributes\IgnoreConditions\DisableAttribute.cs" />
+    <Compile Include="RedirectionFramework\Attributes\RedirectAttribute.cs" />
+    <Compile Include="RedirectionFramework\Attributes\RedirectMethodAttribute.cs" />
+    <Compile Include="RedirectionFramework\Attributes\RedirectReverseAttribute.cs" />
+    <Compile Include="RedirectionFramework\Attributes\TargetTypeAttribute.cs" />
+    <Compile Include="RedirectionFramework\Extensions\TypeExtension.cs" />
+    <Compile Include="RedirectionFramework\RedirectionHelper.cs" />
+    <Compile Include="RedirectionFramework\RedirectionUtil.cs" />
+    <Compile Include="RedirectionFramework\Redirector.cs" />
+    <Compile Include="RedirectionFramework\Tuple.cs" />
     <Compile Include="ResourceManagers\FakeDistrictTool.cs" />
     <Compile Include="ResourceManagers\FakeElectricityManager.cs" />
     <Compile Include="ResourceManagers\FakeDistrictManager.cs" />
@@ -80,7 +88,6 @@
     <Compile Include="Zones\FakeZoneManager.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Redirection\RedirectionHelper.cs" />
     <Compile Include="Zones\FakeZoneTool.cs" />
   </ItemGroup>
   <ItemGroup />

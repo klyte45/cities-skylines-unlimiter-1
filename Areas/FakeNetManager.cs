@@ -1,6 +1,6 @@
 ﻿using ColossalFramework;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 namespace EightyOne.Areas
 {

@@ -4,8 +4,8 @@ using System.Reflection;
 using System.Threading;
 using ColossalFramework.UI;
 using EightyOne.Areas;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 namespace EightyOne.ResourceManagers
 {

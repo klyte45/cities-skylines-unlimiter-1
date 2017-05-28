@@ -1,4 +1,4 @@
-﻿namespace EightyOne.Redirection
+﻿namespace EightyOne.RedirectionFramework
 {
     public class Tuple<T1, T2>
     {

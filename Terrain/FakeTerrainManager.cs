@@ -1,7 +1,7 @@
 ﻿using EightyOne.Areas;
 using EightyOne.IgnoreAttributes;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
-using EightyOne.Redirection;
 
 namespace EightyOne.Terrain
 {

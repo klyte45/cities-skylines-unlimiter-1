@@ -90,10 +90,16 @@ namespace EightyOne
             return newObj;
         }
 
+        public static bool IsModActive(ulong modId)
+        {
+            var plugins = PluginManager.instance.GetPluginsInfo();
+            return plugins.Any(p => p != null && p.isEnabled && p.publishedFileID.AsUInt64 == modId);
+        }
+
         public static bool IsModActive(string modName)
         {
             var plugins = PluginManager.instance.GetPluginsInfo();
-            return (from plugin in plugins.Where(p => p.isEnabled)
+            return (from plugin in plugins.Where(p => p != null && p.isEnabled)
                     select plugin.GetInstances<IUserMod>() into instances
                     where instances.Any()
                     select instances[0].Name into name

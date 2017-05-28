@@ -1,14 +1,7 @@
-﻿// Decompiled with JetBrains decompiler
-// Type: EightyOne.Areas.FakeGameAreaTool
-// Assembly: EightyOne, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: C1C5025C-90CC-4DA3-8508-29E1E863A7F2
-// Assembly location: D:\Games\Steam\steamapps\workshop\content\_255710\422554572\EightyOne.dll
-// Compiler-generated code is shown
-
-using ColossalFramework;
+﻿using ColossalFramework;
 using ColossalFramework.UI;
 using System.Reflection;
-using EightyOne.Redirection;
+using EightyOne.RedirectionFramework.Attributes;
 using UnityEngine;
 
 namespace EightyOne.Areas

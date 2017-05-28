@@ -1,10 +1,8 @@
-﻿using EightyOne.Redirection;
-
-namespace EightyOne.IgnoreAttributes
+﻿namespace EightyOne.IgnoreAttributes
 {
     public class IgnoreIfSurfacePainterEnabledAttribute : IgnoreIfOtherModEnabledAttribute
     {
-        public IgnoreIfSurfacePainterEnabledAttribute() : base(Mod.SURFACE_PAINTER_MOD)
+        public IgnoreIfSurfacePainterEnabledAttribute() : base(689937287L, Mod.SURFACE_PAINTER_MOD)
         {
         }
     }

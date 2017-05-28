@@ -1,10 +1,8 @@
-﻿using EightyOne.Redirection;
-
-namespace EightyOne.IgnoreAttributes
+﻿namespace EightyOne.IgnoreAttributes
 {
     public class IgnoreIfBuildingThemesEnabledAttribute : IgnoreIfOtherModEnabledAttribute
     {
-        public IgnoreIfBuildingThemesEnabledAttribute() : base(Mod.BUILDING_THEMES_MOD)
+        public IgnoreIfBuildingThemesEnabledAttribute() : base(466158459L, Mod.BUILDING_THEMES_MOD)
         {
         }
     }
