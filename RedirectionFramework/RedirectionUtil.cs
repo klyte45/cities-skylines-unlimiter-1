@@ -56,6 +56,11 @@ namespace EightyOne.RedirectionFramework
             {
                 throw new Exception($"No redirects specified for {type.FullName}!");
             }
+            var customAttributes2 = type.GetCustomAttributes(typeof(IgnoreConditionAttribute), false);
+            if (customAttributes2.Any(a => ((IgnoreConditionAttribute)a).IsIgnored(type)))
+            {
+                return new Dictionary<MethodInfo, RedirectCallsState>();
+            }
             var targetType = ((TargetTypeAttribute)customAttributes[0]).Type;
             RedirectMethods(type, targetType, redirects, onCreated);
             RedirectReverse(type, targetType, redirects, onCreated);

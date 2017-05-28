@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using EightyOne.RedirectionFramework.Attributes;
 
 namespace EightyOne.RedirectionFramework.Extensions
 {
@@ -14,11 +12,6 @@ namespace EightyOne.RedirectionFramework.Extensions
         public static void Redirect(this Type type)
         {
             if (IsRedirected(type))
-            {
-                return;
-            }
-            var customAttributes = type.GetCustomAttributes(typeof(IgnoreConditionAttribute), false);
-            if (customAttributes.Any(a => ((IgnoreConditionAttribute)a).IsIgnored(type)))
             {
                 return;
             }
