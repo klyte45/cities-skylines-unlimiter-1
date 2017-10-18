@@ -470,7 +470,6 @@ namespace EightyOne.Zones
                         break;
                     case ItemClass.Zone.Office:
                         service = ItemClass.Service.Office;
-                        subService = ItemClass.SubService.None;
                         break;
                     default:
                         return;
@@ -547,6 +546,10 @@ namespace EightyOne.Zones
                                 ZoneBlock.GetIndustryType(vector3, out subService, out level);
                             else if (zone == ItemClass.Zone.CommercialLow || zone == ItemClass.Zone.CommercialHigh)
                                 ZoneBlock.GetCommercialType(vector3, zone, width, num13, out subService, out level);
+                            else if (zone == ItemClass.Zone.ResidentialLow || zone == ItemClass.Zone.ResidentialHigh)
+                                ZoneBlock.GetResidentialType(vector3, zone, width, num13, out subService, out level);
+                            else if (zone == ItemClass.Zone.Office)
+                                ZoneBlock.GetOfficeType(vector3, zone, width, num13, out subService, out level);
                             byte district2 = instance2.GetDistrict(vector3);
                             ushort style = instance2.m_districts.m_buffer[(int)district2].m_Style;
                             if (Singleton<BuildingManager>.instance.m_BuildingWrapper != null)
@@ -554,10 +557,10 @@ namespace EightyOne.Zones
                             info = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, width, num13, zoningMode3, (int)style);
                             if (info == null)
                                 break;
-                            goto label_165;
+                            goto label_169;
                     }
                 }
-            label_165:
+            label_169:
                 if (info == null || (double) Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double) vector3.y || Singleton<DisasterManager>.instance.IsEvacuating(vector3))
                 {
                     return;

@@ -1,4 +1,5 @@
-﻿using ColossalFramework;
+﻿using System.Collections.Generic;
+using ColossalFramework;
 using ColossalFramework.Math;
 using System.Reflection;
 using EightyOne.RedirectionFramework.Attributes;
@@ -20,6 +21,10 @@ namespace EightyOne.Zones
 
         private float m_mouseRayLength => (float)typeof(BuildingTool)
             .GetField("m_mouseRayLength", BindingFlags.NonPublic | BindingFlags.Instance)
+            .GetValue(this);
+
+        private HashSet<ushort> m_tempZoneBuffer => (HashSet<ushort>)typeof(BuildingTool)
+            .GetField("m_tempZoneBuffer", BindingFlags.NonPublic | BindingFlags.Instance)
             .GetValue(this);
 
         private float m_mouseAngle { 
@@ -99,7 +104,14 @@ namespace EightyOne.Zones
         {
             UnityEngine.Debug.Log($"{info}-{block}-{refPos}-{minD}-{min2}-{minPos}-{minAngle}");
         }
-        
+
+        [RedirectReverse(true)]
+        private void GetAllZoneBlocks(ushort buildingID, HashSet<ushort> buffer)
+        {
+            UnityEngine.Debug.Log($"{buildingID}+{buffer}");
+        }
+
+
         [RedirectMethod]
         public override void SimulationStep()
         {
@@ -141,6 +153,9 @@ namespace EightyOne.Zones
                         int num8 = Mathf.Min((int)(((double)num4 + 46.0) / 64.0 + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
                         int num9 = Mathf.Min((int)(((double)num5 + 46.0) / 64.0 + FakeZoneManager.HALFGRID), FakeZoneManager.GRIDSIZE - 1);
                         //end mod
+                        this.m_tempZoneBuffer.Clear();
+                        if (relocating != 0)
+                            this.GetAllZoneBlocks((ushort)relocating, this.m_tempZoneBuffer);
                         for (int index1 = num7; index1 <= num9; ++index1)
                         {
                             for (int index2 = num6; index2 <= num8; ++index2)
@@ -151,9 +166,12 @@ namespace EightyOne.Zones
                                 int num10 = 0;
                                 while ((int)nextGridBlock != 0)
                                 {
-                                    Vector3 position = instance.m_blocks.m_buffer[(int)nextGridBlock].m_position;
-                                    if ((double)Mathf.Max(Mathf.Max(num2 - 46f - position.x, num3 - 46f - position.z), Mathf.Max((float)((double)position.x - (double)num4 - 46.0), (float)((double)position.z - (double)num5 - 46.0))) < 0.0)
-                                        this.FindClosestZone(info, nextGridBlock, output.m_hitPos, ref minD, ref min2, ref vector3_1, ref num1);
+                                    if (!this.m_tempZoneBuffer.Contains(nextGridBlock))
+                                    {
+                                            Vector3 position = instance.m_blocks.m_buffer[(int)nextGridBlock].m_position;
+                                        if ((double)Mathf.Max(Mathf.Max(num2 - 46f - position.x, num3 - 46f - position.z), Mathf.Max((float)((double)position.x - (double)num4 - 46.0), (float)((double)position.z - (double)num5 - 46.0))) < 0.0)
+                                            this.FindClosestZone(info, nextGridBlock, output.m_hitPos, ref minD, ref min2, ref vector3_1, ref num1);
+                                    }
                                     nextGridBlock = instance.m_blocks.m_buffer[(int)nextGridBlock].m_nextGridBlock;
                                     if (++num10 >= 49152)
                                     {
@@ -259,10 +277,11 @@ namespace EightyOne.Zones
                         {
                             vector3_1 = pos;
                             num1 = Mathf.Atan2(dir.x, -dir.z);
+                            float buildWaterHeight = Mathf.Max(0.0f, pos.y);
                             float minY1;
                             float maxY;
                             float buildingY;
-                            Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY1, out maxY, out buildingY);
+                            Building.SampleBuildingHeight(vector3_1, num1, info.m_cellWidth, info.m_cellLength, info, out minY1, out maxY, out buildingY, ref buildWaterHeight);
                             float minY2 = minY1 - 20f;
                             float num2 = Mathf.Max(vector3_1.y, buildingY);
                             float y = vector3_1.y;
