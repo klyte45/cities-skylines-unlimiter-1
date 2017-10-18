@@ -362,31 +362,40 @@ namespace EightyOne.ResourceManagers
                         {
                             int count1 = normals2.Count;
                             int count2 = normals1.Count;
-                            using (UIFontRenderer uiFontRenderer = this.m_properties.m_areaNameFont.ObtainRenderer())
+                            using (UIFontRenderer renderer = this.m_properties.m_areaNameFont.ObtainRenderer())
                             {
-                                UIDynamicFont.DynamicFontRenderer dynamicFontRenderer = uiFontRenderer as UIDynamicFont.DynamicFontRenderer;
+                                UIDynamicFont.DynamicFontRenderer dynamicFontRenderer = renderer as UIDynamicFont.DynamicFontRenderer;
                                 if (dynamicFontRenderer != null)
                                 {
                                     dynamicFontRenderer.spriteAtlas = this.m_properties.m_areaIconAtlas;
                                     dynamicFontRenderer.spriteBuffer = uiRenderData;
                                 }
-                                uiFontRenderer.defaultColor = new Color32(byte.MaxValue, byte.MaxValue, byte.MaxValue, (byte)64);
-                                uiFontRenderer.textScale = 2f;
-                                uiFontRenderer.pixelRatio = 1f;
-                                uiFontRenderer.processMarkup = true;
-                                uiFontRenderer.multiLine = true;
-                                uiFontRenderer.wordWrap = true;
-                                uiFontRenderer.textAlign = UIHorizontalAlignment.Center;
-                                uiFontRenderer.maxSize = new Vector2(450f, 900f);
-                                uiFontRenderer.shadow = false;
-                                uiFontRenderer.shadowColor = (Color32)Color.black;
-                                uiFontRenderer.shadowOffset = Vector2.one;
-                                Vector2 vector2 = uiFontRenderer.MeasureString(text);
+                                float x1 = 450f;
+                                renderer.defaultColor = new Color32(byte.MaxValue, byte.MaxValue, byte.MaxValue, (byte)64);
+                                renderer.textScale = 2f;
+                                renderer.pixelRatio = 1f;
+                                renderer.processMarkup = true;
+                                renderer.multiLine = true;
+                                renderer.wordWrap = true;
+                                renderer.textAlign = UIHorizontalAlignment.Center;
+                                renderer.maxSize = new Vector2(x1, 900f);
+                                renderer.shadow = false;
+                                renderer.shadowColor = (Color32)Color.black;
+                                renderer.shadowOffset = Vector2.one;
+                                Vector2 vector2 = renderer.MeasureString(text);
+                                float x2 = vector2.x;
+                                if ((double)vector2.x > (double)x1)
+                                {
+                                    x2 = x1 + (float)(((double)vector2.x - (double)x1) * 0.5);
+                                    x1 = vector2.x;
+                                    renderer.maxSize = new Vector2(x1, 900f);
+                                    vector2 = renderer.MeasureString(text);
+                                }
                                 this.m_districts.m_buffer[district].m_nameSize = vector2;
-                                vertices2.Add(new Vector3(-vector2.x, -vector2.y, 1f));
-                                vertices2.Add(new Vector3(-vector2.x, vector2.y, 1f));
-                                vertices2.Add(new Vector3(vector2.x, vector2.y, 1f));
-                                vertices2.Add(new Vector3(vector2.x, -vector2.y, 1f));
+                                vertices2.Add(new Vector3(-x2, -vector2.y, 1f));
+                                vertices2.Add(new Vector3(-x2, vector2.y, 1f));
+                                vertices2.Add(new Vector3(x2, vector2.y, 1f));
+                                vertices2.Add(new Vector3(x2, -vector2.y, 1f));
                                 colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
                                 colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
                                 colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
@@ -401,8 +410,8 @@ namespace EightyOne.ResourceManagers
                                 triangles2.Add(vertices2.Count - 1);
                                 triangles2.Add(vertices2.Count - 3);
                                 triangles2.Add(vertices2.Count - 2);
-                                uiFontRenderer.vectorOffset = new Vector3(-225f, vector2.y * 0.5f, 0.0f);
-                                uiFontRenderer.Render(text, destination);
+                                renderer.vectorOffset = new Vector3(x1 * -0.5f, vector2.y * 0.5f, 0.0f);
+                                renderer.Render(text, destination);
                             }
                             int count3 = vertices2.Count;
                             int count4 = normals2.Count;
