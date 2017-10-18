@@ -264,10 +264,8 @@ namespace EightyOne.Areas
                 return true;
             }
             //begin mod
-            int x = Mathf.FloorToInt((float)((double)position.x / 1920.0 + HALFGRID));
-            int z = Mathf.FloorToInt((float)((double)position.z / 1920.0 + HALFGRID));
+            if (this.GetArea(Mathf.FloorToInt((float)((double)position.x / 1920.0 + HALFGRID)), Mathf.FloorToInt((float)((double)position.z / 1920.0 + HALFGRID))) > 0)
             //end mod
-            if (this.GetArea(x, z) > 0)
                 return true;
             Rect rect1 = new Rect();
             //begin mod
@@ -277,24 +275,56 @@ namespace EightyOne.Areas
             rect1.yMax = 1920 * HALFGRID;
             //end mod
             float num3 = 1000000f;
-            for (int index1 = -1; index1 <= 1; ++index1)
+            //begin mod
+            if (m_areaGrid.Length == 25)
             {
-                for (int index2 = -1; index2 <= 1; ++index2)
+                //end mod
+                //the following is original code
+                for (int index1 = 0; index1 < 5; ++index1)
                 {
-                    if (this.GetArea(x + index2, z + index1) > 0)
+                    for (int index2 = 0; index2 < 5; ++index2)
                     {
-                        Rect rect2 = new Rect();
-                        //begin mod
-                        rect2.xMin = (float)(((double)(x + index2) - HALFGRID) * 1920.0);
-                        rect2.yMin = (float)(((double)(z + index1) - HALFGRID) * 1920.0);
-                        //end mod
-                        rect2.xMax = rect2.xMin + 1920f;
-                        rect2.yMax = rect2.yMin + 1920f;
-                        float num1 = Mathf.Max(Mathf.Max(position.x - rect2.xMax, rect2.xMin - position.x), Mathf.Max(position.z - rect2.yMax, rect2.yMin - position.z));
-                        if ((double)num1 < (double)num3)
+                        if (this.m_areaGrid[index1 * 5 + index2] > 0)
                         {
-                            rect1 = rect2;
-                            num3 = num1;
+                            Rect rect2 = new Rect();
+                            rect2.xMin = (float)(((double)index2 - 2.5) * 1920.0);
+                            rect2.yMin = (float)(((double)index1 - 2.5) * 1920.0);
+                            rect2.xMax = rect2.xMin + 1920f;
+                            rect2.yMax = rect2.yMin + 1920f;
+                            float num1 = Mathf.Max(Mathf.Max(position.x - rect2.xMax, rect2.xMin - position.x), Mathf.Max(position.z - rect2.yMax, rect2.yMin - position.z));
+                            if ((double)num1 < (double)num3)
+                            {
+                                rect1 = rect2;
+                                num3 = num1;
+                            }
+                        }
+                    }
+                }
+            //begin mod
+            //the following is the modified version of original above
+            }
+            else
+            {
+                for (int index1 = 0; index1 < GRID; ++index1)
+                {
+                    for (int index2 = 0; index2 < GRID; ++index2)
+                    {
+                        if (this.m_areaGrid[index1 * GRID + index2] > 0)
+                        {
+                            //end mod
+                            Rect rect2 = new Rect();
+                            //begin mod
+                            rect2.xMin = (float)(((double)index2 - HALFGRID) * 1920.0);
+                            rect2.yMin = (float)(((double)index1 - HALFGRID) * 1920.0);
+                            //end mod
+                            rect2.xMax = rect2.xMin + 1920f;
+                            rect2.yMax = rect2.yMin + 1920f;
+                            float num1 = Mathf.Max(Mathf.Max(position.x - rect2.xMax, rect2.xMin - position.x), Mathf.Max(position.z - rect2.yMax, rect2.yMin - position.z));
+                            if ((double)num1 < (double)num3)
+                            {
+                                rect1 = rect2;
+                                num3 = num1;
+                            }
                         }
                     }
                 }
