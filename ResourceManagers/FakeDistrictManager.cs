@@ -323,9 +323,9 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectReverse(true)]
-        private static void Exchange(DistrictManager manager, ref byte alpha1, ref byte alpha2, ref byte district1, ref byte district2)
+        private static void Exchange(ref byte alpha1, ref byte alpha2, ref byte district1, ref byte district2)
         {
-            UnityEngine.Debug.Log($"{manager}-{alpha1}-{alpha2}-{district1}-{district2}");
+            UnityEngine.Debug.Log($"{alpha1}-{alpha2}-{district1}-{district2}");
         }
 
         [RedirectReverse(true)]
@@ -837,7 +837,9 @@ namespace EightyOne.ResourceManagers
         [RedirectMethod]
         public void NamesModified()
         {
-            this.NamesModified(this.m_districtGrid);
+            //begin mod
+            this.NamesModified(districtGrid);
+            //end mod
             for (int index = 0; index < 128; ++index)
             {
                 //begin mod
@@ -859,7 +861,9 @@ namespace EightyOne.ResourceManagers
         [RedirectMethod]
         public void ParkNamesModified()
         {
-            this.NamesModified(this.m_parkGrid);
+            //begin mod
+            this.NamesModified(parkGrid);
+            //end mod
             for (int index = 0; index < 128; ++index)
             {
                 //begin mod
@@ -1195,11 +1199,11 @@ namespace EightyOne.ResourceManagers
         public void ModifyCell(int x, int z, DistrictManager.Cell cell)
         {
             if ((int)cell.m_alpha2 > (int)cell.m_alpha1)
-                Exchange(this, ref cell.m_alpha1, ref cell.m_alpha2, ref cell.m_district1, ref cell.m_district2);
+                FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha2, ref cell.m_district1, ref cell.m_district2);
             if ((int)cell.m_alpha3 > (int)cell.m_alpha1)
-                Exchange(this, ref cell.m_alpha1, ref cell.m_alpha3, ref cell.m_district1, ref cell.m_district3);
+                FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha3, ref cell.m_district1, ref cell.m_district3);
             if ((int)cell.m_alpha4 > (int)cell.m_alpha1)
-                Exchange(this, ref cell.m_alpha1, ref cell.m_alpha4, ref cell.m_district1, ref cell.m_district4);
+                FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha4, ref cell.m_district1, ref cell.m_district4);
             //begin mod
             int index = z * GRID + x;
             DistrictManager.Cell cell1 = districtGrid[index];
