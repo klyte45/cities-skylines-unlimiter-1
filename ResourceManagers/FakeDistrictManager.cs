@@ -129,6 +129,7 @@ namespace EightyOne.ResourceManagers
         public static int GRID = 900;
         public static int HALFGRID = 450;
         public static DistrictManager.Cell[] districtGrid;
+        public static DistrictManager.Cell[] parkGrid;
         private static Color32[] colorBuffer;
         private static int[] distanceBuffer;
         private static int[] indexBuffer;

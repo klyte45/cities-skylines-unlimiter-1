@@ -2,9 +2,9 @@
 using ColossalFramework.Math;
 using System.Reflection;
 using EightyOne.RedirectionFramework.Attributes;
+using EightyOne.Terrain;
 using UnityEngine;
 
-//TODO(earalov): review this class
 namespace EightyOne.ResourceManagers
 {
     [TargetType(typeof(DistrictTool))]
@@ -20,339 +20,330 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectReverse(true)]
-        private static int GetAlpha(DistrictTool tool, ref DistrictManager.Cell cell, byte district)
+        private static int GetAlpha(ref DistrictManager.Cell cell, byte district)
         {
-            UnityEngine.Debug.Log($"{tool}-{cell}-{district}");
+            UnityEngine.Debug.Log($"{cell}-{district}");
             return 0;
         }
 
         [RedirectReverse(true)]
-        private static void Normalize(DistrictTool tool, ref DistrictManager.Cell cell, int ignoreIndex)
+        private static void Normalize(ref DistrictManager.Cell cell, int ignoreIndex)
         {
-            UnityEngine.Debug.Log($"{tool}-{cell}-{ignoreIndex}");
+            UnityEngine.Debug.Log($"{cell}-{ignoreIndex}");
         }
 
         [RedirectMethod]
-        private void ApplyBrush(byte district)
+        public static void ApplyBrush(DistrictTool.Layer layer, byte district, float brushRadius, Vector3 startPosition, Vector3 endPosition)
         {
             GameAreaManager instance = Singleton<GameAreaManager>.instance;
             //begin mod
-            DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
+            DistrictManager.Cell[] cellArray = layer != DistrictTool.Layer.Districts ? FakeDistrictManager.parkGrid : FakeDistrictManager.districtGrid;
             //end mod
-            float num = 19.2f;
-            float num2 = this.m_brushSize * 0.35f + num;
-            int num3 = FakeDistrictManager.GRID;
-
-            Vector3 vector = (Vector3)m_lastPaintPosition.GetValue(this);
-            Vector3 mousePosition = (Vector3)m_mousePosition.GetValue(this);
-            if (vector.x < -50000f)
+            float num1 = 19.2f;
+            //begin mod
+            int num2 = FakeDistrictManager.GRID;
+            //end mod
+            if ((double)startPosition.x < -50000.0)
+                startPosition = endPosition;
+            startPosition.y = 0.0f;
+            endPosition.y = 0.0f;
+            Vector3 vector3_1 = Vector3.Min(startPosition, endPosition);
+            Vector3 vector3_2 = Vector3.Max(startPosition, endPosition);
+            int num3 = Mathf.Max((int)(((double)vector3_1.x - (double)brushRadius) / (double)num1 + (double)num2 * 0.5), 0);
+            int num4 = Mathf.Max((int)(((double)vector3_1.z - (double)brushRadius) / (double)num1 + (double)num2 * 0.5), 0);
+            int num5 = Mathf.Min((int)(((double)vector3_2.x + (double)brushRadius) / (double)num1 + (double)num2 * 0.5), num2 - 1);
+            int num6 = Mathf.Min((int)(((double)vector3_2.z + (double)brushRadius) / (double)num1 + (double)num2 * 0.5), num2 - 1);
+            int num7 = num2;
+            int num8 = -1;
+            int num9 = num2;
+            int num10 = -1;
+            for (int index1 = num4; index1 <= num6; ++index1)
             {
-                vector = mousePosition;
-            }
-            vector.y = 0f;
-            mousePosition.y = 0f;
-            Vector3 vector2 = Vector3.Min(vector, mousePosition);
-            Vector3 vector3 = Vector3.Max(vector, mousePosition);
-            int num4 = Mathf.Max((int)((vector2.x - num2) / num + (float)num3 * 0.5f), 0);
-            int num5 = Mathf.Max((int)((vector2.z - num2) / num + (float)num3 * 0.5f), 0);
-            int num6 = Mathf.Min((int)((vector3.x + num2) / num + (float)num3 * 0.5f), num3 - 1);
-            int num7 = Mathf.Min((int)((vector3.z + num2) / num + (float)num3 * 0.5f), num3 - 1);
-            int num8 = num3;
-            int num9 = -1;
-            int num10 = num3;
-            int num11 = -1;
-            for (int i = num5; i <= num7; i++)
-            {
-                for (int j = num4; j <= num6; j++)
+                for (int index2 = num3; index2 <= num5; ++index2)
                 {
-                    Vector3 vector4 = new Vector3(((float)j - (float)num3 * 0.5f + 0.5f) * num, 0f, ((float)i - (float)num3 * 0.5f + 0.5f) * num);
-                    Vector3 a = vector4;
-                    if (instance.ClampPoint(ref a))
+                    Vector3 vector3_3 = new Vector3((float)((double)index2 - (double)num2 * 0.5 + 0.5) * num1, 0.0f, (float)((double)index1 - (double)num2 * 0.5 + 0.5) * num1);
+                    Vector3 position = vector3_3;
+                    if (instance.ClampPoint(ref position))
                     {
-                        float a2 = Mathf.Sqrt(Segment3.DistanceSqr(vector, mousePosition, vector4)) - num2 + num * 2f;
-                        float num12 = Vector3.Distance(a, vector4);
-                        float num13 = Mathf.Max(a2, num12) - num * 2f;
-                        float num14 = Mathf.Clamp01(-num13 / (num * 2f));
-                        if (num14 != 0f)
+                        float a = (float)((double)Mathf.Sqrt(Segment3.DistanceSqr(startPosition, endPosition, vector3_3)) - (double)brushRadius + (double)num1 * 2.0);
+                        float b = Vector3.Distance(position, vector3_3);
+                        float num11 = Mathf.Clamp01((float)(-(double)(Mathf.Max(a, b) - num1 * 2f) / ((double)num1 * 2.0)));
+                        if ((double)num11 != 0.0)
                         {
-                            int min = Mathf.Clamp((int)(256f * num14), 0, 255); //TODO(earalov): should that 256f be replaced with HALFGRID?
-                            bool flag;
-                            if (num12 > 1f && district != 0)
+                            int min = Mathf.Clamp((int)(256.0 * (double)num11), 0, (int)byte.MaxValue);
+                            if ((double)b <= 1.0 || (int)district == 0 ? SetDistrictAlpha(index2, index1, layer, district, min, (int)byte.MaxValue) : ForceDistrictAlpha(index2, index1, layer, district, min, (int)byte.MaxValue))
                             {
-                                flag = ForceDistrictAlpha(j, i, district, min, 255);
-                            }
-                            else
-                            {
-                                flag = SetDistrictAlpha(j, i, district, min, 255);
-                            }
-                            if (flag)
-                            {
-                                num8 = Mathf.Min(num8, j);
-                                num9 = Mathf.Max(num9, j);
-                                num10 = Mathf.Min(num10, i);
-                                num11 = Mathf.Max(num11, i);
+                                num7 = Mathf.Min(num7, index2);
+                                num8 = Mathf.Max(num8, index2);
+                                num9 = Mathf.Min(num9, index1);
+                                num10 = Mathf.Max(num10, index1);
                             }
                         }
                     }
                 }
             }
-            int num15 = num8;
-            int num16 = num9;
-            int num17 = num10;
-            int num18 = num11;
-            int num19 = 0;
-            bool flag2;
+            int num12 = num7;
+            int num13 = num8;
+            int num14 = num9;
+            int num15 = num10;
+            int num16 = 0;
+            bool flag1;
             do
             {
-                num4 = Mathf.Max(num8 - 1, 0);
-                num6 = Mathf.Min(num9 + 1, num3 - 1);
-                num5 = Mathf.Max(num10 - 1, 0);
-                num7 = Mathf.Min(num11 + 1, num3 - 1);
-                num8 = num3;
-                num9 = -1;
-                num10 = num3;
-                num11 = -1;
-                flag2 = false;
-                for (int k = num5; k <= num7; k++)
+                int num11 = Mathf.Max(num7 - 1, 0);
+                int num17 = Mathf.Min(num8 + 1, num2 - 1);
+                int num18 = Mathf.Max(num9 - 1, 0);
+                int num19 = Mathf.Min(num10 + 1, num2 - 1);
+                num7 = num2;
+                num8 = -1;
+                num9 = num2;
+                num10 = -1;
+                flag1 = false;
+                for (int index1 = num18; index1 <= num19; ++index1)
                 {
-                    for (int l = num4; l <= num6; l++)
+                    for (int index2 = num11; index2 <= num17; ++index2)
                     {
-                        DistrictManager.Cell cell = districtGrid[k * num3 + l];
+                        DistrictManager.Cell cell = cellArray[index1 * num2 + index2];
+                        bool flag2 = false;
                         bool flag3 = false;
-                        bool flag4 = false;
-                        if (cell.m_alpha1 != 0)
+                        if ((int)cell.m_alpha1 != 0)
                         {
-                            bool flag5 = cell.m_district1 == district;
-                            int num20;
-                            int num21;
-                            CheckNeighbourCells(l, k, cell.m_district1, out num20, out num21);
-                            if (!flag5 && Mathf.Min((int)(cell.m_alpha1 + 120), 255) > num21)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district1, 0, Mathf.Max(0, num21 - 120)));
-                            }
-                            else if (flag5 && Mathf.Max((int)(cell.m_alpha1 - 120), 0) < num20)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district1, Mathf.Min(255, num20 + 120), 255));
-                            }
-                            if (flag5)
-                            {
-                                flag3 = true;
-                            }
+                            bool flag4 = (int)cell.m_district1 == (int)district;
+                            int min;
+                            int max;
+                            CheckNeighbourCells(index2, index1, layer, cell.m_district1, out min, out max);
+                            if (!flag4 && Mathf.Min((int)cell.m_alpha1 + 120, (int)byte.MaxValue) > max)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district1, 0, Mathf.Max(0, max - 120));
+                            else if (flag4 && Mathf.Max((int)cell.m_alpha1 - 120, 0) < min)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district1, Mathf.Min((int)byte.MaxValue, min + 120), (int)byte.MaxValue);
+                            if (flag4)
+                                flag2 = true;
                         }
-                        if (cell.m_alpha2 != 0)
+                        if ((int)cell.m_alpha2 != 0)
                         {
-                            bool flag6 = cell.m_district2 == district;
-                            int num22;
-                            int num23;
-                            CheckNeighbourCells(l, k, cell.m_district2, out num22, out num23);
-                            if (!flag6 && Mathf.Min((int)(cell.m_alpha2 + 120), 255) > num23)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district2, 0, Mathf.Max(0, num23 - 120)));
-                            }
-                            else if (flag6 && Mathf.Max((int)(cell.m_alpha2 - 120), 0) < num22)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district2, Mathf.Min(255, num22 + 120), 255));
-                            }
-                            if (flag6)
-                            {
-                                flag3 = true;
-                            }
+                            bool flag4 = (int)cell.m_district2 == (int)district;
+                            int min;
+                            int max;
+                            CheckNeighbourCells(index2, index1, layer, cell.m_district2, out min, out max);
+                            if (!flag4 && Mathf.Min((int)cell.m_alpha2 + 120, (int)byte.MaxValue) > max)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district2, 0, Mathf.Max(0, max - 120));
+                            else if (flag4 && Mathf.Max((int)cell.m_alpha2 - 120, 0) < min)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district2, Mathf.Min((int)byte.MaxValue, min + 120), (int)byte.MaxValue);
+                            if (flag4)
+                                flag2 = true;
                         }
-                        if (cell.m_alpha3 != 0)
+                        if ((int)cell.m_alpha3 != 0)
                         {
-                            bool flag7 = cell.m_district3 == district;
-                            int num24;
-                            int num25;
-                            CheckNeighbourCells(l, k, cell.m_district3, out num24, out num25);
-                            if (!flag7 && Mathf.Min((int)(cell.m_alpha3 + 120), 255) > num25)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district3, 0, Mathf.Max(0, num25 - 120)));
-                            }
-                            else if (flag7 && Mathf.Max((int)(cell.m_alpha3 - 120), 0) < num24)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district3, Mathf.Min(255, num24 + 120), 255));
-                            }
-                            if (flag7)
-                            {
-                                flag3 = true;
-                            }
+                            bool flag4 = (int)cell.m_district3 == (int)district;
+                            int min;
+                            int max;
+                            CheckNeighbourCells(index2, index1, layer, cell.m_district3, out min, out max);
+                            if (!flag4 && Mathf.Min((int)cell.m_alpha3 + 120, (int)byte.MaxValue) > max)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district3, 0, Mathf.Max(0, max - 120));
+                            else if (flag4 && Mathf.Max((int)cell.m_alpha3 - 120, 0) < min)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district3, Mathf.Min((int)byte.MaxValue, min + 120), (int)byte.MaxValue);
+                            if (flag4)
+                                flag2 = true;
                         }
-                        if (cell.m_alpha4 != 0)
+                        if ((int)cell.m_alpha4 != 0)
                         {
-                            bool flag8 = cell.m_district4 == district;
-                            int num26;
-                            int num27;
-                            CheckNeighbourCells(l, k, cell.m_district4, out num26, out num27);
-                            if (!flag8 && Mathf.Min((int)(cell.m_alpha4 + 120), 255) > num27)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district4, 0, Mathf.Max(0, num27 - 120)));
-                            }
-                            else if (flag8 && Mathf.Max((int)(cell.m_alpha4 - 120), 0) < num26)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, cell.m_district4, Mathf.Min(255, num26 + 120), 255));
-                            }
-                            if (flag8)
-                            {
-                                flag3 = true;
-                            }
+                            bool flag4 = (int)cell.m_district4 == (int)district;
+                            int min;
+                            int max;
+                            CheckNeighbourCells(index2, index1, layer, cell.m_district4, out min, out max);
+                            if (!flag4 && Mathf.Min((int)cell.m_alpha4 + 120, (int)byte.MaxValue) > max)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district4, 0, Mathf.Max(0, max - 120));
+                            else if (flag4 && Mathf.Max((int)cell.m_alpha4 - 120, 0) < min)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, cell.m_district4, Mathf.Min((int)byte.MaxValue, min + 120), (int)byte.MaxValue);
+                            if (flag4)
+                                flag2 = true;
                         }
-                        if (!flag3)
+                        if (!flag2)
                         {
-                            int num28;
-                            int num29;
-                            CheckNeighbourCells(l, k, district, out num28, out num29);
-                            if (0 < num28)
-                            {
-                                flag4 = (flag4 || SetDistrictAlpha(l, k, district, Mathf.Min(255, num28 + 120), 255));
-                            }
+                            int min;
+                            int max;
+                            CheckNeighbourCells(index2, index1, layer, district, out min, out max);
+                            if (0 < min)
+                                flag3 = flag3 || SetDistrictAlpha(index2, index1, layer, district, Mathf.Min((int)byte.MaxValue, min + 120), (int)byte.MaxValue);
                         }
-                        if (flag4)
+                        if (flag3)
                         {
-                            num8 = Mathf.Min(num8, l);
-                            num9 = Mathf.Max(num9, l);
-                            num10 = Mathf.Min(num10, k);
-                            num11 = Mathf.Max(num11, k);
-                            flag2 = true;
+                            num7 = Mathf.Min(num7, index2);
+                            num8 = Mathf.Max(num8, index2);
+                            num9 = Mathf.Min(num9, index1);
+                            num10 = Mathf.Max(num10, index1);
+                            flag1 = true;
                         }
                     }
                 }
-                num15 = Mathf.Min(num15, num8);
-                num16 = Mathf.Max(num16, num9);
-                num17 = Mathf.Min(num17, num10);
-                num18 = Mathf.Max(num18, num11);
+                num12 = Mathf.Min(num12, num7);
+                num13 = Mathf.Max(num13, num8);
+                num14 = Mathf.Min(num14, num9);
+                num15 = Mathf.Max(num15, num10);
             }
-            while (++num19 < 10 && flag2);
-            Singleton<DistrictManager>.instance.AreaModified(num15, num17, num16, num18, true);
-            Singleton<DistrictManager>.instance.m_districtsNotUsed.Disable();
+            while (++num16 < 10 && flag1);
+            if (layer == DistrictTool.Layer.Districts)
+            {
+                Singleton<DistrictManager>.instance.AreaModified(num12, num14, num13, num15, true);
+                Singleton<DistrictManager>.instance.m_districtsNotUsed.Disable();
+            }
+            else
+                Singleton<DistrictManager>.instance.ParksAreaModified(num12, num14, num13, num15, true);
         }
 
         [RedirectMethod]
-        private bool ForceDistrictAlpha(int x, int z, byte district, int min, int max)
+        private static bool ForceDistrictAlpha(int x, int z, DistrictTool.Layer layer, byte district, int min, int max)
         {
             //begin mod
-            DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
-            DistrictManager.Cell cell = districtGrid[z * FakeDistrictManager.GRID + x];
+            int num1 = FakeDistrictManager.GRID;
+            DistrictManager.Cell cell1 = (layer != DistrictTool.Layer.Districts ? FakeDistrictManager.parkGrid : FakeDistrictManager.districtGrid)[z * num1 + x];
             //end mod
-            int num2 = Mathf.Clamp(GetAlpha(this, ref cell, district), min, max);
-            DistrictManager.Cell cell2 = default(DistrictManager.Cell);
+            int num2 = Mathf.Clamp(GetAlpha(ref cell1, district), min, max);
+            DistrictManager.Cell cell2 = new DistrictManager.Cell();
             cell2.m_district1 = district;
-            cell2.m_district2 = 0;
+            cell2.m_district2 = (byte)0;
             cell2.m_alpha1 = (byte)num2;
-            cell2.m_alpha2 = (byte)(255 - num2);
-            if (cell2.m_alpha1 != cell.m_alpha1 || cell2.m_alpha2 != cell.m_alpha2 || cell2.m_alpha3 != cell.m_alpha3 || cell2.m_alpha4 != cell.m_alpha4 || cell2.m_district1 != cell.m_district1 || cell2.m_district2 != cell.m_district2 || cell2.m_district3 != cell.m_district3 || cell2.m_district4 != cell.m_district4)
-            {
+            cell2.m_alpha2 = (byte)((int)byte.MaxValue - num2);
+            if ((int)cell2.m_alpha1 == (int)cell1.m_alpha1 && (int)cell2.m_alpha2 == (int)cell1.m_alpha2 && ((int)cell2.m_alpha3 == (int)cell1.m_alpha3 && (int)cell2.m_alpha4 == (int)cell1.m_alpha4) && ((int)cell2.m_district1 == (int)cell1.m_district1 && (int)cell2.m_district2 == (int)cell1.m_district2 && ((int)cell2.m_district3 == (int)cell1.m_district3 && (int)cell2.m_district4 == (int)cell1.m_district4)))
+                return false;
+            if (layer == DistrictTool.Layer.Districts)
                 Singleton<DistrictManager>.instance.ModifyCell(x, z, cell2);
-                return true;
-            }
-            return false;
+            else
+                Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell2);
+            return true;
         }
 
         [RedirectMethod]
-        private bool SetDistrictAlpha(int x, int z, byte district, int min, int max)
+        private static bool SetDistrictAlpha(int x, int z, DistrictTool.Layer layer, byte district, int min, int max)
         {
-            //begin mod         
-            DistrictManager.Cell cell = FakeDistrictManager.districtGrid[z * FakeDistrictManager.GRID + x];
+            //begin mod
+            int num1 = FakeDistrictManager.GRID;
+            DistrictManager.Cell cell = (layer != DistrictTool.Layer.Districts ? FakeDistrictManager.parkGrid : FakeDistrictManager.districtGrid)[z * num1 + x];
             //end mod
-            if (cell.m_district1 == district)
+            if ((int)cell.m_district1 == (int)district)
             {
                 int num2 = Mathf.Clamp((int)cell.m_alpha1, min, max);
                 if (num2 != (int)cell.m_alpha1)
                 {
                     cell.m_alpha1 = (byte)num2;
-                    Normalize(this, ref cell, 1);
-                    Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    Normalize(ref cell, 1);
+                    if (layer == DistrictTool.Layer.Districts)
+                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    else
+                        Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                     return true;
                 }
             }
-            else if (cell.m_district2 == district)
+            else if ((int)cell.m_district2 == (int)district)
             {
-                int num3 = Mathf.Clamp((int)cell.m_alpha2, min, max);
-                if (num3 != (int)cell.m_alpha2)
+                int num2 = Mathf.Clamp((int)cell.m_alpha2, min, max);
+                if (num2 != (int)cell.m_alpha2)
                 {
-                    cell.m_alpha2 = (byte)num3;
-                    Normalize(this, ref cell, 2);
-                    Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    cell.m_alpha2 = (byte)num2;
+                    Normalize(ref cell, 2);
+                    if (layer == DistrictTool.Layer.Districts)
+                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    else
+                        Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                     return true;
                 }
             }
-            else if (cell.m_district3 == district)
+            else if ((int)cell.m_district3 == (int)district)
             {
-                int num4 = Mathf.Clamp((int)cell.m_alpha3, min, max);
-                if (num4 != (int)cell.m_alpha3)
+                int num2 = Mathf.Clamp((int)cell.m_alpha3, min, max);
+                if (num2 != (int)cell.m_alpha3)
                 {
-                    cell.m_alpha3 = (byte)num4;
-                    Normalize(this, ref cell, 3);
-                    Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    cell.m_alpha3 = (byte)num2;
+                    Normalize(ref cell, 3);
+                    if (layer == DistrictTool.Layer.Districts)
+                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    else
+                        Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                     return true;
                 }
             }
-            else if (cell.m_district4 == district)
+            else if ((int)cell.m_district4 == (int)district)
             {
-                int num5 = Mathf.Clamp((int)cell.m_alpha4, min, max);
-                if (num5 != (int)cell.m_alpha4)
+                int num2 = Mathf.Clamp((int)cell.m_alpha4, min, max);
+                if (num2 != (int)cell.m_alpha4)
                 {
-                    cell.m_alpha4 = (byte)num5;
-                    Normalize(this, ref cell, 4);
-                    Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    cell.m_alpha4 = (byte)num2;
+                    Normalize(ref cell, 4);
+                    if (layer == DistrictTool.Layer.Districts)
+                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                    else
+                        Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                     return true;
                 }
             }
             else if (min > 0)
             {
-                int num6 = 256;
-                int num7 = -1;
-                if ((int)cell.m_alpha1 < num6)
+                int num2 = 256;
+                int num3 = -1;
+                if ((int)cell.m_alpha1 < num2)
                 {
-                    num6 = (int)cell.m_alpha1;
-                    num7 = 1;
+                    num2 = (int)cell.m_alpha1;
+                    num3 = 1;
                 }
-                if ((int)cell.m_alpha2 < num6)
+                if ((int)cell.m_alpha2 < num2)
                 {
-                    num6 = (int)cell.m_alpha2;
-                    num7 = 2;
+                    num2 = (int)cell.m_alpha2;
+                    num3 = 2;
                 }
-                if ((int)cell.m_alpha3 < num6)
+                if ((int)cell.m_alpha3 < num2)
                 {
-                    num6 = (int)cell.m_alpha3;
-                    num7 = 3;
+                    num2 = (int)cell.m_alpha3;
+                    num3 = 3;
                 }
-                if ((int)cell.m_alpha4 < num6)
+                if ((int)cell.m_alpha4 < num2)
                 {
-                    num6 = (int)cell.m_alpha4;
-                    num7 = 4;
+                    num2 = (int)cell.m_alpha4;
+                    num3 = 4;
                 }
-                if (num6 <= min)
+                if (num2 <= min)
                 {
-                    if (num7 == 1)
+                    if (num3 == 1)
                     {
                         cell.m_district1 = district;
                         cell.m_alpha1 = (byte)min;
-                        Normalize(this, ref cell, 1);
-                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        Normalize(ref cell, 1);
+                        if (layer == DistrictTool.Layer.Districts)
+                            Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        else
+                            Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                         return true;
                     }
-                    if (num7 == 2)
+                    if (num3 == 2)
                     {
                         cell.m_district2 = district;
                         cell.m_alpha2 = (byte)min;
-                        Normalize(this, ref cell, 2);
-                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        Normalize(ref cell, 2);
+                        if (layer == DistrictTool.Layer.Districts)
+                            Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        else
+                            Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                         return true;
                     }
-                    if (num7 == 3)
+                    if (num3 == 3)
                     {
                         cell.m_district3 = district;
                         cell.m_alpha3 = (byte)min;
-                        Normalize(this, ref cell, 3);
-                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        Normalize(ref cell, 3);
+                        if (layer == DistrictTool.Layer.Districts)
+                            Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        else
+                            Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                         return true;
                     }
-                    if (num7 == 4)
+                    if (num3 == 4)
                     {
                         cell.m_district4 = district;
                         cell.m_alpha4 = (byte)min;
-                        Normalize(this, ref cell, 4);
-                        Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        Normalize(ref cell, 4);
+                        if (layer == DistrictTool.Layer.Districts)
+                            Singleton<DistrictManager>.instance.ModifyCell(x, z, cell);
+                        else
+                            Singleton<DistrictManager>.instance.ModifyParkCell(x, z, cell);
                         return true;
                     }
                 }
@@ -361,70 +352,68 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private void CheckNeighbourCells(int x, int z, byte district, out int min, out int max)
+        private static void CheckNeighbourCells(int x, int z, DistrictTool.Layer layer, byte district, out int min, out int max)
         {
-            min = 255;
+            min = (int)byte.MaxValue;
             max = 0;
             //begin mod
             int num = FakeDistrictManager.GRID;
-            DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
+            DistrictManager.Cell[] cellArray = layer != DistrictTool.Layer.Districts ? FakeDistrictManager.parkGrid : FakeDistrictManager.districtGrid;
             //end mod
             if (z > 0)
             {
                 if (x > 0)
                 {
-                    DistrictManager.Cell cell = districtGrid[(z - 1) * num + x - 1];
-                    int alpha = GetAlpha(this, ref cell, district);
+                    DistrictManager.Cell cell = cellArray[(z - 1) * num + x - 1];
+                    int alpha = GetAlpha(ref cell, district);
                     min = Mathf.Min(min, alpha);
                     max = Mathf.Max(max, alpha);
                 }
-                DistrictManager.Cell cell2 = districtGrid[(z - 1) * num + x];
-                int alpha2 = GetAlpha(this, ref cell2, district);
-                min = Mathf.Min(min, alpha2);
-                max = Mathf.Max(max, alpha2);
+                DistrictManager.Cell cell1 = cellArray[(z - 1) * num + x];
+                int alpha1 = GetAlpha(ref cell1, district);
+                min = Mathf.Min(min, alpha1);
+                max = Mathf.Max(max, alpha1);
                 if (x < num - 1)
                 {
-                    DistrictManager.Cell cell3 = districtGrid[(z - 1) * num + x + 1];
-                    int alpha3 = GetAlpha(this, ref cell3, district);
-                    min = Mathf.Min(min, alpha3);
-                    max = Mathf.Max(max, alpha3);
+                    DistrictManager.Cell cell2 = cellArray[(z - 1) * num + x + 1];
+                    int alpha2 = GetAlpha(ref cell2, district);
+                    min = Mathf.Min(min, alpha2);
+                    max = Mathf.Max(max, alpha2);
                 }
             }
             if (x > 0)
             {
-                DistrictManager.Cell cell4 = districtGrid[z * num + x - 1];
-                int alpha4 = GetAlpha(this, ref cell4, district);
-                min = Mathf.Min(min, alpha4);
-                max = Mathf.Max(max, alpha4);
+                DistrictManager.Cell cell = cellArray[z * num + x - 1];
+                int alpha = GetAlpha(ref cell, district);
+                min = Mathf.Min(min, alpha);
+                max = Mathf.Max(max, alpha);
             }
             if (x < num - 1)
             {
-                DistrictManager.Cell cell5 = districtGrid[z * num + x + 1];
-                int alpha5 = GetAlpha(this, ref cell5, district);
-                min = Mathf.Min(min, alpha5);
-                max = Mathf.Max(max, alpha5);
+                DistrictManager.Cell cell = cellArray[z * num + x + 1];
+                int alpha = GetAlpha(ref cell, district);
+                min = Mathf.Min(min, alpha);
+                max = Mathf.Max(max, alpha);
             }
-            if (z < num - 1)
+            if (z >= num - 1)
+                return;
+            if (x > 0)
             {
-                if (x > 0)
-                {
-                    DistrictManager.Cell cell6 = districtGrid[(z + 1) * num + x - 1];
-                    int alpha6 = GetAlpha(this, ref cell6, district);
-                    min = Mathf.Min(min, alpha6);
-                    max = Mathf.Max(max, alpha6);
-                }
-                DistrictManager.Cell cell7 = districtGrid[(z + 1) * num + x];
-                int alpha7 = GetAlpha(this, ref cell7, district);
-                min = Mathf.Min(min, alpha7);
-                max = Mathf.Max(max, alpha7);
-                if (x < num - 1)
-                {
-                    DistrictManager.Cell cell8 = districtGrid[(z + 1) * num + x + 1];
-                    int alpha8 = GetAlpha(this, ref cell8, district);
-                    min = Mathf.Min(min, alpha8);
-                    max = Mathf.Max(max, alpha8);
-                }
+                DistrictManager.Cell cell = cellArray[(z + 1) * num + x - 1];
+                int alpha =GetAlpha(ref cell, district);
+                min = Mathf.Min(min, alpha);
+                max = Mathf.Max(max, alpha);
             }
+            DistrictManager.Cell cell3 = cellArray[(z + 1) * num + x];
+            int alpha3 = GetAlpha(ref cell3, district);
+            min = Mathf.Min(min, alpha3);
+            max = Mathf.Max(max, alpha3);
+            if (x >= num - 1)
+                return;
+            DistrictManager.Cell cell4 = cellArray[(z + 1) * num + x + 1];
+            int alpha4 = GetAlpha(ref cell4, district);
+            min = Mathf.Min(min, alpha4);
+            max = Mathf.Max(max, alpha4);
         }
     }
 }
