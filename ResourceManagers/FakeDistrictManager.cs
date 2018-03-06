@@ -10,7 +10,7 @@ using UnityEngine;
 namespace EightyOne.ResourceManagers
 {
 
-    //TODO(earalov): (de)serialization, park specific methods, maybe something else
+    //TODO(earalov): park specific methods, maybe something else
     [TargetType(typeof(DistrictManager))]
     public class FakeDistrictManager : DistrictManager
     {
@@ -21,110 +21,175 @@ namespace EightyOne.ResourceManagers
             {
                 Singleton<LoadingManager>.instance.WaitUntilEssentialScenesLoaded();
                 DistrictManager instance = Singleton<DistrictManager>.instance;
-                District[] buffer = instance.m_districts.m_buffer;
-                DistrictManager.Cell[] districtGrid = FakeDistrictManager.districtGrid;
-                int num = districtGrid.Length;
-                for (int i = 0; i < num; i++)
-                {
-                    DistrictManager.Cell cell = districtGrid[i];
-                    District[] expr_60_cp_0 = buffer;
-                    byte expr_60_cp_1 = cell.m_district1;
-                    expr_60_cp_0[(int)expr_60_cp_1].m_totalAlpha = expr_60_cp_0[(int)expr_60_cp_1].m_totalAlpha + (uint)cell.m_alpha1;
-                    District[] expr_80_cp_0 = buffer;
-                    byte expr_80_cp_1 = cell.m_district2;
-                    expr_80_cp_0[(int)expr_80_cp_1].m_totalAlpha = expr_80_cp_0[(int)expr_80_cp_1].m_totalAlpha + (uint)cell.m_alpha2;
-                    District[] expr_A0_cp_0 = buffer;
-                    byte expr_A0_cp_1 = cell.m_district3;
-                    expr_A0_cp_0[(int)expr_A0_cp_1].m_totalAlpha = expr_A0_cp_0[(int)expr_A0_cp_1].m_totalAlpha + (uint)cell.m_alpha3;
-                    District[] expr_C0_cp_0 = buffer;
-                    byte expr_C0_cp_1 = cell.m_district4;
-                    expr_C0_cp_0[(int)expr_C0_cp_1].m_totalAlpha = expr_C0_cp_0[(int)expr_C0_cp_1].m_totalAlpha + (uint)cell.m_alpha4;
-                }
+                InitializeDistrictBuffer(instance.m_districts.m_buffer, FakeDistrictManager.districtGrid);
+                InitializeParkBuffer(instance.m_parks.m_buffer, FakeDistrictManager.parkGrid);
                 instance.m_districtCount = (int)(instance.m_districts.ItemCount() - 1u);
-                instance.AreaModified(0, 0, 511, 511, true);
+                instance.m_parkCount = (int)(instance.m_parks.ItemCount() - 1u);
+                instance.AreaModified(0, 0, GRID - 1, GRID - 11, true);
+                instance.ParksAreaModified(0, 0, GRID - 1, GRID - 1, true);
                 instance.NamesModified();
+                instance.ParkNamesModified();
+            }
+
+            private static void InitializeDistrictBuffer(District[] buffer, Cell[] cells)
+            {
+                foreach (var cell in cells)
+                {
+                    buffer[cell.m_district1].m_totalAlpha = buffer[cell.m_district1].m_totalAlpha + cell.m_alpha1;
+                    buffer[cell.m_district2].m_totalAlpha = buffer[cell.m_district2].m_totalAlpha + cell.m_alpha2;
+                    buffer[cell.m_district3].m_totalAlpha = buffer[cell.m_district3].m_totalAlpha + cell.m_alpha3;
+                    buffer[cell.m_district4].m_totalAlpha = buffer[cell.m_district4].m_totalAlpha + cell.m_alpha4;
+                }
+            }
+
+            private static void InitializeParkBuffer(DistrictPark[] buffer, Cell[] cells)
+            {
+                foreach (var cell in cells)
+                {
+                    buffer[cell.m_district1].m_totalAlpha = buffer[cell.m_district1].m_totalAlpha + cell.m_alpha1;
+                    buffer[cell.m_district2].m_totalAlpha = buffer[cell.m_district2].m_totalAlpha + cell.m_alpha2;
+                    buffer[cell.m_district3].m_totalAlpha = buffer[cell.m_district3].m_totalAlpha + cell.m_alpha3;
+                    buffer[cell.m_district4].m_totalAlpha = buffer[cell.m_district4].m_totalAlpha + cell.m_alpha4;
+                }
             }
 
             public void Deserialize(DataSerializer s)
             {
-                var districtGrid = new DistrictManager.Cell[GRID * GRID];
+                var disctrictGrid = new DistrictManager.Cell[GRID * GRID];
+                var parkGrid = new DistrictManager.Cell[GRID * GRID];
                 EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
-                int num2 = districtGrid.Length;
-                for (int num21 = 0; num21 < num2; num21++)
+                ReadGrid(disctrictGrid, @byte);
+                if (s.version >= 110020U)
                 {
-                    districtGrid[num21].m_district1 = @byte.Read();
+                    ReadGrid(parkGrid, @byte);
                 }
-                for (int num22 = 0; num22 < num2; num22++)
+                else
                 {
-                    districtGrid[num22].m_district2 = @byte.Read();
-                }
-                for (int num23 = 0; num23 < num2; num23++)
-                {
-                    districtGrid[num23].m_district3 = @byte.Read();
-                }
-                for (int num24 = 0; num24 < num2; num24++)
-                {
-                    districtGrid[num24].m_district4 = @byte.Read();
-                }
-                for (int num25 = 0; num25 < num2; num25++)
-                {
-                    districtGrid[num25].m_alpha1 = @byte.Read();
-                }
-                for (int num26 = 0; num26 < num2; num26++)
-                {
-                    districtGrid[num26].m_alpha2 = @byte.Read();
-                }
-                for (int num27 = 0; num27 < num2; num27++)
-                {
-                    districtGrid[num27].m_alpha3 = @byte.Read();
-                }
-                for (int num28 = 0; num28 < num2; num28++)
-                {
-                    districtGrid[num28].m_alpha4 = @byte.Read();
+                    InitializeGrid(parkGrid);
                 }
                 @byte.EndRead();
 
-                FakeDistrictManager.districtGrid = districtGrid;
+                FakeDistrictManager.districtGrid = disctrictGrid;
+                FakeDistrictManager.parkGrid = parkGrid;
+            }
+
+            private static void ReadGrid(Cell[] grid, EncodedArray.Byte @byte)
+            {
+                int gridLength = grid.Length;
+                for (int num21 = 0; num21 < gridLength; num21++)
+                {
+                    grid[num21].m_district1 = @byte.Read();
+                }
+                for (int num22 = 0; num22 < gridLength; num22++)
+                {
+                    grid[num22].m_district2 = @byte.Read();
+                }
+                for (int num23 = 0; num23 < gridLength; num23++)
+                {
+                    grid[num23].m_district3 = @byte.Read();
+                }
+                for (int num24 = 0; num24 < gridLength; num24++)
+                {
+                    grid[num24].m_district4 = @byte.Read();
+                }
+                for (int num25 = 0; num25 < gridLength; num25++)
+                {
+                    grid[num25].m_alpha1 = @byte.Read();
+                }
+                for (int num26 = 0; num26 < gridLength; num26++)
+                {
+                    grid[num26].m_alpha2 = @byte.Read();
+                }
+                for (int num27 = 0; num27 < gridLength; num27++)
+                {
+                    grid[num27].m_alpha3 = @byte.Read();
+                }
+                for (int num28 = 0; num28 < gridLength; num28++)
+                {
+                    grid[num28].m_alpha4 = @byte.Read();
+                }
+            }
+
+            private static void InitializeGrid(Cell[] grid)
+            {
+                int gridLength = grid.Length;
+                for (int num21 = 0; num21 < gridLength; num21++)
+                {
+                    grid[num21].m_district1 = 0;
+                }
+                for (int num22 = 0; num22 < gridLength; num22++)
+                {
+                    grid[num22].m_district2 =0;
+                }
+                for (int num23 = 0; num23 < gridLength; num23++)
+                {
+                    grid[num23].m_district3 = 0;
+                }
+                for (int num24 = 0; num24 < gridLength; num24++)
+                {
+                    grid[num24].m_district4 = 0;
+                }
+                for (int num25 = 0; num25 < gridLength; num25++)
+                {
+                    grid[num25].m_alpha1 = 0;
+                }
+                for (int num26 = 0; num26 < gridLength; num26++)
+                {
+                    grid[num26].m_alpha2 = 0;
+                }
+                for (int num27 = 0; num27 < gridLength; num27++)
+                {
+                    grid[num27].m_alpha3 = 0;
+                }
+                for (int num28 = 0; num28 < gridLength; num28++)
+                {
+                    grid[num28].m_alpha4 = 0;
+                }
             }
 
             public void Serialize(DataSerializer s)
             {
-                var districtGrid = FakeDistrictManager.districtGrid;
-                int num2 = districtGrid.Length;
                 EncodedArray.Byte @byte = EncodedArray.Byte.BeginWrite(s);
-                for (int num19 = 0; num19 < num2; num19++)
-                {
-                    @byte.Write(districtGrid[num19].m_district1);
-                }
-                for (int num20 = 0; num20 < num2; num20++)
-                {
-                    @byte.Write(districtGrid[num20].m_district2);
-                }
-                for (int num21 = 0; num21 < num2; num21++)
-                {
-                    @byte.Write(districtGrid[num21].m_district3);
-                }
-                for (int num22 = 0; num22 < num2; num22++)
-                {
-                    @byte.Write(districtGrid[num22].m_district4);
-                }
-                for (int num23 = 0; num23 < num2; num23++)
-                {
-                    @byte.Write(districtGrid[num23].m_alpha1);
-                }
-                for (int num24 = 0; num24 < num2; num24++)
-                {
-                    @byte.Write(districtGrid[num24].m_alpha2);
-                }
-                for (int num25 = 0; num25 < num2; num25++)
-                {
-                    @byte.Write(districtGrid[num25].m_alpha3);
-                }
-                for (int num26 = 0; num26 < num2; num26++)
-                {
-                    @byte.Write(districtGrid[num26].m_alpha4);
-                }
+                WriteGrid(FakeDistrictManager.districtGrid, @byte);
+                WriteGrid(FakeDistrictManager.parkGrid, @byte);
                 @byte.EndWrite();
+            }
+
+            private static void WriteGrid(Cell[] grid, EncodedArray.Byte @byte)
+            {
+                int gridLength = grid.Length;
+                for (int num19 = 0; num19 < gridLength; num19++)
+                {
+                    @byte.Write(grid[num19].m_district1);
+                }
+                for (int num20 = 0; num20 < gridLength; num20++)
+                {
+                    @byte.Write(grid[num20].m_district2);
+                }
+                for (int num21 = 0; num21 < gridLength; num21++)
+                {
+                    @byte.Write(grid[num21].m_district3);
+                }
+                for (int num22 = 0; num22 < gridLength; num22++)
+                {
+                    @byte.Write(grid[num22].m_district4);
+                }
+                for (int num23 = 0; num23 < gridLength; num23++)
+                {
+                    @byte.Write(grid[num23].m_alpha1);
+                }
+                for (int num24 = 0; num24 < gridLength; num24++)
+                {
+                    @byte.Write(grid[num24].m_alpha2);
+                }
+                for (int num25 = 0; num25 < gridLength; num25++)
+                {
+                    @byte.Write(grid[num25].m_alpha3);
+                }
+                for (int num26 = 0; num26 < gridLength; num26++)
+                {
+                    @byte.Write(grid[num26].m_alpha4);
+                }
             }
         }
 
@@ -214,31 +279,15 @@ namespace EightyOne.ResourceManagers
 
         public static void Init()
         {
-            //TODO(earalov): init park gird
             if (districtGrid == null)
             {
-                districtGrid = new DistrictManager.Cell[GRID * GRID];
-                for (int i = 0; i < districtGrid.Length; i++)
-                {
-                    districtGrid[i].m_district1 = 0;
-                    districtGrid[i].m_district2 = 1;
-                    districtGrid[i].m_district3 = 2;
-                    districtGrid[i].m_district4 = 3;
-                    districtGrid[i].m_alpha1 = 255;
-                    districtGrid[i].m_alpha2 = 0;
-                    districtGrid[i].m_alpha3 = 0;
-                    districtGrid[i].m_alpha4 = 0;
-                }
-                var oldGrid = DistrictManager.instance.m_districtGrid;
-                int diff = (GRID - DISTRICTGRID_RESOLUTION) / 2;
-                for (var i = 0; i < DISTRICTGRID_RESOLUTION; i += 1)
-                {
-                    for (var j = 0; j < DISTRICTGRID_RESOLUTION; j += 1)
-                    {
-                        districtGrid[(j + diff) * GRID + (i + diff)] = oldGrid[j * DISTRICTGRID_RESOLUTION + i];
-                    }
-                }
+                districtGrid = BuildGrid(DistrictManager.instance.m_districtGrid);
             }
+            if (parkGrid == null)
+            {
+                parkGrid = BuildGrid(DistrictManager.instance.m_parkGrid);
+            }
+
             colorBuffer = new Color32[GRID * GRID];
             distanceBuffer = new int[HALFGRID * HALFGRID];
             indexBuffer = new int[HALFGRID * HALFGRID];
@@ -302,6 +351,31 @@ namespace EightyOne.ResourceManagers
                 fullParksUpdateField.SetValue(DistrictManager.instance, true);
                 DistrictManager.instance.NamesModified();
             });
+        }
+
+        private static Cell[] BuildGrid(Cell[] oldGrid)
+        {
+            var cells = new DistrictManager.Cell[GRID * GRID];
+            for (int i = 0; i < districtGrid.Length; i++)
+            {
+                cells[i].m_district1 = 0;
+                cells[i].m_district2 = 1;
+                cells[i].m_district3 = 2;
+                cells[i].m_district4 = 3;
+                cells[i].m_alpha1 = 255;
+                cells[i].m_alpha2 = 0;
+                cells[i].m_alpha3 = 0;
+                cells[i].m_alpha4 = 0;
+            }
+            int diff = (GRID - DISTRICTGRID_RESOLUTION) / 2;
+            for (var i = 0; i < DISTRICTGRID_RESOLUTION; i += 1)
+            {
+                for (var j = 0; j < DISTRICTGRID_RESOLUTION; j += 1)
+                {
+                    cells[(j + diff) * GRID + (i + diff)] = oldGrid[j * DISTRICTGRID_RESOLUTION + i];
+                }
+            }
+            return cells;
         }
 
         [RedirectReverse(true)]
