@@ -1,7 +1,9 @@
-﻿using ColossalFramework;
+﻿using System;
+using ColossalFramework;
 using ColossalFramework.IO;
 using System.Reflection;
 using System.Threading;
+using ColossalFramework.Math;
 using ColossalFramework.UI;
 using EightyOne.Areas;
 using EightyOne.RedirectionFramework.Attributes;
@@ -10,7 +12,6 @@ using UnityEngine;
 namespace EightyOne.ResourceManagers
 {
 
-    //TODO(earalov): park specific methods, maybe something else
     [TargetType(typeof(DistrictManager))]
     public class FakeDistrictManager : DistrictManager
     {
@@ -226,6 +227,8 @@ namespace EightyOne.ResourceManagers
         private static FieldInfo nameMeshField;
         private static FieldInfo iconMeshField;
 
+        private static FieldInfo parkGateCheckNeededField;
+
         private static int ID_DistrictsA1;
         private static int ID_DistrictsA2;
         private static int ID_DistrictsB1;
@@ -312,6 +315,8 @@ namespace EightyOne.ResourceManagers
             nameMeshField = typeof(DistrictManager).GetField("m_nameMesh", BindingFlags.Instance | BindingFlags.NonPublic);
             iconMeshField = typeof(DistrictManager).GetField("m_iconMesh", BindingFlags.Instance | BindingFlags.NonPublic);
 
+            parkGateCheckNeededField = typeof(DistrictManager).GetField("m_parkGateCheckNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
+
             districtTexture1 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture1.wrapMode = TextureWrapMode.Clamp;
@@ -391,9 +396,9 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectReverse(true)]
-        private static void SetBitAlphas(DistrictManager manager, DistrictManager.Cell cell, int alpha, ref int b1, ref int b2, ref int b3, ref int b4, ref int b5, ref int b6, ref int b7)
+        private static void SetBitAlphas(DistrictManager.Cell cell, int alpha, ref int b1, ref int b2, ref int b3, ref int b4, ref int b5, ref int b6, ref int b7)
         {
-            UnityEngine.Debug.Log($"{manager}-{cell}-{alpha}-{b1}-{b2}-{b3}-{b4}-{b5}-{b6}-{b7}");
+            UnityEngine.Debug.Log($"{cell}-{alpha}-{b1}-{b2}-{b3}-{b4}-{b5}-{b6}-{b7}");
         }
 
         [RedirectReverse(true)]
@@ -406,6 +411,26 @@ namespace EightyOne.ResourceManagers
         private static void EraseDistrict(DistrictManager manager, byte district, ref District data, uint amount)
         {
             UnityEngine.Debug.Log($"{manager}-{district}-{data}-{amount}");
+        }
+
+        [RedirectReverse(true)]
+        private static void ErasePark(DistrictManager manager, byte park, ref DistrictPark data, uint amount)
+        {
+            UnityEngine.Debug.Log($"{manager}-{park}-{data}-{amount}");
+        }
+
+        [RedirectReverse(true)]
+        private static void AddAlpha(ref DistrictManager.Cell cell, int index, byte district, int alpha, ref int extra1,
+            ref int extra2, ref int extra3, ref int extra4)
+        {
+            UnityEngine.Debug.Log($"{district}");
+        }
+
+        [RedirectReverse(true)]
+        private static int FindIndex(ref DistrictManager.Cell cell, byte district)
+        {
+            UnityEngine.Debug.Log($"{cell}-{district}");
+            return 0;
         }
 
         [RedirectMethod]
@@ -1214,8 +1239,7 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        public new byte SampleDistrict(Vector3 worldPos)
-        {
+        private static byte SampleDistrict(Vector3 worldPos, DistrictManager.Cell[] grid) {
             //begin mod
             int num = Mathf.RoundToInt(worldPos.x * 13.333333f + (HALFGRID * HALFGRID) - HALFGRID);
             int num2 = Mathf.RoundToInt(worldPos.z * 13.333333f + (HALFGRID * HALFGRID) - HALFGRID);
@@ -1232,10 +1256,10 @@ namespace EightyOne.ResourceManagers
             int num12 = 0;
             int num13 = 0;
             //begin mod
-            SetBitAlphas(this, districtGrid[num4 * GRID + num3], (255 - (num & 255)) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
-            SetBitAlphas(this, districtGrid[num4 * GRID + num5], (num & 255) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
-            SetBitAlphas(this, districtGrid[num6 * GRID + num3], (255 - (num & 255)) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
-            SetBitAlphas(this, districtGrid[num6 * GRID + num5], (num & 255) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            FakeDistrictManager.SetBitAlphas(grid[num4 * GRID + num3], (255 - (num & 255)) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            FakeDistrictManager.SetBitAlphas(grid[num4 * GRID + num5], (num & 255) * (255 - (num2 & 255)), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            FakeDistrictManager.SetBitAlphas(grid[num6 * GRID + num3], (255 - (num & 255)) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
+            FakeDistrictManager.SetBitAlphas(grid[num6 * GRID + num5], (num & 255) * (num2 & 255), ref num7, ref num8, ref num9, ref num10, ref num11, ref num12, ref num13);
             //end mod
             byte b = 0;
             if (num7 > 0)
@@ -1291,6 +1315,311 @@ namespace EightyOne.ResourceManagers
             EraseDistrict(this, cell1.m_district2, ref this.m_districts.m_buffer[(int)cell1.m_district2], (uint)cell1.m_alpha2);
             EraseDistrict(this, cell1.m_district3, ref this.m_districts.m_buffer[(int)cell1.m_district3], (uint)cell1.m_alpha3);
             EraseDistrict(this, cell1.m_district4, ref this.m_districts.m_buffer[(int)cell1.m_district4], (uint)cell1.m_alpha4);
+        }
+
+        [RedirectMethod]
+        public void ModifyParkCell(int x, int z, DistrictManager.Cell cell)
+        {
+            //begin mod
+            int index1 = z * GRID + x;
+            DistrictManager.Cell cell1 = parkGrid[index1];
+            Vector2 a = new Vector2((float)(((double)x - HALFGRID + 0.5) * 19.2f), (float)(((double)z - HALFGRID + 0.5) * 19.2f));
+            //end mod
+            int alpha1 = 0;
+            int alpha2 = 0;
+            int alpha3 = 0;
+            int alpha4 = 0;
+            if ((int)cell1.m_district1 != 0)
+            {
+                ushort mainGate = this.m_parks.m_buffer[(int)cell1.m_district1].m_mainGate;
+                alpha1 = 0;
+                if ((int)mainGate != 0)
+                {
+                    Vector2 b = VectorUtils.XZ(Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)mainGate].m_position);
+                    alpha1 = Mathf.Clamp((int)(256.0 * (1.25 - (double)Vector2.Distance(a, b) / 38.4f)), 0, (int)byte.MaxValue);
+                }
+            }
+            if ((int)cell1.m_district2 != 0)
+            {
+                ushort mainGate = this.m_parks.m_buffer[(int)cell1.m_district2].m_mainGate;
+                alpha2 = 0;
+                if ((int)mainGate != 0)
+                {
+                    Vector2 b = VectorUtils.XZ(Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)mainGate].m_position);
+                    alpha2 = Mathf.Clamp((int)(256.0 * (1.25 - (double)Vector2.Distance(a, b) / 38.4f)), 0, (int)byte.MaxValue);
+                }
+            }
+            if ((int)cell1.m_district3 != 0)
+            {
+                ushort mainGate = this.m_parks.m_buffer[(int)cell1.m_district3].m_mainGate;
+                alpha3 = 0;
+                if ((int)mainGate != 0)
+                {
+                    Vector2 b = VectorUtils.XZ(Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)mainGate].m_position);
+                    alpha3 = Mathf.Clamp((int)(256.0 * (1.25 - (double)Vector2.Distance(a, b) / 38.4f)), 0, (int)byte.MaxValue);
+                }
+            }
+            if ((int)cell1.m_district4 != 0)
+            {
+                ushort mainGate = this.m_parks.m_buffer[(int)cell1.m_district4].m_mainGate;
+                alpha4 = 0;
+                if ((int)mainGate != 0)
+                {
+                    Vector2 b = VectorUtils.XZ(Singleton<BuildingManager>.instance.m_buildings.m_buffer[(int)mainGate].m_position);
+                    alpha4 = Mathf.Clamp((int)(256.0 * (1.25 - (double)Vector2.Distance(a, b) / 38.4f)), 0, (int)byte.MaxValue);
+                }
+            }
+            int num1 = alpha1 + alpha2 + alpha3 + alpha4;
+            if (num1 != 0)
+            {
+                if (num1 >= (int)byte.MaxValue)
+                {
+                    cell = cell1;
+                    cell.m_alpha1 = (byte)(alpha1 * (int)byte.MaxValue / num1);
+                    cell.m_alpha2 = (byte)(alpha2 * (int)byte.MaxValue / num1);
+                    cell.m_alpha3 = (byte)(alpha3 * (int)byte.MaxValue / num1);
+                    cell.m_alpha4 = (byte)(alpha4 * (int)byte.MaxValue / num1);
+                }
+                else
+                {
+                    int extra1 = (int)cell.m_alpha1;
+                    int extra2 = (int)cell.m_alpha2;
+                    int extra3 = (int)cell.m_alpha3;
+                    int extra4 = (int)cell.m_alpha4;
+                    int num2 = 0;
+                    if (alpha1 != 0)
+                    {
+                        int index2 = FakeDistrictManager.FindIndex(ref cell, cell1.m_district1);
+                        FakeDistrictManager.AddAlpha(ref cell, index2, cell1.m_district1, alpha1, ref extra1, ref extra2, ref extra3, ref extra4);
+                        num2 |= 1 << index2;
+                    }
+                    if (alpha2 != 0)
+                    {
+                        int index2 = FakeDistrictManager.FindIndex(ref cell, cell1.m_district2);
+                        FakeDistrictManager.AddAlpha(ref cell, index2, cell1.m_district2, alpha2, ref extra1, ref extra2, ref extra3, ref extra4);
+                        num2 |= 1 << index2;
+                    }
+                    if (alpha3 != 0)
+                    {
+                        int index2 = FakeDistrictManager.FindIndex(ref cell, cell1.m_district3);
+                        FakeDistrictManager.AddAlpha(ref cell, index2, cell1.m_district3, alpha3, ref extra1, ref extra2, ref extra3, ref extra4);
+                        num2 |= 1 << index2;
+                    }
+                    if (alpha4 != 0)
+                    {
+                        int index2 = FakeDistrictManager.FindIndex(ref cell, cell1.m_district4);
+                        FakeDistrictManager.AddAlpha(ref cell, index2, cell1.m_district4, alpha4, ref extra1, ref extra2, ref extra3, ref extra4);
+                        num2 |= 1 << index2;
+                    }
+                    if ((num2 & 2) == 0)
+                        cell.m_alpha1 = (byte)0;
+                    if ((num2 & 4) == 0)
+                        cell.m_alpha2 = (byte)0;
+                    if ((num2 & 8) == 0)
+                        cell.m_alpha3 = (byte)0;
+                    if ((num2 & 16) == 0)
+                        cell.m_alpha4 = (byte)0;
+                    int num3 = (int)byte.MaxValue - num1;
+                    int num4 = extra1 + extra2 + extra3 + extra4;
+                    if (num4 != num3 && num4 != 0)
+                    {
+                        extra1 = extra1 * num3 / num4;
+                        extra2 = extra2 * num3 / num4;
+                        extra3 = extra3 * num3 / num4;
+                        extra4 = extra4 * num3 / num4;
+                    }
+                    cell.m_alpha1 += (byte)extra1;
+                    cell.m_alpha2 += (byte)extra2;
+                    cell.m_alpha3 += (byte)extra3;
+                    cell.m_alpha4 += (byte)extra4;
+                }
+            }
+            if ((int)cell.m_alpha2 > (int)cell.m_alpha1)
+                FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha2, ref cell.m_district1, ref cell.m_district2);
+            if ((int)cell.m_alpha3 > (int)cell.m_alpha1)
+                FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha3, ref cell.m_district1, ref cell.m_district3);
+            if ((int)cell.m_alpha4 > (int)cell.m_alpha1)
+                FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha4, ref cell.m_district1, ref cell.m_district4);
+            this.m_parkGrid[index1] = cell;
+            this.m_parks.m_buffer[(int)cell.m_district1].m_totalAlpha += (uint)cell.m_alpha1;
+            this.m_parks.m_buffer[(int)cell.m_district2].m_totalAlpha += (uint)cell.m_alpha2;
+            this.m_parks.m_buffer[(int)cell.m_district3].m_totalAlpha += (uint)cell.m_alpha3;
+            this.m_parks.m_buffer[(int)cell.m_district4].m_totalAlpha += (uint)cell.m_alpha4;
+            if ((int)cell.m_district1 != (int)cell1.m_district1)
+            {
+                this.MoveParkBuildings(x, z, cell1.m_district1, cell.m_district1);
+                this.MoveParkSegments(x, z, cell1.m_district1, cell.m_district1);
+                this.MoveParkProps(x, z, cell1.m_district1, cell.m_district1);
+                this.MoveParkTrees(x, z, cell1.m_district1, cell.m_district1);
+            }
+            ErasePark(this, cell1.m_district1, ref this.m_parks.m_buffer[(int)cell1.m_district1], (uint)cell1.m_alpha1);
+            ErasePark(this, cell1.m_district2, ref this.m_parks.m_buffer[(int)cell1.m_district2], (uint)cell1.m_alpha2);
+            ErasePark(this, cell1.m_district3, ref this.m_parks.m_buffer[(int)cell1.m_district3], (uint)cell1.m_alpha3);
+            ErasePark(this, cell1.m_district4, ref this.m_parks.m_buffer[(int)cell1.m_district4], (uint)cell1.m_alpha4);
+            parkGateCheckNeededField.SetValue(this, true);
+        }
+
+        [RedirectMethod]
+        private void MoveParkBuildings(int cellX, int cellZ, byte src, byte dest)
+        {
+            //begin mod
+            int num1 = Mathf.Max((int)(((double)cellX - HALFGRID) * 19.2f / 64.0 + 135.0), 0);
+            int num2 = Mathf.Max((int)(((double)cellZ - HALFGRID) * 19.2f / 64.0 + 135.0), 0);
+            int num3 = Mathf.Min((int)(((double)cellX - HALFGRID + 1.0) * 19.2f / 64.0 + 135.0), 269);
+            int num4 = Mathf.Min((int)(((double)cellZ - HALFGRID + 1.0) * 19.2f / 64.0 + 135.0), 269);
+            //end mod
+            Array16<Building> buildings = Singleton<BuildingManager>.instance.m_buildings;
+            ushort[] buildingGrid = Singleton<BuildingManager>.instance.m_buildingGrid;
+            for (int index1 = num2; index1 <= num4; ++index1)
+            {
+                for (int index2 = num1; index2 <= num3; ++index2)
+                {
+                    ushort nextGridBuilding = buildingGrid[index1 * 270 + index2];
+                    int num5 = 0;
+                    while ((int)nextGridBuilding != 0)
+                    {
+                        Vector3 position = buildings.m_buffer[(int)nextGridBuilding].m_position;
+                        //begin mod
+                        int num6 = Mathf.Clamp((int)((double)position.x / 19.2f + HALFGRID), 0, GRID - 1);
+                        int num7 = Mathf.Clamp((int)((double)position.z / 19.2f + HALFGRID), 0, GRID - 1);
+                        //end mod
+                        if (num6 == cellX && num7 == cellZ)
+                            buildings.m_buffer[(int)nextGridBuilding].Info.m_buildingAI.ParkAreaChanged(nextGridBuilding, ref buildings.m_buffer[(int)nextGridBuilding], src, dest);
+                        nextGridBuilding = buildings.m_buffer[(int)nextGridBuilding].m_nextGridBuilding;
+                        if (++num5 >= 49152)
+                        {
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        [RedirectMethod]
+        private void MoveParkSegments(int cellX, int cellZ, byte src, byte dest)
+        {
+            //begin mod
+            int num1 = Mathf.Max((int)(((double)cellX - HALFGRID) * 19.2f / 64.0 + 135.0), 0);
+            int num2 = Mathf.Max((int)(((double)cellZ - HALFGRID) * 19.2f / 64.0 + 135.0), 0);
+            int num3 = Mathf.Min((int)(((double)cellX - HALFGRID + 1.0) * 19.2f / 64.0 + 135.0), 269);
+            int num4 = Mathf.Min((int)(((double)cellZ - HALFGRID + 1.0) * 19.2f / 64.0 + 135.0), 269);
+            //end mod
+            Array16<NetSegment> segments = Singleton<NetManager>.instance.m_segments;
+            Array16<NetNode> nodes = Singleton<NetManager>.instance.m_nodes;
+            ushort[] segmentGrid = Singleton<NetManager>.instance.m_segmentGrid;
+            for (int index1 = num2; index1 <= num4; ++index1)
+            {
+                for (int index2 = num1; index2 <= num3; ++index2)
+                {
+                    ushort nextGridSegment = segmentGrid[index1 * 270 + index2];
+                    int num5 = 0;
+                    while ((int)nextGridSegment != 0)
+                    {
+                        ushort startNode = segments.m_buffer[(int)nextGridSegment].m_startNode;
+                        ushort endNode = segments.m_buffer[(int)nextGridSegment].m_endNode;
+                        Vector3 vector3 = (nodes.m_buffer[(int)startNode].m_position + nodes.m_buffer[(int)endNode].m_position) * 0.5f;
+                        //begin mod
+                        int num6 = Mathf.Clamp((int)((double)vector3.x / 19.2f + HALFGRID), 0, GRID - 1);
+                        int num7 = Mathf.Clamp((int)((double)vector3.z / 19.2f + HALFGRID), 0, GRID - 1);
+                        //end mod
+                        if (num6 == cellX && num7 == cellZ)
+                            segments.m_buffer[(int)nextGridSegment].Info.m_netAI.ParkAreaChanged(nextGridSegment, ref segments.m_buffer[(int)nextGridSegment], src, dest);
+                        nextGridSegment = segments.m_buffer[(int)nextGridSegment].m_nextGridSegment;
+                        if (++num5 >= 36864)
+                        {
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        [RedirectMethod]
+        private void MoveParkProps(int cellX, int cellZ, byte src, byte dest)
+        {
+            //begin mod
+            int num1 = Mathf.Max((int)(((double)cellX - HALFGRID) * 19.2f / 64.0 + 135.0), 0);
+            int num2 = Mathf.Max((int)(((double)cellZ - HALFGRID) * 19.2f / 64.0 + 135.0), 0);
+            int num3 = Mathf.Min((int)(((double)cellX - HALFGRID + 1.0) * 19.2f / 64.0 + 135.0), 269);
+            int num4 = Mathf.Min((int)(((double)cellZ - HALFGRID + 1.0) * 19.2f / 64.0 + 135.0), 269);
+            //end mod
+            Array16<PropInstance> props = Singleton<PropManager>.instance.m_props;
+            ushort[] propGrid = Singleton<PropManager>.instance.m_propGrid;
+            for (int index1 = num2; index1 <= num4; ++index1)
+            {
+                for (int index2 = num1; index2 <= num3; ++index2)
+                {
+                    ushort nextGridProp = propGrid[index1 * 270 + index2];
+                    int num5 = 0;
+                    while ((int)nextGridProp != 0)
+                    {
+                        if (!props.m_buffer[(int)nextGridProp].Blocked)
+                        {
+                            Vector3 position = props.m_buffer[(int)nextGridProp].Position;
+                            //begin mod
+                            int num6 = Mathf.Clamp((int)((double)position.x / 19.2f + HALFGRID), 0, GRID - 1);
+                            int num7 = Mathf.Clamp((int)((double)position.z / 19.2f + HALFGRID), 0, GRID - 1);
+                            //end mod
+                            if (num6 == cellX && num7 == cellZ)
+                            {
+                                --this.m_parks.m_buffer[(int)src].m_propCount;
+                                ++this.m_parks.m_buffer[(int)dest].m_propCount;
+                            }
+                        }
+                        nextGridProp = props.m_buffer[(int)nextGridProp].m_nextGridProp;
+                        if (++num5 >= 65536)
+                        {
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        [RedirectMethod]
+        private void MoveParkTrees(int cellX, int cellZ, byte src, byte dest)
+        {
+            //begin mod
+            int num1 = Mathf.Max((int)(((double)cellX - HALFGRID) * 19.2f / 32.0 + 270.0), 0);
+            int num2 = Mathf.Max((int)(((double)cellZ - HALFGRID) * 19.2f / 32.0 + 270.0), 0);
+            int num3 = Mathf.Min((int)(((double)cellX - HALFGRID + 1.0) * 19.2f / 32.0 + 270.0), 539);
+            int num4 = Mathf.Min((int)(((double)cellZ - HALFGRID + 1.0) * 19.2f / 32.0 + 270.0), 539);
+            //end mod
+            Array32<TreeInstance> trees = Singleton<TreeManager>.instance.m_trees;
+            uint[] treeGrid = Singleton<TreeManager>.instance.m_treeGrid;
+            for (int index1 = num2; index1 <= num4; ++index1)
+            {
+                for (int index2 = num1; index2 <= num3; ++index2)
+                {
+                    uint nextGridTree = treeGrid[index1 * 540 + index2];
+                    int num5 = 0;
+                    while ((int)nextGridTree != 0)
+                    {
+                        if (trees.m_buffer[nextGridTree].GrowState != 0)
+                        {
+                            Vector3 position = trees.m_buffer[nextGridTree].Position;
+                            //begin mod
+                            int num6 = Mathf.Clamp((int)((double)position.x / 19.2f + HALFGRID), 0, GRID - 1);
+                            int num7 = Mathf.Clamp((int)((double)position.z / 19.2f + HALFGRID), 0, GRID - 1);
+                            //end mod
+                            if (num6 == cellX && num7 == cellZ)
+                            {
+                                --this.m_parks.m_buffer[(int)src].m_treeCount;
+                                ++this.m_parks.m_buffer[(int)dest].m_treeCount;
+                            }
+                        }
+                        nextGridTree = trees.m_buffer[nextGridTree].m_nextGridTree;
+                        if (++num5 >= 262144)
+                        {
+                            CODebugBase<LogChannel>.Error(LogChannel.Core, "Invalid list detected!\n" + System.Environment.StackTrace);
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
 
