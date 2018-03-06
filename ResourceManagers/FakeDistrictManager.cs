@@ -60,7 +60,7 @@ namespace EightyOne.ResourceManagers
                 var parkGrid = new DistrictManager.Cell[GRID * GRID];
                 EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
                 ReadGrid(disctrictGrid, @byte);
-                if (s.version >= 110020U)
+                if (s.version >= 2U)
                 {
                     ReadGrid(parkGrid, @byte);
                 }
@@ -361,7 +361,7 @@ namespace EightyOne.ResourceManagers
         private static Cell[] BuildGrid(Cell[] oldGrid)
         {
             var cells = new DistrictManager.Cell[GRID * GRID];
-            for (int i = 0; i < districtGrid.Length; i++)
+            for (int i = 0; i < oldGrid.Length; i++)
             {
                 cells[i].m_district1 = 0;
                 cells[i].m_district2 = 1;
@@ -1239,6 +1239,22 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
+        public byte SampleDistrict(Vector3 worldPos)
+        {
+            //begin mod
+            return FakeDistrictManager.SampleDistrict(worldPos, districtGrid);
+            //end mod
+        }
+
+        [RedirectMethod]
+        public byte SamplePark(Vector3 worldPos)
+        {
+            //begin mod
+            return FakeDistrictManager.SampleDistrict(worldPos, parkGrid);
+            //end mod
+        }
+
+        [RedirectMethod]
         private static byte SampleDistrict(Vector3 worldPos, DistrictManager.Cell[] grid) {
             //begin mod
             int num = Mathf.RoundToInt(worldPos.x * 13.333333f + (HALFGRID * HALFGRID) - HALFGRID);
@@ -1440,7 +1456,9 @@ namespace EightyOne.ResourceManagers
                 FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha3, ref cell.m_district1, ref cell.m_district3);
             if ((int)cell.m_alpha4 > (int)cell.m_alpha1)
                 FakeDistrictManager.Exchange(ref cell.m_alpha1, ref cell.m_alpha4, ref cell.m_district1, ref cell.m_district4);
-            this.m_parkGrid[index1] = cell;
+            //begin mod
+            parkGrid[index1] = cell;
+            //end mod
             this.m_parks.m_buffer[(int)cell.m_district1].m_totalAlpha += (uint)cell.m_alpha1;
             this.m_parks.m_buffer[(int)cell.m_district2].m_totalAlpha += (uint)cell.m_alpha2;
             this.m_parks.m_buffer[(int)cell.m_district3].m_totalAlpha += (uint)cell.m_alpha3;
