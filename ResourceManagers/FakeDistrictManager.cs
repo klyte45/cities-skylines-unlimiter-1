@@ -24,12 +24,6 @@ namespace EightyOne.ResourceManagers
                 DistrictManager instance = Singleton<DistrictManager>.instance;
                 InitializeDistrictBuffer(instance.m_districts.m_buffer, FakeDistrictManager.districtGrid);
                 InitializeParkBuffer(instance.m_parks.m_buffer, FakeDistrictManager.parkGrid);
-                instance.m_districtCount = (int)(instance.m_districts.ItemCount() - 1u);
-                instance.m_parkCount = (int)(instance.m_parks.ItemCount() - 1u);
-                instance.AreaModified(0, 0, GRID - 1, GRID - 11, true);
-                instance.ParksAreaModified(0, 0, GRID - 1, GRID - 1, true);
-                instance.NamesModified();
-                instance.ParkNamesModified();
             }
 
             private static void InitializeDistrictBuffer(District[] buffer, Cell[] cells)
@@ -318,14 +312,18 @@ namespace EightyOne.ResourceManagers
             parkGateCheckNeededField = typeof(DistrictManager).GetField("m_parkGateCheckNeeded", BindingFlags.Instance | BindingFlags.NonPublic);
 
             districtTexture1 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
-            districtTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture1.wrapMode = TextureWrapMode.Clamp;
+            typeof(DistrictManager).GetField("m_districtTexture1", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, districtTexture1); 
+            districtTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture2.wrapMode = TextureWrapMode.Clamp;
-
+            typeof(DistrictManager).GetField("m_districtTexture2", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, districtTexture2);
+            
             parkTexture1 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
-            parkTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             parkTexture1.wrapMode = TextureWrapMode.Clamp;
+            typeof(DistrictManager).GetField("m_parkTexture1", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, parkTexture1);
+            parkTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             parkTexture2.wrapMode = TextureWrapMode.Clamp;
+            typeof(DistrictManager).GetField("m_parkTexture2", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, parkTexture2);
 
             ID_DistrictsA1 = Shader.PropertyToID("_DistrictsA1");
             ID_DistrictsA2 = Shader.PropertyToID("_DistrictsA2");
@@ -344,17 +342,12 @@ namespace EightyOne.ResourceManagers
             {
                 nameMeshField.SetValue(DistrictManager.instance, null);
                 iconMeshField.SetValue(DistrictManager.instance, null);
-                districtsModifiedX1Field.SetValue(DistrictManager.instance, 0);
-                districtsModifiedZ1Field.SetValue(DistrictManager.instance, 0);
-                districtsModifiedX2Field.SetValue(DistrictManager.instance, GRID);
-                districtsModifiedZ2Field.SetValue(DistrictManager.instance, GRID);
-                fullDistrictsUpdateField.SetValue(DistrictManager.instance, true);
-                parksModifiedX1Field.SetValue(DistrictManager.instance, 0);
-                parksModifiedZ1Field.SetValue(DistrictManager.instance, 0);
-                parksModifiedX2Field.SetValue(DistrictManager.instance, GRID);
-                parksModifiedZ2Field.SetValue(DistrictManager.instance, GRID);
-                fullParksUpdateField.SetValue(DistrictManager.instance, true);
+
+                instance.AreaModified(0, 0, GRID - 1, GRID - 1, true);
+                instance.ParksAreaModified(0, 0, GRID - 1, GRID - 1, true);
+
                 DistrictManager.instance.NamesModified();
+                DistrictManager.instance.ParkNamesModified();
             });
         }
 
@@ -861,7 +854,7 @@ namespace EightyOne.ResourceManagers
                 }
                 for (int k = minZ; k <= maxZ; k++)
                 {
-                    for (int l = maxX; l <= maxX; l++)
+                    for (int l = minX; l <= maxX; l++)
                     {
                         //begin mod
                         int num8 = k * GRID + l;
