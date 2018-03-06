@@ -191,10 +191,16 @@ namespace EightyOne.Zones
                     flag2 = ((int)num7 & 65536) != 0;
                     num7 >>= 1;
                 }
-                if (num8 == 5 || num8 == 6)
+                switch (num8)
+                {
+                case 5:
+                case 6:
                     num8 = (!flag2 ? 4 : num8 - (Singleton<SimulationManager>.instance.m_randomizer.Int32(2U) + 2)) | 131072;
-                else if (num8 == 7)
+                    break;
+                case 7:
                     num8 = 4 | 131072;
+                    break;
+                }
                 if (flag1)
                     num8 |= 65536;
                 xBuffer[index] = num8;
@@ -257,7 +263,7 @@ namespace EightyOne.Zones
                             if (num9 <= 2)
                             {
                                 if (!flag1)
-                                    goto label_88;
+                                    goto label_87;
                             }
                             else
                                 --num9;
@@ -272,13 +278,13 @@ namespace EightyOne.Zones
                             if (num9 <= 2)
                             {
                                 if (!flag1)
-                                    goto label_88;
+                                    goto label_87;
                             }
                             else
                                 --num9;
                         }
                         else
-                            goto label_73;
+                            goto label_72;
                     }
                     else if (flag4)
                     {
@@ -287,37 +293,37 @@ namespace EightyOne.Zones
                             if (num9 <= 2)
                             {
                                 if (!flag1)
-                                    goto label_88;
+                                    goto label_87;
                             }
                             else
                                 --num9;
                         }
                         else
-                            goto label_79;
+                            goto label_78;
                     }
                     else if (index1 == index2)
                     {
                         if (num9 <= 2)
                         {
                             if (!flag1)
-                                goto label_88;
+                                goto label_87;
                         }
                         else
                             --num9;
                     }
                     else
-                        goto label_88;
+                        goto label_87;
                     flag1 = false;
                 }
                 ++index1;
                 --index2;
-                goto label_88;
-            label_73:
+                  goto label_87;
+            label_72:
                 ++index1;
-                goto label_88;
-            label_79:
+                goto label_87;
+            label_78:
                 --index2;
-            label_88:
+            label_87:
                 int index3;
                 int index4;
                 if (num9 == 1 && index2 - index1 >= 1)
@@ -542,14 +548,23 @@ namespace EightyOne.Zones
                             goto default;
                         default:
                             vector3 = block.m_position + VectorUtils.X_Y((float)((double)num13 * 0.5 - 4.0) * xDir + (float)((double)num12 * 0.5 + (double)z - 10.0) * zDir);
-                            if (zone == ItemClass.Zone.Industrial)
-                                ZoneBlock.GetIndustryType(vector3, out subService, out level);
-                            else if (zone == ItemClass.Zone.CommercialLow || zone == ItemClass.Zone.CommercialHigh)
-                                ZoneBlock.GetCommercialType(vector3, zone, width, num13, out subService, out level);
-                            else if (zone == ItemClass.Zone.ResidentialLow || zone == ItemClass.Zone.ResidentialHigh)
+                            switch (zone)
+                            {
+                              case ItemClass.Zone.ResidentialLow:
+                              case ItemClass.Zone.ResidentialHigh:
                                 ZoneBlock.GetResidentialType(vector3, zone, width, num13, out subService, out level);
-                            else if (zone == ItemClass.Zone.Office)
+                                break;
+                              case ItemClass.Zone.CommercialLow:
+                              case ItemClass.Zone.CommercialHigh:
+                                ZoneBlock.GetCommercialType(vector3, zone, width, num13, out subService, out level);
+                                break;
+                              case ItemClass.Zone.Industrial:
+                                ZoneBlock.GetIndustryType(vector3, out subService, out level);
+                                break;
+                              case ItemClass.Zone.Office:
                                 ZoneBlock.GetOfficeType(vector3, zone, width, num13, out subService, out level);
+                                break;
+                            }
                             byte district2 = instance2.GetDistrict(vector3);
                             ushort style = instance2.m_districts.m_buffer[(int)district2].m_Style;
                             if (Singleton<BuildingManager>.instance.m_BuildingWrapper != null)
@@ -557,10 +572,10 @@ namespace EightyOne.Zones
                             info = Singleton<BuildingManager>.instance.GetRandomBuildingInfo(ref Singleton<SimulationManager>.instance.m_randomizer, service, subService, level, width, num13, zoningMode3, (int)style);
                             if (info == null)
                                 break;
-                            goto label_169;
+                            goto label_165;
                     }
                 }
-            label_169:
+            label_165:
                 if (info == null || (double) Singleton<TerrainManager>.instance.WaterLevel(VectorUtils.XZ(vector3)) > (double) vector3.y || Singleton<DisasterManager>.instance.IsEvacuating(vector3))
                 {
                     return;
