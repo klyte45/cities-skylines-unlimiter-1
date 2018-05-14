@@ -625,9 +625,13 @@ namespace EightyOne.ResourceManagers
                     if (this.m_parks.m_buffer[park].m_flags != DistrictPark.Flags.None)
                     {
                         string empty = string.Empty;
-                        for (int index = 1; (DistrictPark.ParkLevel)index <= this.m_parks.m_buffer[park].m_parkLevel; ++index)
-                            empty += "<sprite ParkLevelStar>";
-                        string text = empty + "\n" + this.GetParkName(park) + "\n";
+                        if (this.m_parks.m_buffer[park].m_mainGate != (ushort)0)
+                        {
+                            for (int index = 1; (DistrictPark.ParkLevel)index <= this.m_parks.m_buffer[park].m_parkLevel; ++index)
+                                empty += "<sprite ParkLevelStar>";
+                            empty += "\n";
+                        }
+                        string text = empty + this.GetParkName(park) + "\n";
                         for (int index = 0; index < orderedEnumData.Length; ++index)
                         {
                             if (this.IsParkPolicySet(orderedEnumData[index].enumValue, (byte)park))
