@@ -303,10 +303,12 @@ namespace EightyOne.ResourceManagers
             DistrictManager instance = Singleton<DistrictManager>.instance;
             Vector3 nameLocation = instance.m_parks.m_buffer[(int) park].m_nameLocation;
             FakeImmaterialResourceManager.CellLocation index;
-            index.m_x = (byte) Mathf.Clamp((int) ((double) nameLocation.x / 38.4000015258789 + 128.0), 0,
-                (int) byte.MaxValue);
-            index.m_z = (byte) Mathf.Clamp((int) ((double) nameLocation.z / 38.4000015258789 + 128.0), 0,
-                (int) byte.MaxValue);
+            //begin mod
+            index.m_x = (byte) Mathf.Clamp((int) ((double) nameLocation.x / 38.4000015258789 + HALFGRID), 0,
+                GRID - 1);
+            index.m_z = (byte) Mathf.Clamp((int) ((double) nameLocation.z / 38.4000015258789 + HALFGRID), 0,
+                GRID - 1);
+            //end mod
             FakeImmaterialResourceManager.AreaQueueItem areaQueueItem1;
             areaQueueItem1.m_cost = 0;
             areaQueueItem1.m_location = index;
@@ -410,7 +412,9 @@ namespace EightyOne.ResourceManagers
                             }
                         }
                     }
-                    if ((int) areaQueueItem1.m_location.m_x < (int) byte.MaxValue &&
+                    //begin mod
+                    if ((int) areaQueueItem1.m_location.m_x < (int) (GRID - 1) &&
+                        //end mod
                         (int) areaQueueItem1.m_location.m_x >= (int) areaQueueItem1.m_source.m_x)
                     {
                         FakeImmaterialResourceManager.AreaQueueItem areaQueueItem2;
@@ -447,7 +451,9 @@ namespace EightyOne.ResourceManagers
                             }
                         }
                     }
-                    if ((int) areaQueueItem1.m_location.m_z < (int) byte.MaxValue &&
+                    //begin mod
+                    if ((int) areaQueueItem1.m_location.m_z < (int)(GRID - 1) &&
+                        //end mod
                         (int) areaQueueItem1.m_location.m_z >= (int) areaQueueItem1.m_source.m_z)
                     {
                         FakeImmaterialResourceManager.AreaQueueItem areaQueueItem2;
