@@ -304,9 +304,9 @@ namespace EightyOne.ResourceManagers
             Vector3 nameLocation = instance.m_parks.m_buffer[(int) park].m_nameLocation;
             FakeImmaterialResourceManager.CellLocation index;
             //begin mod
-            index.m_x = (byte) Mathf.Clamp((int) ((double) nameLocation.x / 38.4000015258789 + HALFGRID), 0,
+            index.m_x = (short) Mathf.Clamp((int) ((double) nameLocation.x / 38.4000015258789 + HALFGRID), 0,
                 GRID - 1);
-            index.m_z = (byte) Mathf.Clamp((int) ((double) nameLocation.z / 38.4000015258789 + HALFGRID), 0,
+            index.m_z = (short) Mathf.Clamp((int) ((double) nameLocation.z / 38.4000015258789 + HALFGRID), 0,
                 GRID - 1);
             //end mod
             FakeImmaterialResourceManager.AreaQueueItem areaQueueItem1;
@@ -342,7 +342,9 @@ namespace EightyOne.ResourceManagers
                         (int) areaQueueItem1.m_source.m_x)
                     {
                         FakeImmaterialResourceManager.AreaQueueItem areaQueueItem2;
-                        areaQueueItem2.m_location.m_x = (byte) ((uint) areaQueueItem1.m_location.m_x - 1U);
+                        //begin mod: cast to short instead of byte
+                        areaQueueItem2.m_location.m_x = (short) ((uint) areaQueueItem1.m_location.m_x - 1U);
+                        //end mod
                         areaQueueItem2.m_location.m_z = areaQueueItem1.m_location.m_z;
                         if (!m_tempAreaCost.TryGetValue(areaQueueItem2.m_location, out num6))
                             num6 = num4 + 1;
@@ -380,7 +382,9 @@ namespace EightyOne.ResourceManagers
                     {
                         FakeImmaterialResourceManager.AreaQueueItem areaQueueItem2;
                         areaQueueItem2.m_location.m_x = areaQueueItem1.m_location.m_x;
-                        areaQueueItem2.m_location.m_z = (byte) ((uint) areaQueueItem1.m_location.m_z - 1U);
+                        //begin mod: cast to short instead of byte
+                        areaQueueItem2.m_location.m_z = (short) ((uint) areaQueueItem1.m_location.m_z - 1U);
+                        //end mod
                         if (!m_tempAreaCost.TryGetValue(areaQueueItem2.m_location, out num6))
                             num6 = num4 + 1;
                         if (num6 != 0)
@@ -418,7 +422,9 @@ namespace EightyOne.ResourceManagers
                         (int) areaQueueItem1.m_location.m_x >= (int) areaQueueItem1.m_source.m_x)
                     {
                         FakeImmaterialResourceManager.AreaQueueItem areaQueueItem2;
-                        areaQueueItem2.m_location.m_x = (byte) ((uint) areaQueueItem1.m_location.m_x + 1U);
+                        //begin mod: case to short instead of byte
+                        areaQueueItem2.m_location.m_x = (short) ((uint) areaQueueItem1.m_location.m_x + 1U);
+                        //end mod
                         areaQueueItem2.m_location.m_z = areaQueueItem1.m_location.m_z;
                         if (!m_tempAreaCost.TryGetValue(areaQueueItem2.m_location, out num6))
                             num6 = num4 + 1;
@@ -458,7 +464,9 @@ namespace EightyOne.ResourceManagers
                     {
                         FakeImmaterialResourceManager.AreaQueueItem areaQueueItem2;
                         areaQueueItem2.m_location.m_x = areaQueueItem1.m_location.m_x;
-                        areaQueueItem2.m_location.m_z = (byte) ((uint) areaQueueItem1.m_location.m_z + 1U);
+                        //begin mod: cast to short instead of byte
+                        areaQueueItem2.m_location.m_z = (short) ((uint) areaQueueItem1.m_location.m_z + 1U);
+                        //end mod
                         if (!m_tempAreaCost.TryGetValue(areaQueueItem2.m_location, out num6))
                             num6 = num4 + 1;
                         if (num6 != 0)
@@ -1127,8 +1135,10 @@ namespace EightyOne.ResourceManagers
 
         private struct CellLocation
         {
-            public byte m_x;
-            public byte m_z;
+            //beign mod: change to short to fit within [0, GRID-1)
+            public short m_x;
+            public short m_z;
+            //end mod
         }
 
         private struct AreaQueueItem
