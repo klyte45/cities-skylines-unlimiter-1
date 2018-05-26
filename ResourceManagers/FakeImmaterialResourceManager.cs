@@ -334,7 +334,7 @@ namespace EightyOne.ResourceManagers
                     //begin mod
                     this.AddResource(
                         ref m_localTempResources[
-                            ((int) areaQueueItem1.m_location.m_z * HALFGRID + (int) areaQueueItem1.m_location.m_x) * 25 +
+                            ((int) areaQueueItem1.m_location.m_z * GRID + (int) areaQueueItem1.m_location.m_x) * 25 +
                             num3], rate1);
                     //end mod
                     num5 += rate1;
@@ -1041,7 +1041,7 @@ namespace EightyOne.ResourceManagers
                     if ((double) f2 < (double) num2 * (double) num2)
                     {
                         //begin mod
-                        int localFinalResource = (int) m_localFinalResources[(index1 * HALFGRID + index2) * 25 + num3];
+                        int localFinalResource = (int) m_localFinalResources[(index1 * GRID + index2) * 25 + num3];
                         //end mod
                         if ((double) f2 > (double) num1 * (double) num1)
                         {
