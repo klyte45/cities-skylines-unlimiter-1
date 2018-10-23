@@ -587,10 +587,10 @@ namespace EightyOne.ResourceManagers
                                 vertices2.Add(new Vector3(-x2, vector2.y, 1f));
                                 vertices2.Add(new Vector3(x2, vector2.y, 1f));
                                 vertices2.Add(new Vector3(x2, -vector2.y, 1f));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
                                 uvs2.Add(new Vector2(-1f, -1f));
                                 uvs2.Add(new Vector2(-1f, 1f));
                                 uvs2.Add(new Vector2(1f, 1f));
@@ -653,7 +653,7 @@ namespace EightyOne.ResourceManagers
                                     dynamicFontRenderer.spriteBuffer = uiRenderData;
                                 }
                                 float x1 = 450f;
-                                renderer.defaultColor = new Color32((byte)0, byte.MaxValue, (byte)0, byte.MaxValue);
+                                renderer.defaultColor = new Color32(!this.m_parks.m_buffer[park].IsIndustry ? (byte) 0 : byte.MaxValue, !this.m_parks.m_buffer[park].IsPark ? (byte) 0 : byte.MaxValue, (byte) 0, byte.MaxValue);
                                 renderer.textScale = 1.6f;
                                 renderer.pixelRatio = 1f;
                                 renderer.processMarkup = true;
@@ -678,10 +678,10 @@ namespace EightyOne.ResourceManagers
                                 vertices2.Add(new Vector3(-x2, vector2.y, 1f));
                                 vertices2.Add(new Vector3(x2, vector2.y, 1f));
                                 vertices2.Add(new Vector3(x2, -vector2.y, 1f));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
-                                colors2.Add(new Color32(byte.MaxValue, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
+                                colors2.Add(new Color32((byte)0, (byte)0, (byte)0, byte.MaxValue));
                                 uvs2.Add(new Vector2(-1f, -1f));
                                 uvs2.Add(new Vector2(-1f, 1f));
                                 uvs2.Add(new Vector2(1f, 1f));

@@ -53,8 +53,8 @@ namespace EightyOne.ResourceManagers
                 }
             }
 
-            m_localFinalResources = new ushort[GRID * GRID * 25];
-            m_localTempResources = new ushort[GRID * GRID * 25];
+            m_localFinalResources = new ushort[GRID * GRID * 26];
+            m_localTempResources = new ushort[GRID * GRID * 26];
             m_globalFinalResources = (int[]) typeof(ImmaterialResourceManager)
                 .GetField("m_globalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(ImmaterialResourceManager.instance);
@@ -214,7 +214,7 @@ namespace EightyOne.ResourceManagers
         {
             x = Mathf.Clamp(x, 0, GRID - 1);
             z = Mathf.Clamp(z, 0, GRID - 1);
-            int num = (int) ((z * GRID + x) * 25 + ImmaterialResourceManager.instance.ResourceMapVisible);
+            int num = (int) ((z * GRID + x) * 26 + ImmaterialResourceManager.instance.ResourceMapVisible);
             amount += (int) m_localFinalResources[num] * multiplier;
         }
 
@@ -281,7 +281,7 @@ namespace EightyOne.ResourceManagers
                             float num11 = Mathf.Clamp01((num2 - Mathf.Sqrt(num9)) / (num2 - num));
                             num10 = Mathf.RoundToInt((float) num10 * num11);
                         }
-                        int num12 = (int) ((i * GRID + j) * 25 + resource);
+                        int num12 = (int) ((i * GRID + j) * 26 + resource);
                         AddResource(ImmaterialResourceManager.instance, ref m_localTempResources[num12], num10);
                     }
                 }
@@ -334,7 +334,7 @@ namespace EightyOne.ResourceManagers
                     //begin mod
                     this.AddResource(
                         ref m_localTempResources[
-                            ((int) areaQueueItem1.m_location.m_z * GRID + (int) areaQueueItem1.m_location.m_x) * 25 +
+                            ((int) areaQueueItem1.m_location.m_z * GRID + (int) areaQueueItem1.m_location.m_x) * 26 +
                             num3], rate1);
                     //end mod
                     num5 += rate1;
@@ -622,7 +622,7 @@ namespace EightyOne.ResourceManagers
                                         Mathf.Clamp01(
                                             (float) (((double) num2 - (double) b1) / ((double) num2 - (double) num1)));
                                 //begin mod
-                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 25 + num3],
+                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 26 + num3],
                                     Mathf.RoundToInt(f2));
                                 //end mod
                             }
@@ -683,7 +683,7 @@ namespace EightyOne.ResourceManagers
                                         Mathf.Clamp01(
                                             (float) (((double) num2 - (double) b1) / ((double) num2 - (double) num1)));
                                 //begin mod
-                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 25 + num3],
+                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 26 + num3],
                                     Mathf.RoundToInt(f2));
                                 //end mod
                             }
@@ -742,6 +742,7 @@ namespace EightyOne.ResourceManagers
             int num9 = (int) buffer[index + 22] + global[22];
             int resourceRate14 = (int) buffer[index + 23] + global[23];
             int num10 = (int) buffer[index + 24] + global[24];
+            int resourceRate15 = (int) buffer[index + 25] + global[25];
             //begin mod
             Rect area = new Rect((float) (((double) x - HALFGRID - 1.5) * 38.4000015258789),
                 (float) (((double) z - HALFGRID - 1.5) * 38.4000015258789), 153.6f, 153.6f);
@@ -753,7 +754,7 @@ namespace EightyOne.ResourceManagers
                 out waterProximity, out treeProximity);
             int num11 = (int) ((double) groundPollution * 100.0);
             int num12 = (int) ((double) waterProximity * 100.0);
-            int resourceRate15 = (int) ((double) treeProximity * 100.0);
+            int resourceRate16 = (int) ((double) treeProximity * 100.0);
             if (num12 > 33 && num12 < 99)
             {
                 //begin mod
@@ -763,22 +764,22 @@ namespace EightyOne.ResourceManagers
                 Singleton<NaturalResourceManager>.instance.AverageWater(area, out waterProximity);
                 num12 = Mathf.Max(Mathf.Min(num12, (int) ((double) waterProximity * 100.0)), 33);
             }
-            int resourceRate16 = num8 * 2 / (resourceRate2 + 50);
-            int resourceRate17 = (num1 * (100 - resourceRate15) + 50) / 100;
-            int resourceRate18;
+            int resourceRate17 = num8 * 2 / (resourceRate2 + 50);
+            int resourceRate18 = (num1 * (100 - resourceRate16) + 50) / 100;
             int resourceRate19;
             int resourceRate20;
+            int resourceRate21;
             if (a == 0)
             {
-                resourceRate18 = 0;
-                resourceRate19 = 50;
+                resourceRate19 = 0;
                 resourceRate20 = 50;
+                resourceRate21 = 50;
             }
             else
             {
-                resourceRate18 = num2 / a;
-                resourceRate19 = num3 / a;
-                resourceRate20 = num4 / a;
+                resourceRate19 = num2 / a;
+                resourceRate20 = num3 / a;
+                resourceRate21 = num4 / a;
                 num7 += Mathf.Min(a, 10) * 10;
             }
             int num13;
@@ -795,30 +796,8 @@ namespace EightyOne.ResourceManagers
             {
                 int num15 = ImmaterialResourceManager.CalculateResourceEffect(num12, 33, 67, 300, 0) *
                             Mathf.Max(0, 32 - num11) >> 5;
-                int resourceEffect = ImmaterialResourceManager.CalculateResourceEffect(resourceRate15, 10, 100, 0, 30);
-                num13 = (num5 + ImmaterialResourceManager.CalculateResourceEffect(resourceRate1, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate3, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate2, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate4, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate5, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate6, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate7, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate8, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate11, 100, 500, 50, 100) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate9, 100, 500, 100, 200) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate20, 60, 100, 0, 50) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate19, 60, 100, 0, 50) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate12, 50, 100, 20, 25) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate14, 50, 100, 20, 25) +
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate13, 100, 1000, 0, 25) -
-                         ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate20, 60, 100, 0, 50) -
-                         ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate19, 60, 100, 0, 50) -
-                         ImmaterialResourceManager.CalculateResourceEffect(num11, 50, (int) byte.MaxValue, 50, 100) -
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate17, 10, 100, 0, 100) -
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate18, 10, 100, 0, 100) -
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate16, 50, 100, 10, 50) -
-                         ImmaterialResourceManager.CalculateResourceEffect(resourceRate10, 15, 50, 100, 200) + num15) /
-                        10;
+            int resourceEffect = ImmaterialResourceManager.CalculateResourceEffect(resourceRate16, 10, 100, 0, 30);
+            num13 = (num5 + ImmaterialResourceManager.CalculateResourceEffect(resourceRate1, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate3, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate2, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate4, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate5, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate6, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate7, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate8, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate11, 100, 500, 50, 100) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate9, 100, 500, 100, 200) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate21, 60, 100, 0, 50) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate20, 60, 100, 0, 50) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate12, 50, 100, 20, 25) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate14, 50, 100, 20, 25) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate13, 100, 1000, 0, 25) + ImmaterialResourceManager.CalculateResourceEffect(resourceRate15, 100, 200, 20, 30) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate21, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(100 - resourceRate20, 60, 100, 0, 50) - ImmaterialResourceManager.CalculateResourceEffect(num11, 50, (int) byte.MaxValue, 50, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate18, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate19, 10, 100, 0, 100) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate17, 50, 100, 10, 50) - ImmaterialResourceManager.CalculateResourceEffect(resourceRate10, 15, 50, 100, 200) + num15) / 10;
                 num14 = num6 + num15 * 25 / 300 + resourceEffect;
             }
             int num16 = Mathf.Clamp(resourceRate1, 0, (int) ushort.MaxValue);
@@ -829,16 +808,16 @@ namespace EightyOne.ResourceManagers
             int num21 = Mathf.Clamp(resourceRate6, 0, (int) ushort.MaxValue);
             int num22 = Mathf.Clamp(resourceRate7, 0, (int) ushort.MaxValue);
             int num23 = Mathf.Clamp(resourceRate8, 0, (int) ushort.MaxValue);
-            int num24 = Mathf.Clamp(resourceRate17, 0, (int) ushort.MaxValue);
-            int num25 = Mathf.Clamp(resourceRate18, 0, (int) ushort.MaxValue);
-            int num26 = Mathf.Clamp(resourceRate19, 0, (int) ushort.MaxValue);
-            int num27 = Mathf.Clamp(resourceRate20, 0, (int) ushort.MaxValue);
+            int num24 = Mathf.Clamp(resourceRate18, 0, (int) ushort.MaxValue);
+            int num25 = Mathf.Clamp(resourceRate19, 0, (int) ushort.MaxValue);
+            int num26 = Mathf.Clamp(resourceRate20, 0, (int) ushort.MaxValue);
+            int num27 = Mathf.Clamp(resourceRate21, 0, (int) ushort.MaxValue);
             int num28 = Mathf.Clamp(a, 0, (int) ushort.MaxValue);
             int num29 = Mathf.Clamp(resourceRate9, 0, (int) ushort.MaxValue);
             int landvalue = Mathf.Clamp(num13, 0, (int) ushort.MaxValue);
             int num30 = Mathf.Clamp(num14, 0, (int) ushort.MaxValue);
             int coverage = Mathf.Clamp(num7, 0, (int) ushort.MaxValue);
-            int num31 = Mathf.Clamp(resourceRate16, 0, (int) ushort.MaxValue);
+            int num31 = Mathf.Clamp(resourceRate17, 0, (int) ushort.MaxValue);
             int num32 = Mathf.Clamp(resourceRate10, 0, (int) ushort.MaxValue);
             int num33 = Mathf.Clamp(resourceRate11, 0, (int) ushort.MaxValue);
             int num34 = Mathf.Clamp(resourceRate12, 0, (int) ushort.MaxValue);
@@ -846,6 +825,7 @@ namespace EightyOne.ResourceManagers
             int num36 = Mathf.Clamp(num9, 0, (int) ushort.MaxValue);
             int num37 = Mathf.Clamp(resourceRate14, 0, (int) ushort.MaxValue);
             int num38 = Mathf.Clamp(num10, 0, (int) ushort.MaxValue);
+            int num39 = Mathf.Clamp(resourceRate15, 0, (int) ushort.MaxValue);
             DistrictManager instance = Singleton<DistrictManager>.instance;
             //begin mod
             byte district = instance.GetDistrict(x * FakeDistrictManager.GRID / GRID,
@@ -886,6 +866,11 @@ namespace EightyOne.ResourceManagers
             if (num22 != (int) target[index + 6])
             {
                 target[index + 6] = (ushort) num22;
+                flag = true;
+            }
+            if (num39 != (int) target[index + 25])
+            {
+                target[index + 25] = (ushort) num39;
                 flag = true;
             }
             if (num23 != (int) target[index + 7])
@@ -987,7 +972,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int) (position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int) (position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int) ((num2 * GRID + num) * 25 + resource);
+            int num3 = (int) ((num2 * GRID + num) * 26 + resource);
             local = (int) m_localFinalResources[num3];
             total = m_totalFinalResources[(int) resource];
         }
@@ -997,7 +982,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int) (position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int) (position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int) ((num2 * GRID + num) * 25 + resource);
+            int num3 = (int) ((num2 * GRID + num) * 26 + resource);
             local = (int) m_localFinalResources[num3];
         }
 
@@ -1006,7 +991,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int) (position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int) (position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            index = (num2 * GRID + num) * 25;
+            index = (num2 * GRID + num) * 26;
             resources = m_localFinalResources;
         }
 
@@ -1088,7 +1073,7 @@ namespace EightyOne.ResourceManagers
                 int num4 = GRID - 1;
                 for (int x = num3; x <= num4; ++x)
                 {
-                    int index1 = (z * GRID + x) * 25;
+                    int index1 = (z * GRID + x) * 26;
                     if (CalculateLocalResources(x, z, m_localTempResources, m_globalFinalResources,
                         m_localFinalResources, index1))
                     {
@@ -1098,7 +1083,7 @@ namespace EightyOne.ResourceManagers
                         maxZ = Math.Max(maxZ, z);
                     }
                     int num5 = (int) m_localFinalResources[index1 + 16];
-                    for (int index2 = 0; index2 < 25; ++index2)
+                    for (int index2 = 0; index2 < 26; ++index2)
                     {
                         int num6 = (int) m_localFinalResources[index1 + index2];
                         m_totalTempResources[index2] += num6;
@@ -1115,14 +1100,14 @@ namespace EightyOne.ResourceManagers
                 //end mod
                 StatisticBase statisticBase =
                     Singleton<StatisticsManager>.instance.Acquire<StatisticArray>(StatisticType.ImmaterialResource);
-                for (int index = 0; index < 25; ++index)
+                for (int index = 0; index < 26; ++index)
                 {
                     //begin mod
                     m_globalFinalResources[index] = m_globalTempResources[index];
                     m_globalTempResources[index] = 0;
                     m_totalTempResources[index] = 0;
                     m_totalTempResourcesMul[index] = 0;
-                    statisticBase.Acquire<StatisticInt32>(index, 25).Set(m_totalFinalResources[index]);
+                    statisticBase.Acquire<StatisticInt32>(index, 26).Set(m_totalFinalResources[index]);
                     //end mod
                 }
             }

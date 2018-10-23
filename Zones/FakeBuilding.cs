@@ -82,7 +82,7 @@ namespace EightyOne.Zones
             if (!secondary ? zone1 == ItemClass.Zone.CommercialHigh || zone1 == ItemClass.Zone.ResidentialHigh : zone2 == ItemClass.Zone.CommercialHigh || zone2 == ItemClass.Zone.ResidentialHigh)
                 b.m_flags |= Building.Flags.HighDensity;
             else
-                b.m_flags &= ~Building.Flags.HighDensity;
+                b.m_flags &= Building.Flags.ContentMask | Building.Flags.IncomingOutgoing | Building.Flags.CapacityFull | Building.Flags.Created | Building.Flags.Deleted | Building.Flags.Original | Building.Flags.CustomName | Building.Flags.Untouchable | Building.Flags.FixedHeight | Building.Flags.RateReduced | Building.Flags.RoadAccessFailed | Building.Flags.Evacuating | Building.Flags.Completed | Building.Flags.Active | Building.Flags.Abandoned | Building.Flags.Demolishing | Building.Flags.ZonesUpdated | Building.Flags.Downgrading | Building.Flags.Collapsed | Building.Flags.Upgrading | Building.Flags.SecondaryLoading | Building.Flags.Hidden | Building.Flags.EventActive | Building.Flags.Flooded | Building.Flags.Filling | Building.Flags.Historical;
             return true;
         }
 

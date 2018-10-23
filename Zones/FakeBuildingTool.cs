@@ -425,6 +425,11 @@ namespace EightyOne.Zones
                             int constructionCost2;
                             toolErrors1 |= buildingInfo.m_buildingAI.CheckBuildPosition((ushort)relocating, ref position, ref angle, waterHeight, elevation, ref connectionSegment2, out productionRate2, out constructionCost2);
                             constructionCost1 += constructionCost2;
+                            if ((productionRate2 & 268435456) != 0)
+                            {
+                                connectionSegment1 = connectionSegment2;
+                                productionRate1 = productionRate2 & 268435455;
+                            }
                         }
                     }
                     if (flag && Singleton<EconomyManager>.instance.PeekResource(EconomyManager.Resource.Construction, constructionCost1) != constructionCost1)
