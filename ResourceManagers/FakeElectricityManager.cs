@@ -522,17 +522,14 @@ namespace EightyOne.ResourceManagers
         [IgnoreIfRemoveNeedForPowerLinesEnabled]
         public void CheckElectricity(Vector3 pos, out bool electricity)
         {
-            if ((Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.AssetEditor) !=
-                ItemClass.Availability.None)
+            if ((Singleton<ToolManager>.instance.m_properties.m_mode & ItemClass.Availability.AssetEditor) != ItemClass.Availability.None)
             {
                 electricity = true;
             }
             else
             {
-                int num = Mathf.Clamp((int) (pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0,
-                    GRID - 1);
-                int num2 = Mathf.Clamp((int) (pos.z / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0,
-                    GRID - 1);
+                int num = Mathf.Clamp((int) (pos.x / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
+                int num2 = Mathf.Clamp((int) (pos.z / ElectricityManager.ELECTRICITYGRID_CELL_SIZE + HALFGRID), 0, GRID - 1);
                 int num3 = num2 * GRID + num;
                 electricity = electricityGrid[num3].m_electrified;
             }

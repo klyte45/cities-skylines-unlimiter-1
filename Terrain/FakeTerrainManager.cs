@@ -27,7 +27,7 @@ namespace EightyOne.Terrain
         public new float GetTileFlatness(int x, int z)
         {
             //begin mod
-            return this.m_patches[z * 9 + x].m_flatness;
+            return this.m_patches[z * FakeGameAreaManager.GRID + x].m_flatness;
             //end mod
         }
 
