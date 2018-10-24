@@ -29,7 +29,7 @@ namespace EightyOne.DataExtensions
 
             using (var ms = new MemoryStream())
             {
-                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 2u, new FakeDistrictManager.Data());
+                DataSerializer.Serialize(ms, DataSerializer.Mode.Memory, 3u, new FakeDistrictManager.Data());
                 var data = ms.ToArray();
                 serializableDataManager.SaveData(id, data);
             }

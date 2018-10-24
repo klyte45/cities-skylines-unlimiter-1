@@ -50,13 +50,21 @@ namespace EightyOne.ResourceManagers
 
             public void Deserialize(DataSerializer s)
             {
-                var disctrictGrid = new DistrictManager.Cell[GRID * GRID];
+                var districtGrid = new DistrictManager.Cell[GRID * GRID];
                 var parkGrid = new DistrictManager.Cell[GRID * GRID];
                 EncodedArray.Byte @byte = EncodedArray.Byte.BeginRead(s);
-                ReadGrid(disctrictGrid, @byte);
+                ReadGrid(districtGrid, @byte);
+                if (s.version == 2U)
+                {
+                    RepairGrid(districtGrid);     
+                }
                 if (s.version >= 2U)
                 {
                     ReadGrid(parkGrid, @byte);
+                    if (s.version == 2U)
+                    {
+                        RepairGrid(parkGrid);     
+                    }
                 }
                 else
                 {
@@ -64,8 +72,24 @@ namespace EightyOne.ResourceManagers
                 }
                 @byte.EndRead();
 
-                FakeDistrictManager.districtGrid = disctrictGrid;
+                FakeDistrictManager.districtGrid = districtGrid;
                 FakeDistrictManager.parkGrid = parkGrid;
+            }
+
+            private static void RepairGrid(Cell[] grid)
+            {
+                int gridLength = grid.Length;
+                for (int num25 = 0; num25 < gridLength; num25++)
+                {
+                    if (grid[num25].m_district1 != 0)
+                    {
+                        continue;
+                    }
+                    grid[num25].m_alpha1 = 255;
+                    grid[num25].m_alpha2 = 0;
+                    grid[num25].m_alpha3 = 0;
+                    grid[num25].m_alpha4 = 0;
+                }
             }
 
             private static void ReadGrid(Cell[] grid, EncodedArray.Byte @byte)
@@ -126,7 +150,7 @@ namespace EightyOne.ResourceManagers
                 }
                 for (int num25 = 0; num25 < gridLength; num25++)
                 {
-                    grid[num25].m_alpha1 = 0;
+                    grid[num25].m_alpha1 = 255;
                 }
                 for (int num26 = 0; num26 < gridLength; num26++)
                 {
@@ -354,7 +378,7 @@ namespace EightyOne.ResourceManagers
         private static Cell[] BuildGrid(Cell[] oldGrid)
         {
             var cells = new DistrictManager.Cell[GRID * GRID];
-            for (int i = 0; i < oldGrid.Length; i++)
+            for (int i = 0; i < cells.Length; i++)
             {
                 cells[i].m_district1 = 0;
                 cells[i].m_district2 = 1;
