@@ -35,6 +35,43 @@ namespace EightyOne
                 false);
             }
 
+            SimulationManager.instance.AddAction(FixNotInParkProblem);
+            
+        }
+
+        private static void FixNotInParkProblem()
+        {
+            for (uint i = 0; i < BuildingManager.instance.m_buildings.m_size; i++)
+            {
+                var data = BuildingManager.instance.m_buildings.m_buffer[i];
+                if (data.Info == null || !(data.Info.m_buildingAI is IndustryBuildingAI))
+                {
+                    continue;
+                }
+                DistrictManager instance = Singleton<DistrictManager>.instance;
+                if ((data.m_problems & Notification.Problem.NotInIndustryArea) != Notification.Problem.None)
+                {
+                    byte park = instance.GetPark(data.m_position);
+                    if (park != (byte) 0)
+                    {
+                        if (!instance.m_parks.m_buffer[(int) park].IsIndustry)
+                            park = (byte) 0;
+                        else
+                        {
+                            var industryBuildingAi = ((IndustryBuildingAI) data.Info.m_buildingAI);
+                            if (industryBuildingAi.m_industryType == DistrictPark.ParkType.Industry ||
+                                industryBuildingAi.m_industryType != instance.m_parks.m_buffer[(int) park].m_parkType)
+                                park = (byte) 0;
+                        }
+                    }
+
+                    if (park != 0)
+                    {
+                        BuildingManager.instance.m_buildings.m_buffer[i].m_problems = Notification.RemoveProblems(data.m_problems,
+                            Notification.Problem.NotInIndustryArea);
+                    }
+                }
+            }
         }
 
         public override void OnLevelUnloading()
