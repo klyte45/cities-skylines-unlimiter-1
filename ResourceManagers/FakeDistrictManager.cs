@@ -677,7 +677,7 @@ namespace EightyOne.ResourceManagers
                                     dynamicFontRenderer.spriteBuffer = uiRenderData;
                                 }
                                 float x1 = 450f;
-                                renderer.defaultColor = new Color32(!this.m_parks.m_buffer[park].IsIndustry ? (byte) 0 : byte.MaxValue, !this.m_parks.m_buffer[park].IsPark ? (byte) 0 : byte.MaxValue, (byte) 0, byte.MaxValue);
+                                renderer.defaultColor = new Color32(this.m_parks.m_buffer[park].IsIndustry || this.m_parks.m_buffer[park].IsCampus ? byte.MaxValue : (byte) 0, this.m_parks.m_buffer[park].IsPark || this.m_parks.m_buffer[park].IsCampus ? byte.MaxValue : (byte) 0, (byte) 0, byte.MaxValue);
                                 renderer.textScale = 1.6f;
                                 renderer.pixelRatio = 1f;
                                 renderer.processMarkup = true;

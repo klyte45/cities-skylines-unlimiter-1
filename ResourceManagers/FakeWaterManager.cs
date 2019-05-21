@@ -665,14 +665,14 @@ namespace EightyOne.ResourceManagers
                 }
                 if (pos.z > num4 && num2 < GRID - 1)
                 {
-                    if (CheckWaterImpl(pos, num + 1, num2 + 1, out water, out sewage, out waterPollution))
+                    if (!CheckWaterImpl(pos, num + 1, num2 + 1, out water, out sewage, out waterPollution))
                     {
-                        return;
+                        ;
                     }
                 }
                 else if (pos.z < num4 && num2 > 0 && CheckWaterImpl(pos, num + 1, num2 - 1, out water, out sewage, out waterPollution))
                 {
-                    return;
+                    ;
                 }
             }
             else if (pos.x < num3 && num > 0)
@@ -683,14 +683,14 @@ namespace EightyOne.ResourceManagers
                 }
                 if (pos.z > num4 && num2 < GRID - 1)
                 {
-                    if (CheckWaterImpl(pos, num - 1, num2 + 1, out water, out sewage, out waterPollution))
+                    if (!CheckWaterImpl(pos, num - 1, num2 + 1, out water, out sewage, out waterPollution))
                     {
-                        return;
+                        ;
                     }
                 }
                 else if (pos.z < num4 && num2 > 0 && CheckWaterImpl(pos, num - 1, num2 - 1, out water, out sewage, out waterPollution))
                 {
-                    return;
+                    ;
                 }
             }
         }
@@ -760,7 +760,7 @@ namespace EightyOne.ResourceManagers
                 if ((double)pos.z > (double)num2 && z < GRID - 1)
                 //end mod
                 {
-                    if (CheckHeatingImpl(pos, x + 1, z + 1, out heating))
+                    if (!CheckHeatingImpl(pos, x + 1, z + 1, out heating))
                         ;
                 }
                 else if ((double)pos.z >= (double)num2 || z <= 0 || !CheckHeatingImpl(pos, x + 1, z - 1, out heating))
@@ -774,7 +774,7 @@ namespace EightyOne.ResourceManagers
                 if ((double)pos.z > (double)num2 && z < GRID - 1)
                 //end mod
                 {
-                    if (CheckHeatingImpl(pos, x - 1, z + 1, out heating))
+                    if (!CheckHeatingImpl(pos, x - 1, z + 1, out heating))
                         ;
                 }
                 else if ((double)pos.z >= (double)num2 || z <= 0 || !CheckHeatingImpl(pos, x - 1, z - 1, out heating))

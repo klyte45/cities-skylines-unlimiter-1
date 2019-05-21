@@ -53,8 +53,8 @@ namespace EightyOne.ResourceManagers
                 }
             }
 
-            m_localFinalResources = new ushort[GRID * GRID * 26];
-            m_localTempResources = new ushort[GRID * GRID * 26];
+            m_localFinalResources = new ushort[GRID * GRID * 27];
+            m_localTempResources = new ushort[GRID * GRID * 27];
             m_globalFinalResources = (int[]) typeof(ImmaterialResourceManager)
                 .GetField("m_globalFinalResources", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(ImmaterialResourceManager.instance);
@@ -214,7 +214,7 @@ namespace EightyOne.ResourceManagers
         {
             x = Mathf.Clamp(x, 0, GRID - 1);
             z = Mathf.Clamp(z, 0, GRID - 1);
-            int num = (int) ((z * GRID + x) * 26 + ImmaterialResourceManager.instance.ResourceMapVisible);
+            int num = (int) ((z * GRID + x) * 27 + ImmaterialResourceManager.instance.ResourceMapVisible);
             amount += (int) m_localFinalResources[num] * multiplier;
         }
 
@@ -281,7 +281,7 @@ namespace EightyOne.ResourceManagers
                             float num11 = Mathf.Clamp01((num2 - Mathf.Sqrt(num9)) / (num2 - num));
                             num10 = Mathf.RoundToInt((float) num10 * num11);
                         }
-                        int num12 = (int) ((i * GRID + j) * 26 + resource);
+                        int num12 = (int) ((i * GRID + j) * 27 + resource);
                         AddResource(ImmaterialResourceManager.instance, ref m_localTempResources[num12], num10);
                     }
                 }
@@ -334,7 +334,7 @@ namespace EightyOne.ResourceManagers
                     //begin mod
                     this.AddResource(
                         ref m_localTempResources[
-                            ((int) areaQueueItem1.m_location.m_z * GRID + (int) areaQueueItem1.m_location.m_x) * 26 +
+                            ((int) areaQueueItem1.m_location.m_z * GRID + (int) areaQueueItem1.m_location.m_x) * 27 +
                             num3], rate1);
                     //end mod
                     num5 += rate1;
@@ -622,7 +622,7 @@ namespace EightyOne.ResourceManagers
                                         Mathf.Clamp01(
                                             (float) (((double) num2 - (double) b1) / ((double) num2 - (double) num1)));
                                 //begin mod
-                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 26 + num3],
+                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 27 + num3],
                                     Mathf.RoundToInt(f2));
                                 //end mod
                             }
@@ -683,7 +683,7 @@ namespace EightyOne.ResourceManagers
                                         Mathf.Clamp01(
                                             (float) (((double) num2 - (double) b1) / ((double) num2 - (double) num1)));
                                 //begin mod
-                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 26 + num3],
+                                this.AddResource(ref m_localTempResources[(index2 * GRID + index3) * 27 + num3],
                                     Mathf.RoundToInt(f2));
                                 //end mod
                             }
@@ -826,6 +826,7 @@ namespace EightyOne.ResourceManagers
             int num37 = Mathf.Clamp(resourceRate14, 0, (int) ushort.MaxValue);
             int num38 = Mathf.Clamp(num10, 0, (int) ushort.MaxValue);
             int num39 = Mathf.Clamp(resourceRate15, 0, (int) ushort.MaxValue);
+            int num40 = Mathf.Clamp(resourceRate16, 0, (int) ushort.MaxValue);
             DistrictManager instance = Singleton<DistrictManager>.instance;
             //begin mod
             byte district = instance.GetDistrict(x * FakeDistrictManager.GRID / GRID,
@@ -963,6 +964,11 @@ namespace EightyOne.ResourceManagers
                 target[index + 24] = (ushort) num38;
                 flag = true;
             }
+            if (num40 != (int) target[index + 26])
+            {
+                target[index + 26] = (ushort) num40;
+                flag = true;
+            }
             return flag;
         }
 
@@ -972,7 +978,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int) (position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int) (position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int) ((num2 * GRID + num) * 26 + resource);
+            int num3 = (int) ((num2 * GRID + num) * 27 + resource);
             local = (int) m_localFinalResources[num3];
             total = m_totalFinalResources[(int) resource];
         }
@@ -982,7 +988,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int) (position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int) (position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            int num3 = (int) ((num2 * GRID + num) * 26 + resource);
+            int num3 = (int) ((num2 * GRID + num) * 27 + resource);
             local = (int) m_localFinalResources[num3];
         }
 
@@ -991,7 +997,7 @@ namespace EightyOne.ResourceManagers
         {
             int num = Mathf.Clamp((int) (position.x / 38.4f + HALFGRID), 0, GRID - 1);
             int num2 = Mathf.Clamp((int) (position.z / 38.4f + HALFGRID), 0, GRID - 1);
-            index = (num2 * GRID + num) * 26;
+            index = (num2 * GRID + num) * 27;
             resources = m_localFinalResources;
         }
 
@@ -1073,7 +1079,7 @@ namespace EightyOne.ResourceManagers
                 int num4 = GRID - 1;
                 for (int x = num3; x <= num4; ++x)
                 {
-                    int index1 = (z * GRID + x) * 26;
+                    int index1 = (z * GRID + x) * 27;
                     if (CalculateLocalResources(x, z, m_localTempResources, m_globalFinalResources,
                         m_localFinalResources, index1))
                     {
@@ -1083,7 +1089,7 @@ namespace EightyOne.ResourceManagers
                         maxZ = Math.Max(maxZ, z);
                     }
                     int num5 = (int) m_localFinalResources[index1 + 16];
-                    for (int index2 = 0; index2 < 26; ++index2)
+                    for (int index2 = 0; index2 < 27; ++index2)
                     {
                         int num6 = (int) m_localFinalResources[index1 + index2];
                         m_totalTempResources[index2] += num6;
@@ -1100,14 +1106,14 @@ namespace EightyOne.ResourceManagers
                 //end mod
                 StatisticBase statisticBase =
                     Singleton<StatisticsManager>.instance.Acquire<StatisticArray>(StatisticType.ImmaterialResource);
-                for (int index = 0; index < 26; ++index)
+                for (int index = 0; index < 27; ++index)
                 {
                     //begin mod
                     m_globalFinalResources[index] = m_globalTempResources[index];
                     m_globalTempResources[index] = 0;
                     m_totalTempResources[index] = 0;
                     m_totalTempResourcesMul[index] = 0;
-                    statisticBase.Acquire<StatisticInt32>(index, 26).Set(m_totalFinalResources[index]);
+                    statisticBase.Acquire<StatisticInt32>(index, 27).Set(m_totalFinalResources[index]);
                     //end mod
                 }
             }
