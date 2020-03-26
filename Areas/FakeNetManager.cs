@@ -13,7 +13,7 @@ namespace EightyOne.Areas
         private static void Init()
         {
             DontUpdateNodeFlags = false;
-            m_tileNodesCount = new int[30 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
+            m_tileNodesCount = new int[37 * FakeGameAreaManager.GRID * FakeGameAreaManager.GRID];
             var nodes = NetManager.instance.m_nodes.m_buffer;
             for (int n = 1; n < nodes.Length; n++)
             {
@@ -37,10 +37,10 @@ namespace EightyOne.Areas
             int areaIndex = Singleton<GameAreaManager>.instance.GetAreaIndex(position);
             if (areaIndex == -1)
                 return;
-            int num = areaIndex * 30;
+            int num = areaIndex * 37;
             int publicSubServiceIndex = ItemClass.GetPublicSubServiceIndex(subService);
             //begin mod
-            ++m_tileNodesCount[publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 13)];
+            ++m_tileNodesCount[publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 17)];
             //end mod
         }
 
@@ -55,14 +55,14 @@ namespace EightyOne.Areas
                 //end mod
                 if (tileIndex != -1)
                 {
-                    int num = tileIndex * 30;
+                    int num = tileIndex * 37;
                     int publicSubServiceIndex = ItemClass.GetPublicSubServiceIndex(subService);
                     //begin mod
                     if (m_tileNodesCount == null)
                     {
                         Init();
                     }
-                    var index0 = publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 13);
+                    var index0 = publicSubServiceIndex == -1 ? num + publicServiceIndex : num + (publicSubServiceIndex + 17);
                     return m_tileNodesCount[index0];
                     //end mod
                 }
