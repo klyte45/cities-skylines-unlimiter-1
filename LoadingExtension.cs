@@ -43,7 +43,7 @@ namespace EightyOne
                 UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage("81 Tiles self-check: new park types detected", "This new version of the game added new park types. 81 Tiles has to be updated in order to not get 'Not in X area' errors on save re-load", false);
             }
             
-            if (Enum.GetNames(typeof(ImmaterialResourceManager.Resource)).Length > 28)
+            if (Enum.GetNames(typeof(ImmaterialResourceManager.Resource)).Length > 30)
             {
                 UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage("81 Tiles self-check: new resource types detected", "This new version of the game added new resource types. 81 Tiles has to be updated!", false);
             }
