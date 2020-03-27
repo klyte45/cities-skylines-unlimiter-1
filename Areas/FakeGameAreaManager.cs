@@ -505,6 +505,8 @@ namespace EightyOne.Areas
             private static FieldInfo _fieldInfo2 = typeof(GameAreaManager).GetField("m_buildableArea1", BindingFlags.Instance | BindingFlags.NonPublic);
             private static FieldInfo _fieldInfo3 = typeof(GameAreaManager).GetField("m_buildableArea2", BindingFlags.Instance | BindingFlags.NonPublic);
             private static FieldInfo _fieldInfo4 = typeof(GameAreaManager).GetField("m_buildableArea3", BindingFlags.Instance | BindingFlags.NonPublic);
+            private static FieldInfo _fieldInfo5 = typeof(GameAreaManager).GetField("m_savedCameraView", BindingFlags.Instance | BindingFlags.NonPublic);
+            private static FieldInfo _fieldInfo6 = typeof(GameAreaManager).GetField("m_cameraController", BindingFlags.Instance | BindingFlags.NonPublic);
 
             [RedirectMethod]
             public void Serialize(DataSerializer s)
@@ -540,6 +542,9 @@ namespace EightyOne.Areas
                 s.WriteFloat((float)_fieldInfo2.GetValue(instance));
                 s.WriteFloat((float)_fieldInfo3.GetValue(instance));
                 s.WriteFloat((float)_fieldInfo4.GetValue(instance));
+                var instanceSavedCameraView = new CameraController.SavedCameraView((CameraController)_fieldInfo6.GetValue(instance));
+                _fieldInfo5.SetValue(instance, instanceSavedCameraView);
+                instanceSavedCameraView.Serialize(s);
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndSerialize(s, "GameAreaManager");
             }
 
@@ -576,6 +581,17 @@ namespace EightyOne.Areas
                     _fieldInfo2.SetValue(instance, -1f);
                     _fieldInfo3.SetValue(instance, -1f);
                     _fieldInfo4.SetValue(instance, -1f);
+                }
+                if (s.version >= 112032U)
+                {
+                    var instanceSavedCameraView = (CameraController.SavedCameraView) _fieldInfo5.GetValue(instance);
+                    instanceSavedCameraView.Deserialize(s);
+                }
+                else
+                {
+                    var instanceSavedCameraView = new CameraController.SavedCameraView();
+                    instanceSavedCameraView.m_mode = -1;
+                    _fieldInfo5.SetValue(instance, instanceSavedCameraView);
                 }
                 Singleton<LoadingManager>.instance.m_loadingProfilerSimulation.EndDeserialize(s, "GameAreaManager");
             }
