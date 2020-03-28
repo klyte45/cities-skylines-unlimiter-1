@@ -13,6 +13,8 @@ namespace EightyOne.Areas
     [TargetType(typeof(GameAreaManager))]
     public class FakeGameAreaManager : GameAreaManager
     {
+        public static bool RecoveryMode = false;
+        
         public const int GRID = 9;
         public const float HALFGRID = 4.5f;
 
@@ -582,13 +584,14 @@ namespace EightyOne.Areas
                     _fieldInfo3.SetValue(instance, -1f);
                     _fieldInfo4.SetValue(instance, -1f);
                 }
-                if (s.version >= 112032U)
+                if (s.version >= 112032U && !RecoveryMode)
                 {
                     var instanceSavedCameraView = (CameraController.SavedCameraView) _fieldInfo5.GetValue(instance);
                     instanceSavedCameraView.Deserialize(s);
                 }
                 else
                 {
+                    RecoveryMode = false;
                     var instanceSavedCameraView = new CameraController.SavedCameraView();
                     instanceSavedCameraView.m_mode = -1;
                     _fieldInfo5.SetValue(instance, instanceSavedCameraView);

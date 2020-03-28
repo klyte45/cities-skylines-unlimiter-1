@@ -1,4 +1,7 @@
-﻿using ICities;
+﻿using ColossalFramework.UI;
+using EightyOne.Areas;
+using ICities;
+using UnityEngine;
 
 namespace EightyOne
 {
@@ -20,7 +23,24 @@ namespace EightyOne
 
         public void OnSettingsUI(UIHelperBase helper)
         {
-            helper.AddButton(UNLOCK_ALL_TILES_FOR_FREE, UnlockAllCheat.UnlockAllAreas);
+            helper.AddGroup("Utilities").AddButton(UNLOCK_ALL_TILES_FOR_FREE, UnlockAllCheat.UnlockAllAreas);
+            var dangerZone = (UIHelper) helper.AddGroup("DANGER ZONE");
+            UIButton recovery = null;
+            recovery = (UIButton) dangerZone.AddButton(
+                "Activate loading recovery mode -  READ TOOLTIP BEFORE PRESSING!",
+                () =>
+                {
+                    Detours.SetUp();
+                    FakeGameAreaManager.RecoveryMode = true;
+                    recovery.Disable();
+                });
+            recovery.textColor = Color.red;
+            recovery.tooltip = "The button is only needed if you saved with 81 Tiles after Sunset Harbor release,\n" +
+                               "but before the mod was fixed for it,\n" +
+                               "If you enable it without having that issue you won't be able to load a properly saved game!\n" +
+                               "The option is not persisted and will be automatically disabled when the save is loaded!\n" +
+                               "As soon as the save is loaded, save it again, exit the game to desktop and load it normally\n" +
+                               "This button will become disabled after pressing it!";
         }
     }
 }
