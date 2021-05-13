@@ -19,7 +19,7 @@ namespace EightyOne
 
         public string Description => "Allows to use all 81 map tiles";
 
-        public string Name => "81 Tiles (Fixed for C:S 1.2+)";
+        public string Name => "81 Tiles (Fixed for C:S 1.2+)"; //never change this name! Used by Surface Painter do detect it
 
         public void OnSettingsUI(UIHelperBase helper)
         {
