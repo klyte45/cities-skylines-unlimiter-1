@@ -25,6 +25,7 @@ namespace EightyOne
                 return;
             }
             Detours.Deploy();
+            Patches.Apply();
             SimulationManager.instance.AddAction(() => Object.FindObjectOfType<RenderProperties>().m_edgeFogDistance = 2800f);
             SimulationManager.instance.AddAction(() => Object.FindObjectOfType<FogEffect>().m_edgeFogDistance = 2800f);
             SimulationManager.instance.AddAction(() => Object.FindObjectOfType<FogProperties>().m_EdgeFogDistance = 2800f);
@@ -120,6 +121,7 @@ namespace EightyOne
         public override void OnLevelUnloading()
         {
             Detours.Revert();
+            Patches.Undo();
         }
 
         public override void OnReleased()

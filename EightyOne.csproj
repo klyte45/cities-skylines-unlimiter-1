@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,6 +54,7 @@
     <Compile Include="Areas\FakeNatualResourceManager.cs" />
     <Compile Include="Areas\FakeNetManager.cs" />
     <Compile Include="DataExtensions\AreaManagerDataExtension.cs" />
+    <Compile Include="HarmonyPatches\MaxDistanceTranspiler.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfBuildingThemesEnabledAttribute.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfDisableZoneCheckEnabled.cs" />
     <Compile Include="IgnoreAttributes\IgnoreIfPlopGrowablesEnabledAttribute.cs" />
@@ -64,6 +66,7 @@
     <Compile Include="LoadingExtension.cs" />
     <Compile Include="DataExtensions\DistrictManagerDataExtension.cs" />
     <Compile Include="DataExtensions\ElectricityManagerDataExtension.cs" />
+    <Compile Include="Patches.cs" />
     <Compile Include="PatchUtil.cs" />
     <Compile Include="RedirectionFramework\AssemblyRedirector.cs" />
     <Compile Include="RedirectionFramework\Attributes\IgnoreConditionAttribute.cs" />
@@ -97,9 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="HarmonyPatches" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
