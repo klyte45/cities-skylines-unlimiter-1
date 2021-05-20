@@ -12,17 +12,17 @@ namespace EightyOne.HarmonyPatches
     public static class MaxDistanceTranspiler
     {
         
-        public static void Apply(Type type, string methodName)
+        public static void Apply(Type type, string methodName, Type[] argumentTypes = null)
         {
             PatchUtil.Patch(
-                new PatchUtil.MethodDefinition(type, methodName),
+                new PatchUtil.MethodDefinition(type, methodName, argumentTypes: argumentTypes),
                 null, null,
                 new PatchUtil.MethodDefinition(typeof(MaxDistanceTranspiler), (nameof(Transpile))));
         }
 
-        public static void Undo(Type type, string methodName)
+        public static void Undo(Type type, string methodName, Type[] argumentTypes = null)
         {
-            PatchUtil.Unpatch(new PatchUtil.MethodDefinition(type, methodName));
+            PatchUtil.Unpatch(new PatchUtil.MethodDefinition(type, methodName, argumentTypes: argumentTypes));
         }
         
         

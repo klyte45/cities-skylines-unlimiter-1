@@ -1,6 +1,8 @@
 using System;
+using System.Reflection;
 using EightyOne.HarmonyPatches;
 using EightyOne.RedirectionFramework;
+using UnityEngine;
 
 namespace EightyOne
 {
@@ -9,7 +11,6 @@ namespace EightyOne
         private static Tuple<Type, string>[] TypeMethods = {
             new(typeof(BusAI), nameof(BusAI.ArriveAtDestination)),
             new(typeof(BusAI), "ArriveAtTarget"),
-            //TODO: CargoTruckAI
             new(typeof(CinematicCameraController), "IsInsideGameAreaLimits"),
             new(typeof(EarthquakeAI), "IsStillClearing"),
             //TODO: GameAreaManager ?
@@ -17,7 +18,6 @@ namespace EightyOne
             new(typeof(PassengerPlaneAI), "ArriveAtTarget"),       
             new(typeof(PassengerShipAI), "ArriveAtTarget"),      
             new(typeof(PassengerTrainAI), "ArriveAtTarget"),  
-            //TODO: PostVanAI
             new(typeof(TramAI), "ArriveAtTarget"),  
             //TODO: TransferManager ?
             new(typeof(TrolleybusAI), "ArriveAtTarget"),  
@@ -25,10 +25,28 @@ namespace EightyOne
             new(typeof(TsunamiAI), "IsStillClearing"),
             new(typeof(TsunamiAI), "IsStillEmerging"),
         };
+
+        private static Type[] StartPathFindTypes =
+        {
+            typeof(CargoTruckAI),
+            typeof(PostVanAI)
+        };
         
         public static void Apply()
         {
-
+            foreach (var type in StartPathFindTypes)
+            {
+                MaxDistanceTranspiler.Apply(type, "StartPathFind", new[]
+                    {
+                        typeof(ushort),
+                        typeof(Vehicle).MakeByRefType(),
+                        typeof(Vector3),
+                        typeof(Vector3),
+                        typeof(bool),
+                        typeof(bool),
+                        typeof(bool)
+                    });       
+            }
             foreach (var tuple in TypeMethods)
             {
                 MaxDistanceTranspiler.Apply(tuple.First, tuple.Second);
@@ -37,6 +55,19 @@ namespace EightyOne
 
         public static void Undo()
         {
+            foreach (var type in StartPathFindTypes)
+            {
+                MaxDistanceTranspiler.Undo(type, "StartPathFind", new[]
+                {
+                    typeof(ushort),
+                    typeof(Vehicle).MakeByRefType(),
+                    typeof(Vector3),
+                    typeof(Vector3),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool)
+                });       
+            }
             foreach (var tuple in TypeMethods)
             {
                 MaxDistanceTranspiler.Undo(tuple.First, tuple.Second);
