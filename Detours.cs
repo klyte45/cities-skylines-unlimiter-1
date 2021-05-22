@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using EightyOne.Areas;
 using EightyOne.RedirectionFramework;
-using EightyOne.RedirectionFramework.Attributes;
 using EightyOne.ResourceManagers;
 using EightyOne.Terrain;
 using EightyOne.Zones;
@@ -51,9 +49,32 @@ namespace EightyOne
                 redirectsOnLoaded = new Dictionary<MethodInfo, RedirectCallsState>();
             }
             var redirects = onCreated ? redirectsOnCreated : redirectsOnLoaded;
-            var types = Assembly.GetExecutingAssembly().GetTypes().
-                Where(t => t.GetCustomAttributes(typeof(TargetTypeAttribute), false).Length > 0).
-                ToArray();
+            var types = new[]
+            {
+                typeof(FakeAreasWrapper),
+                typeof(FakeGameAreaInfoPanel),
+                typeof(FakeGameAreaManager),
+                typeof(FakeGameAreaManager.FakeData),
+                typeof(FakeGameAreaManagerUI),
+                typeof(FakeGameAreaTool),
+                typeof(FakeNatualResourceManager),
+                typeof(FakeNetManager),
+                
+                typeof(FakeDistrictManager),
+                typeof(FakeDistrictTool),
+                typeof(FakeElectricityManager),
+                typeof(FakeImmaterialResourceManager),
+                typeof(FakeWaterManager),
+                
+                typeof(FakeTerrainManager),
+                
+                typeof(FakeBuilding),
+                typeof(FakeBuildingTool),
+                typeof(FakeZoneBlock),
+                typeof(FakeZoneManager),
+                typeof(FakeZoneTool)
+                
+            };
             foreach (var type in types)
             {
                 redirects.AddRange(RedirectionUtil.RedirectType(type, onCreated));

@@ -9,16 +9,6 @@ namespace EightyOne.RedirectionFramework
     public static class RedirectionUtil
     {
 
-        public static Dictionary<MethodInfo, RedirectCallsState> RedirectAssembly()
-        {
-            var redirects = new Dictionary<MethodInfo, RedirectCallsState>();
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
-            {
-                redirects.AddRange(RedirectType(type));
-            }
-            return redirects;
-        }
-
         public static void RevertRedirects(Dictionary<MethodInfo, RedirectCallsState> redirects)
         {
             if (redirects == null)

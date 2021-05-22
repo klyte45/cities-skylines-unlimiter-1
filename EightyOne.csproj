@@ -72,7 +72,6 @@
     <Compile Include="DataExtensions\ElectricityManagerDataExtension.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="PatchUtil.cs" />
-    <Compile Include="RedirectionFramework\AssemblyRedirector.cs" />
     <Compile Include="RedirectionFramework\Attributes\IgnoreConditionAttribute.cs" />
     <Compile Include="RedirectionFramework\Attributes\IgnoreConditions\DisableAttribute.cs" />
     <Compile Include="RedirectionFramework\Attributes\RedirectAttribute.cs" />
