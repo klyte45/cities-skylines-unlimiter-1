@@ -1,4 +1,5 @@
 using System;
+using CitiesHarmony.API;
 using EightyOne.HarmonyPatches;
 using EightyOne.RedirectionFramework;
 using UnityEngine;
@@ -33,6 +34,10 @@ namespace EightyOne
 
         internal static void Apply()
         {
+            if (!HarmonyHelper.IsHarmonyInstalled)
+            {
+                return;
+            }
             foreach (var type in StartPathFindTypes)
             {
                 MaxDistanceTranspiler.Apply(type, "StartPathFind", new[]
@@ -54,6 +59,10 @@ namespace EightyOne
 
         internal static void Undo()
         {
+            if (!HarmonyHelper.IsHarmonyInstalled)
+            {
+                return;
+            }
             foreach (var type in StartPathFindTypes)
             {
                 MaxDistanceTranspiler.Undo(type, "StartPathFind", new[]
