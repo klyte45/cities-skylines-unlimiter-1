@@ -113,7 +113,7 @@ namespace EightyOne
             {
                 try
                 {
-                    var types = assembly.GetTypes();
+                    var types = assembly.GetExportedTypes();
                     foreach (var type in types.Where(type => type.Name == className))
                     {
                         return type;
