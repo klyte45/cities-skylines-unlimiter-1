@@ -1,4 +1,5 @@
-﻿using ColossalFramework.UI;
+﻿using CitiesHarmony.API;
+using ColossalFramework.UI;
 using EightyOne.Areas;
 using ICities;
 using UnityEngine;
@@ -41,6 +42,10 @@ namespace EightyOne
                                "The option is not persisted and will be automatically disabled when the save is loaded!\n" +
                                "As soon as the save is loaded, save it again, exit the game to desktop and load it normally\n" +
                                "This button will become disabled after pressing it!";
+        }
+        
+        public void OnEnabled() {
+            HarmonyHelper.EnsureHarmonyInstalled();
         }
     }
 }
