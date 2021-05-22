@@ -4,15 +4,14 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using EightyOne.Areas;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace EightyOne.HarmonyPatches
 {
-    public static class MaxDistanceTranspiler
+    internal static class MaxDistanceTranspiler
     {
-        
-        public static void Apply(Type type, string methodName, Type[] argumentTypes = null)
+        internal static void Apply(Type type, string methodName, Type[] argumentTypes = null)
         {
             PatchUtil.Patch(
                 new PatchUtil.MethodDefinition(type, methodName, argumentTypes: argumentTypes),
@@ -20,13 +19,13 @@ namespace EightyOne.HarmonyPatches
                 new PatchUtil.MethodDefinition(typeof(MaxDistanceTranspiler), (nameof(Transpile))));
         }
 
-        public static void Undo(Type type, string methodName, Type[] argumentTypes = null)
+        internal static void Undo(Type type, string methodName, Type[] argumentTypes = null)
         {
             PatchUtil.Unpatch(new PatchUtil.MethodDefinition(type, methodName, argumentTypes: argumentTypes));
         }
         
         
-        public static IEnumerable<CodeInstruction> Transpile(MethodBase original,
+        private static IEnumerable<CodeInstruction> Transpile(MethodBase original,
             IEnumerable<CodeInstruction> instructions)
         {
             Debug.Log("81 Tiles: MaxDistanceTranspiler - Transpiling method: " + original.DeclaringType + "." + original);

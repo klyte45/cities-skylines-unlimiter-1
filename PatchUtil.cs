@@ -1,19 +1,19 @@
 using System;
 using System.Reflection;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace EightyOne
 {
-    public static class PatchUtil
+    internal static class PatchUtil
     {
         private const string HarmonyId = "github.com/bloodypenguin/cities-skylines-unlimiter-1";
-        private static HarmonyInstance _harmonyInstance = null;
+        private static Harmony _harmonyInstance = null;
 
-        private static HarmonyInstance HarmonyInstance =>
-            _harmonyInstance ?? (_harmonyInstance = HarmonyInstance.Create(HarmonyId));
+        private static Harmony HarmonyInstance =>
+            _harmonyInstance ??= new Harmony(HarmonyId);
 
-        public static void Patch(
+        internal static void Patch(
             MethodDefinition original,
             MethodDefinition prefix = null,
             MethodDefinition postfix = null,
@@ -42,7 +42,7 @@ namespace EightyOne
             }
         }
 
-        public static void Unpatch(MethodDefinition original)
+        internal static void Unpatch(MethodDefinition original)
         {
             Debug.Log($"81 Tiles: Unpatching method {original.Type.FullName}.{original.MethodName}");
             HarmonyInstance.Unpatch(GetOriginal(original), HarmonyPatchType.All, HarmonyId);
@@ -82,7 +82,7 @@ namespace EightyOne
             return methodInfo;
         }
 
-        public class MethodDefinition
+        internal class MethodDefinition
         {
             public MethodDefinition(Type type, string methodName, 
                 BindingFlags bindingFlags = BindingFlags.Default,

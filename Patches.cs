@@ -1,12 +1,11 @@
 using System;
-using System.Reflection;
 using EightyOne.HarmonyPatches;
 using EightyOne.RedirectionFramework;
 using UnityEngine;
 
 namespace EightyOne
 {
-    public static class Patches
+    internal static class Patches
     {
         private static Tuple<Type, string>[] TypeMethods = {
             new(typeof(BusAI), nameof(BusAI.ArriveAtDestination)),
@@ -31,8 +30,8 @@ namespace EightyOne
             typeof(CargoTruckAI),
             typeof(PostVanAI)
         };
-        
-        public static void Apply()
+
+        internal static void Apply()
         {
             foreach (var type in StartPathFindTypes)
             {
@@ -53,7 +52,7 @@ namespace EightyOne
             }
         }
 
-        public static void Undo()
+        internal static void Undo()
         {
             foreach (var type in StartPathFindTypes)
             {
