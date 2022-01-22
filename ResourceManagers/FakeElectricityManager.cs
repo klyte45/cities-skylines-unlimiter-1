@@ -688,7 +688,7 @@ namespace EightyOne.ResourceManagers
             if (node.m_position.x >= minX && node.m_position.z >= minZ && node.m_position.x <= maxX && node.m_position.z <= maxZ)
             {
                 NetInfo info = node.Info;
-                if (info.m_class.m_service == ItemClass.Service.Electricity)
+                if (info.m_class.m_service == ItemClass.Service.Electricity || node.Info.m_netAI is ConcourseAI)
                 {
                     if (m_nodeGroups[(int)nodeIndex] == 65535)
                     {
@@ -777,7 +777,7 @@ namespace EightyOne.ResourceManagers
                         if (instance.m_nodes.m_buffer[i].m_flags != NetNode.Flags.None)
                         {
                             NetInfo info = instance.m_nodes.m_buffer[i].Info;
-                            if (info.m_class.m_service == ItemClass.Service.Electricity)
+                            if (info.m_class.m_service == ItemClass.Service.Electricity || info.m_netAI is ConcourseAI)
                             {
                                 UpdateNodeElectricity((ElectricityManager)Convert.ChangeType(this, typeof(ElectricityManager)), i, (m_nodeGroups[i] == 65535) ? 0 : 1);
                                 m_conductiveCells++;

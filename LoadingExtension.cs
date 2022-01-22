@@ -38,8 +38,9 @@ namespace EightyOne
             }
             SimulationManager.instance.AddAction(FixNotInIndustryAreaProblem);
             SimulationManager.instance.AddAction(FixNotInCampusAreaProblem);
+            SimulationManager.instance.AddAction(FixNotInAirportAreaProblem);
 
-            if (Enum.GetNames(typeof(DistrictPark.ParkType)).Length > 14)
+            if (Enum.GetNames(typeof(DistrictPark.ParkType)).Length > 15)
             {
                 UIView.library.ShowModal<ExceptionPanel>("ExceptionPanel").SetMessage("81 Tiles self-check: new park types detected", "This new version of the game added new park types. 81 Tiles has to be updated in order to not get 'Not in X area' errors on save re-load", false);
             }
@@ -51,6 +52,10 @@ namespace EightyOne
             
         }
 
+        private static void FixNotInAirportAreaProblem()
+        {
+            FixNotInParkProblem<IndustryBuildingAI>(Notification.Problem.NotInAirportArea, GetCampusPark);
+        }
         private static void FixNotInIndustryAreaProblem()
         {
             FixNotInParkProblem<IndustryBuildingAI>(Notification.Problem.NotInIndustryArea, GetIndustryPark);
@@ -102,19 +107,28 @@ namespace EightyOne
             }
             return park;
         }
-        
+
         private static byte GetCampusPark(byte park, Building data)
         {
             DistrictManager instance = Singleton<DistrictManager>.instance;
-            if (!instance.m_parks.m_buffer[(int) park].IsCampus)
-                park = (byte) 0;
+            if (!instance.m_parks.m_buffer[(int)park].IsCampus)
+                park = (byte)0;
             else
             {
-                var campusBuildingAi = ((CampusBuildingAI) data.Info.m_buildingAI);
+                var campusBuildingAi = ((CampusBuildingAI)data.Info.m_buildingAI);
                 if (campusBuildingAi.m_campusType == DistrictPark.ParkType.GenericCampus ||
-                    campusBuildingAi.m_campusType != instance.m_parks.m_buffer[(int) park].m_parkType)
-                    park = (byte) 0;
+                    campusBuildingAi.m_campusType != instance.m_parks.m_buffer[(int)park].m_parkType)
+                    park = (byte)0;
             }
+            return park;
+        }
+
+        private static byte GetAirportPark(byte park, Building data)
+        {
+            DistrictManager instance = Singleton<DistrictManager>.instance;
+            if (!instance.m_parks.m_buffer[(int)park].IsAirport)
+                park = (byte)0;
+            
             return park;
         }
 

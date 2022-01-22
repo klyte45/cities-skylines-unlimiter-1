@@ -1,10 +1,10 @@
+using EightyOne.Areas;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using EightyOne.Areas;
-using HarmonyLib;
 using UnityEngine;
 
 namespace EightyOne.HarmonyPatches
@@ -23,8 +23,8 @@ namespace EightyOne.HarmonyPatches
         {
             PatchUtil.Unpatch(new PatchUtil.MethodDefinition(type, methodName, argumentTypes: argumentTypes));
         }
-        
-        
+
+
         private static IEnumerable<CodeInstruction> Transpile(MethodBase original,
             IEnumerable<CodeInstruction> instructions)
         {
@@ -39,10 +39,10 @@ namespace EightyOne.HarmonyPatches
                     continue;
                 }
                 //100m buffer, just to make sure OutsideConnections don't get treated incorrectly
-                var newInstruction = new CodeInstruction(OpCodes.Ldc_R4,  FakeGameAreaManager.HALFGRID * 1920.0f - 100f)
-                    {
-                        labels = codeInstruction.labels
-                    }
+                var newInstruction = new CodeInstruction(OpCodes.Ldc_R4, FakeGameAreaManager.HALFGRID * 1920.0f - 100f)
+                {
+                    labels = codeInstruction.labels
+                }
                     ;
                 newCodes.Add(newInstruction);
                 Debug.Log($"81 Tiles: MaxDistanceTranspiler - Replaced distance with {newInstruction.operand}");
@@ -53,7 +53,7 @@ namespace EightyOne.HarmonyPatches
 
         private static bool SkipInstruction(CodeInstruction codeInstruction)
         {
-            return codeInstruction.opcode != OpCodes.Ldc_R4 || codeInstruction.operand is not (> 4799f and < 4801f);
+            return codeInstruction.opcode != OpCodes.Ldc_R4 || (codeInstruction.operand is float f && f < 4799f && f > 4801f);
         }
     }
 }

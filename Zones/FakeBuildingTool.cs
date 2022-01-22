@@ -409,6 +409,39 @@ namespace EightyOne.Zones
                         vector3_1.y = buildingY;
                         toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1) | BuildingTool.CheckSpace(info, info.m_placementMode, relocating, vector3_1, minY, buildingY + info.m_collisionHeight, num1, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
                     }
+                    else if (info.m_placementMode == BuildingInfo.PlacementMode.Concourse)
+                    {
+                        toolErrors1 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1);
+                        toolErrors1 |= ToolBase.ToolErrors.ConcourseRequired;
+                        Vector3 a7;
+                        Vector3 a8;
+                        if (BuildingTool.SnapToPath(vector3_1, out a7, out a8, (float)Mathf.Min(info.m_cellWidth, info.m_cellLength) * 3.9f, false, true))
+                        {
+                            for (int n = 0; n < 9; n++)
+                            {
+                                Vector3 vector9 = a7 - a8 * ((float)info.m_cellLength * 4f + (float)n * 0.5f);
+                                float num57 = Mathf.Atan2(-a8.x, a8.z);
+                                float num58;
+                                float num59;
+                                float num60;
+                                Building.SampleBuildingHeight(vector9, num57, info.m_cellWidth, info.m_cellLength, info, out num58, out num59, out num60);
+                                this.m_toolController.ResetColliding();
+                                ToolBase.ToolErrors toolErrors6 = info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector9, ref num57, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1);
+                                toolErrors6 |= BuildingTool.CheckSpace(info, BuildingInfo.PlacementMode.PathsideOrGround, relocating, vector9, num58, vector9.y + info.m_collisionHeight, num57, info.m_cellWidth, info.m_cellLength, true, collidingSegments, collidingBuildings);
+                                if (num59 - num58 > info.m_maxHeightOffset)
+                                {
+                                    toolErrors6 |= ToolBase.ToolErrors.SlopeTooSteep;
+                                }
+                                if (toolErrors6 == ToolBase.ToolErrors.None)
+                                {
+                                    num1 = num57;
+                                    vector3_1 = vector9;
+                                    toolErrors1 = ToolBase.ToolErrors.None;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     else
                         toolErrors1 = ToolBase.ToolErrors.Pending | info.m_buildingAI.CheckBuildPosition((ushort)relocating, ref vector3_1, ref num1, waterHeight, elevation, ref connectionSegment1, out productionRate1, out constructionCost1);
                     if (info.m_subBuildings != null && info.m_subBuildings.Length != 0)

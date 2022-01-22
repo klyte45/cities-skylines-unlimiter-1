@@ -113,7 +113,7 @@ namespace EightyOne.Areas
             bool result = this.IsUnlocked(x, z - 1) || this.IsUnlocked(x - 1, z) || this.IsUnlocked(x + 1, z) || this.IsUnlocked(x, z + 1) || UnlockAllCheat.CheatInProgress;
             //begin mod
             //end mod
-            return result;
+            return true;
         }
 
         [RedirectMethod]

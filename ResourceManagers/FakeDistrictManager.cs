@@ -1,12 +1,12 @@
-﻿using System;
-using ColossalFramework;
+﻿using ColossalFramework;
 using ColossalFramework.IO;
-using System.Reflection;
-using System.Threading;
 using ColossalFramework.Math;
 using ColossalFramework.UI;
 using EightyOne.Areas;
 using EightyOne.RedirectionFramework.Attributes;
+using System;
+using System.Reflection;
+using System.Threading;
 using UnityEngine;
 
 namespace EightyOne.ResourceManagers
@@ -56,14 +56,14 @@ namespace EightyOne.ResourceManagers
                 ReadGrid(districtGrid, @byte);
                 if (s.version == 2U)
                 {
-                    RepairGrid(districtGrid);     
+                    RepairGrid(districtGrid);
                 }
                 if (s.version >= 2U)
                 {
                     ReadGrid(parkGrid, @byte);
                     if (s.version == 2U)
                     {
-                        RepairGrid(parkGrid);     
+                        RepairGrid(parkGrid);
                     }
                 }
                 else
@@ -138,7 +138,7 @@ namespace EightyOne.ResourceManagers
                 }
                 for (int num22 = 0; num22 < gridLength; num22++)
                 {
-                    grid[num22].m_district2 =0;
+                    grid[num22].m_district2 = 0;
                 }
                 for (int num23 = 0; num23 < gridLength; num23++)
                 {
@@ -325,7 +325,7 @@ namespace EightyOne.ResourceManagers
             parksModifiedX2Field = typeof(DistrictManager).GetField("m_parksModifiedX2", BindingFlags.Instance | BindingFlags.NonPublic);
             parksModifiedZ2Field = typeof(DistrictManager).GetField("m_parksModifiedZ2", BindingFlags.Instance | BindingFlags.NonPublic);
             fullParksUpdateField = typeof(DistrictManager).GetField("m_fullParksUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
-            
+
             modifyLockField = typeof(DistrictManager).GetField("m_modifyLock", BindingFlags.Instance | BindingFlags.NonPublic);
             namesModifiedField = typeof(DistrictManager).GetField("m_namesModified", BindingFlags.Instance | BindingFlags.NonPublic);
             areaMaterialField = typeof(DistrictManager).GetField("m_areaMaterial", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -337,11 +337,11 @@ namespace EightyOne.ResourceManagers
 
             districtTexture1 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture1.wrapMode = TextureWrapMode.Clamp;
-            typeof(DistrictManager).GetField("m_districtTexture1", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, districtTexture1); 
+            typeof(DistrictManager).GetField("m_districtTexture1", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, districtTexture1);
             districtTexture2 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             districtTexture2.wrapMode = TextureWrapMode.Clamp;
             typeof(DistrictManager).GetField("m_districtTexture2", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, districtTexture2);
-            
+
             parkTexture1 = new Texture2D(GRID, GRID, TextureFormat.ARGB32, false, true);
             parkTexture1.wrapMode = TextureWrapMode.Clamp;
             typeof(DistrictManager).GetField("m_parkTexture1", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(DistrictManager.instance, parkTexture1);
@@ -361,7 +361,7 @@ namespace EightyOne.ResourceManagers
             ID_AreaColorA = Shader.PropertyToID("_AreaColorA");
             ID_EdgeColorB = Shader.PropertyToID("_EdgeColorB");
             ID_AreaColorB = Shader.PropertyToID("_AreaColorB");
-            
+
             SimulationManager.instance.AddAction(() =>
             {
                 nameMeshField.SetValue(DistrictManager.instance, null);
@@ -677,7 +677,7 @@ namespace EightyOne.ResourceManagers
                                     dynamicFontRenderer.spriteBuffer = uiRenderData;
                                 }
                                 float x1 = 450f;
-                                renderer.defaultColor = new Color32(this.m_parks.m_buffer[park].IsIndustry || this.m_parks.m_buffer[park].IsCampus ? byte.MaxValue : (byte) 0, this.m_parks.m_buffer[park].IsPark || this.m_parks.m_buffer[park].IsCampus ? byte.MaxValue : (byte) 0, (byte) 0, byte.MaxValue);
+                                renderer.defaultColor = new Color32((!this.m_parks.m_buffer[park].IsIndustry && !this.m_parks.m_buffer[park].IsCampus && !this.m_parks.m_buffer[park].IsAirport) ? (byte)0 : byte.MaxValue, (!this.m_parks.m_buffer[park].IsPark && !this.m_parks.m_buffer[park].IsCampus && !this.m_parks.m_buffer[park].IsAirport) ? (byte)0 : byte.MaxValue, (byte)0, byte.MaxValue);
                                 renderer.textScale = 1.6f;
                                 renderer.pixelRatio = 1f;
                                 renderer.processMarkup = true;
@@ -737,7 +737,7 @@ namespace EightyOne.ResourceManagers
                 }
                 if ((Mesh)nameMeshField.GetValue(this) == null)
                     nameMeshField.SetValue(this, new Mesh());
-                var nameMesh = (Mesh) nameMeshField.GetValue(this);
+                var nameMesh = (Mesh)nameMeshField.GetValue(this);
                 nameMesh.Clear();
                 nameMesh.vertices = vertices2.ToArray();
                 nameMesh.normals = normals2.ToArray();
@@ -1276,7 +1276,8 @@ namespace EightyOne.ResourceManagers
         }
 
         [RedirectMethod]
-        private static byte SampleDistrict(Vector3 worldPos, DistrictManager.Cell[] grid) {
+        private static byte SampleDistrict(Vector3 worldPos, DistrictManager.Cell[] grid)
+        {
             //begin mod
             int num = Mathf.RoundToInt(worldPos.x * 13.333333f + (HALFGRID * HALFGRID) - HALFGRID);
             int num2 = Mathf.RoundToInt(worldPos.z * 13.333333f + (HALFGRID * HALFGRID) - HALFGRID);
